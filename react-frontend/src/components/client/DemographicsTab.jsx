@@ -18,7 +18,7 @@ function DemographicsTab({ data, onDataUpdate }) {
     const loadDropdownOptions = async () => {
       try {
         // Fetch all required list options in parallel
-        const [sexOptions, genderOptions, orientationOptions, maritalOptions, protectOptions, stateOptions, categoriesOptions, careTeamStatusOptions] = await Promise.all([
+        const [sexOptions, genderOptions, orientationOptions, maritalOptions, protectOptions, stateOptions, categoriesOptions, careTeamStatusOptions, paymentTypeOptions] = await Promise.all([
           getListOptions('sex'),
           getListOptions('gender_identity'),
           getListOptions('sexual_orientation'),
@@ -26,7 +26,8 @@ function DemographicsTab({ data, onDataUpdate }) {
           getListOptions('yesno'),
           getListOptions('state'),
           getListOptions('Patient_Groupings'),
-          getListOptions('Care_Team_Status')
+          getListOptions('Care_Team_Status'),
+          getListOptions('payment_type')
         ]);
 
         setDropdownOptions({
@@ -37,7 +38,8 @@ function DemographicsTab({ data, onDataUpdate }) {
           protect_indicator: protectOptions.options || [],
           state: stateOptions.options || [],
           patient_categories: categoriesOptions.options || [],
-          care_team_status: careTeamStatusOptions.options || []
+          care_team_status: careTeamStatusOptions.options || [],
+          payment_type: paymentTypeOptions.options || []
         });
       } catch (err) {
         console.error('Failed to load dropdown options:', err);
@@ -130,6 +132,9 @@ function DemographicsTab({ data, onDataUpdate }) {
 
       // Care Team Status
       care_team_status: patient.care_team_status || '',
+
+      // Payment Type
+      payment_type: patient.payment_type || '',
 
       // Clinician Information
       provider_id: patient.provider_id || '',
@@ -537,34 +542,55 @@ function DemographicsTab({ data, onDataUpdate }) {
         {/* Right Column */}
         <div className="space-y-6">
 
-          {/* Risk & Protection Section */}
+          {/* Client Status Section */}
           <div className="card-main">
-            <h2 className="card-header">Risk & Protection</h2>
+            <h2 className="card-header">Client Status</h2>
             <div className="card-inner">
               {isEditing ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-3">
+                  {renderField('Status', formData.care_team_status, 'care_team_status', 'text',
+                    dropdownOptions.care_team_status && dropdownOptions.care_team_status.length > 0
+                      ? [{ value: '', label: 'Select...' }, ...dropdownOptions.care_team_status]
+                      : null
+                  )}
+                  {renderField('Payment Type', formData.payment_type, 'payment_type', 'text',
+                    dropdownOptions.payment_type && dropdownOptions.payment_type.length > 0
+                      ? [{ value: '', label: 'Select...' }, ...dropdownOptions.payment_type]
+                      : null
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="form-field">
+                    <div className="form-field-label">Status</div>
+                    <div className="form-field-value">{patient.care_team_status || 'Not Set'}</div>
+                  </div>
+                  <div className="form-field">
+                    <div className="form-field-label">Payment Type</div>
+                    <div className="form-field-value">{patient.payment_type || 'Not Set'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Is the Client at Risk Section */}
+          <div className="card-main">
+            <h2 className="card-header">Is the Client at Risk?</h2>
+            <div className="card-inner">
+              {isEditing ? (
+                <div>
                   {renderField('Risk Indicator', formData.protect_indicator, 'protect_indicator', 'text',
                     dropdownOptions.protect_indicator && dropdownOptions.protect_indicator.length > 0
                       ? [{ value: '', label: 'Select...' }, ...dropdownOptions.protect_indicator]
                       : null
                   )}
-                  <div className="col-span-2">
-                    {renderField('Client Status', formData.care_team_status, 'care_team_status', 'text',
-                      dropdownOptions.care_team_status && dropdownOptions.care_team_status.length > 0
-                        ? [{ value: '', label: 'Select...' }, ...dropdownOptions.care_team_status]
-                        : null
-                    )}
-                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div className="form-field">
                     <div className="form-field-label">Risk Indicator</div>
                     <div className="form-field-value">{patient.protection_indicator}</div>
-                  </div>
-                  <div className="form-field">
-                    <div className="form-field-label">Client Status</div>
-                    <div className="form-field-value">{patient.care_team_status}</div>
                   </div>
                   {patient.protection_indicator_code === 'YES' && (
                     <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-3">
