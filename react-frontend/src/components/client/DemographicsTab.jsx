@@ -352,6 +352,15 @@ function DemographicsTab({ data, onDataUpdate }) {
         </div>
       )}
 
+      {/* Required fields legend - shown when editing */}
+      {isEditing && (
+        <div className="mb-4 px-4 py-2 bg-purple-50 border-l-4 border-purple-700 rounded">
+          <p className="text-sm text-purple-900">
+            <span className="required-field-label">*</span> Required fields are marked with an asterisk and displayed in <span className="required-field-label">purple</span>
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column */}
         <div className="space-y-6">

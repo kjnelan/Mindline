@@ -105,15 +105,22 @@ function InsuranceTab({ data, onDataUpdate }) {
     accept_assignment: ''
   });
 
-  // Always show all insurance sections with placeholders if needed
+  // Determine if client is self-pay based on payment_type field
+  const isSelfPay = patient.payment_type === 'client';
+
+  // Always show primary insurance with placeholder if needed
   if (!primaryInsurance) {
     primaryInsurance = createPlaceholder('primary');
   }
-  if (!secondaryInsurance) {
-    secondaryInsurance = createPlaceholder('secondary');
-  }
-  if (!tertiaryInsurance) {
-    tertiaryInsurance = createPlaceholder('tertiary');
+
+  // Only show secondary/tertiary placeholders if NOT self-pay (i.e., payment_type is 'insurance')
+  if (!isSelfPay) {
+    if (!secondaryInsurance) {
+      secondaryInsurance = createPlaceholder('secondary');
+    }
+    if (!tertiaryInsurance) {
+      tertiaryInsurance = createPlaceholder('tertiary');
+    }
   }
 
   // Helper function to initialize form data from insurance record
@@ -496,8 +503,7 @@ function InsuranceTab({ data, onDataUpdate }) {
   const hasEmployerData = patient.employer || patient.employer_street || patient.employer_city ||
                          patient.employer_state || patient.employer_postal_code || patient.employer_occupation;
 
-  // Determine if client is self-pay based on payment_type field (userlist1)
-  const isSelfPay = patient.payment_type === 'client';
+  // Payment type label for display
   const paymentTypeLabel = isSelfPay ? 'Self-Pay (Client)' : 'Insurance';
 
   // Determine if we should show insurance sections
