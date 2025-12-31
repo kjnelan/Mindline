@@ -18,7 +18,7 @@ function About() {
       {/* Logo, Branding, and Author Info */}
       <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/30">
         <div className="flex items-center gap-6">
-          <div className="w-32 h-32 backdrop-blur-xl bg-white/60 rounded-2xl flex items-center justify-center p-4 shadow-lg">
+          <div className="w-48 h-48 backdrop-blur-xl bg-white/40 rounded-2xl flex items-center justify-center p-3 shadow-lg">
             <img src="/app/mindlinelogo.png" alt="Mindline Logo" className="w-full h-full object-contain" />
           </div>
           <div>
