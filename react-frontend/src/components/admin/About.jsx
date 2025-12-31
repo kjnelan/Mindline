@@ -19,7 +19,7 @@ function About() {
       <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/30">
         <div className="flex items-center gap-6">
           <div className="w-32 h-32 backdrop-blur-xl bg-white/60 rounded-2xl flex items-center justify-center p-4 shadow-lg">
-            <img src="/mindlinelogo.png" alt="Mindline Logo" className="w-full h-full object-contain" />
+            <img src="/app/mindlinelogo.png" alt="Mindline Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h3 className="text-3xl font-bold text-gray-900">Mindline</h3>
