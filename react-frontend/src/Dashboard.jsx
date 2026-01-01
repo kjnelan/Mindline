@@ -9,6 +9,7 @@ import Clients from './components/Clients';
 import Reports from './components/Reports';
 import Calendar from './pages/Calendar';
 import Admin from './pages/Admin';
+import Settings from './pages/Settings';
 import NewClientModal from './components/client/NewClientModal';
 import AppointmentModal from './components/calendar/AppointmentModal';
 import { useAuth } from './hooks/useAuth';
@@ -146,7 +147,9 @@ function Dashboard() {
 
       {activeNav === 'admin' && <Admin />}
 
-      {activeNav !== 'dashboard' && activeNav !== 'clients' && activeNav !== 'calendar' && activeNav !== 'reports' && activeNav !== 'admin' && (
+      {activeNav === 'settings' && <Settings />}
+
+      {activeNav !== 'dashboard' && activeNav !== 'clients' && activeNav !== 'calendar' && activeNav !== 'reports' && activeNav !== 'admin' && activeNav !== 'settings' && (
         <div className="backdrop-blur-2xl bg-white/40 rounded-3xl shadow-2xl border border-white/50 p-8 text-center">
           <p className="text-gray-700 text-lg font-semibold">
             {activeNav.charAt(0).toUpperCase() + activeNav.slice(1)} - Coming Soon
