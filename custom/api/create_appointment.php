@@ -107,6 +107,56 @@ try {
         $facilityId = $facilityResult['facility_id'] ?? 0;
     }
 
+    // Check for conflicts with existing appointments and availability blocks
+    // Only check conflicts for patient appointments (not for availability blocks themselves)
+    if ($patientId > 0) {
+        $conflictSql = "SELECT
+            e.pc_eid,
+            e.pc_title,
+            e.pc_startTime,
+            e.pc_duration,
+            e.pc_pid,
+            c.pc_catname,
+            c.pc_cattype
+        FROM openemr_postcalendar_events e
+        LEFT JOIN openemr_postcalendar_categories c ON e.pc_catid = c.pc_catid
+        WHERE e.pc_aid = ?
+          AND e.pc_eventDate = ?
+          AND e.pc_apptstatus NOT IN ('x', '?')
+          AND (
+              -- New appointment starts during existing event
+              (? >= e.pc_startTime AND ? < ADDTIME(e.pc_startTime, SEC_TO_TIME(e.pc_duration)))
+              OR
+              -- New appointment ends during existing event
+              (? > e.pc_startTime AND ? <= ADDTIME(e.pc_startTime, SEC_TO_TIME(e.pc_duration)))
+              OR
+              -- New appointment completely contains existing event
+              (? <= e.pc_startTime AND ? >= ADDTIME(e.pc_startTime, SEC_TO_TIME(e.pc_duration)))
+          )";
+
+        $conflictParams = [
+            $providerId,
+            $eventDate,
+            $startTime, $startTime,  // Check start time
+            $endTime, $endTime,      // Check end time
+            $startTime, $endTime     // Check if contains
+        ];
+
+        $conflictResult = sqlQuery($conflictSql, $conflictParams);
+
+        if ($conflictResult) {
+            // Determine conflict type
+            $conflictType = intval($conflictResult['pc_cattype']);
+            if ($conflictType === 1) {
+                // Conflict with availability block
+                throw new Exception("Provider is unavailable at this time: " . $conflictResult['pc_catname']);
+            } else {
+                // Conflict with another appointment
+                throw new Exception("Provider already has an appointment at this time");
+            }
+        }
+    }
+
     // Build INSERT query
     $sql = "INSERT INTO openemr_postcalendar_events (
         pc_catid,

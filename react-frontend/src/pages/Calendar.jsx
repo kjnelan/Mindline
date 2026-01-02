@@ -214,8 +214,17 @@ function Calendar() {
       const aptHour = parseInt(aptHourStr);
       const aptMinute = parseInt(aptMinuteStr);
 
-      // Check if appointment starts in this time slot
-      return aptHour === hour && aptMinute === minutes;
+      // Calculate appointment start and end times in minutes
+      const aptStartMinutes = aptHour * 60 + aptMinute;
+      const aptEndMinutes = aptStartMinutes + (apt.duration || 0);
+
+      // Current slot time in minutes
+      const slotStartMinutes = hour * 60 + minutes;
+      const slotEndMinutes = slotStartMinutes + calendarSettings.interval;
+
+      // Appointment should show if it overlaps with this time slot
+      // Overlaps if: appointment starts before slot ends AND appointment ends after slot starts
+      return aptStartMinutes < slotEndMinutes && aptEndMinutes > slotStartMinutes;
     });
   };
 

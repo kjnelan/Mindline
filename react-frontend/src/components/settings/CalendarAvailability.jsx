@@ -52,9 +52,8 @@ function CalendarAvailability() {
       const response = await getAppointments(startDate, endDate);
 
       // Filter to only show availability blocks (Type 1 categories)
-      const blocks = response.appointments.filter(apt =>
-        categories.some(cat => cat.id === apt.categoryId)
-      );
+      // Use categoryType field from API response instead of checking against categories array
+      const blocks = response.appointments.filter(apt => apt.categoryType === 1);
 
       setAvailabilityBlocks(blocks);
     } catch (err) {
@@ -165,8 +164,21 @@ function CalendarAvailability() {
     const dateStr = date.toISOString().split('T')[0];
     return availabilityBlocks.filter(block => {
       if (block.eventDate !== dateStr) return false;
+
+      // Parse block start time
       const [blockHour, blockMin] = block.startTime.split(':').map(Number);
-      return blockHour === hour && blockMin === minutes;
+      const blockStartMinutes = blockHour * 60 + blockMin;
+
+      // Calculate block end time
+      const blockEndMinutes = blockStartMinutes + block.duration;
+
+      // Current slot time in minutes
+      const slotStartMinutes = hour * 60 + minutes;
+      const slotEndMinutes = slotStartMinutes + 15; // 15-minute slot duration
+
+      // Block should show if it overlaps with this time slot
+      // Block overlaps if: block starts before slot ends AND block ends after slot starts
+      return blockStartMinutes < slotEndMinutes && blockEndMinutes > slotStartMinutes;
     });
   };
 
