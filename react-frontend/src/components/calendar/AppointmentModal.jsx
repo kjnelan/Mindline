@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { createAppointment, updateAppointment, getAppointmentCategories, searchPatients, getRooms } from '../../utils/api';
+import { createAppointment, updateAppointment, deleteAppointment, getAppointmentCategories, searchPatients, getRooms } from '../../utils/api';
 
 /**
  * Props:
@@ -220,6 +220,38 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     } catch (err) {
       console.error(`Failed to ${appointment ? 'update' : 'create'} appointment:`, err);
       setError(err.message || `Failed to ${appointment ? 'update' : 'create'} appointment`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle delete appointment
+  const handleDelete = async () => {
+    if (!appointment) return;
+
+    if (!confirm(`Are you sure you want to delete this appointment for ${patientName}?`)) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await deleteAppointment(appointment.id);
+
+      if (response.success) {
+        setSuccess('Appointment deleted successfully!');
+        setTimeout(() => {
+          handleClose();
+          if (onSave) onSave();
+        }, 1000);
+      } else {
+        setError(response.message || 'Failed to delete appointment');
+      }
+    } catch (err) {
+      console.error('Failed to delete appointment:', err);
+      setError(err.message || 'Failed to delete appointment');
     } finally {
       setLoading(false);
     }
@@ -499,6 +531,16 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
 
           {/* Actions */}
           <div className="flex gap-4 pt-6 mt-6 border-t border-gray-200">
+            {appointment && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-semibold rounded-xl transition-all hover:shadow-md"
+                disabled={loading}
+              >
+                Delete
+              </button>
+            )}
             <button
               type="button"
               onClick={handleClose}
