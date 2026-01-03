@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { createAppointment, updateAppointment, deleteAppointment } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -149,7 +150,7 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div
@@ -342,7 +343,8 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
