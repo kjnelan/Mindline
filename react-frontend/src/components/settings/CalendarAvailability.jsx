@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { getAppointments, getAppointmentCategories, createAppointment } from '../../utils/api';
+import { getAppointments, getAppointmentCategories, createAppointment, getCurrentUser } from '../../utils/api';
 import BlockTimeModal from './BlockTimeModal';
 
 function CalendarAvailability() {
@@ -48,8 +48,18 @@ function CalendarAvailability() {
   const loadAvailabilityBlocks = async () => {
     setLoading(true);
     try {
+      // Get current user's provider ID
+      const currentUser = getCurrentUser();
+      if (!currentUser || !currentUser.id) {
+        console.error('No current user found');
+        setAvailabilityBlocks([]);
+        setLoading(false);
+        return;
+      }
+
       const { startDate, endDate } = getDateRange();
-      const response = await getAppointments(startDate, endDate);
+      // Pass provider ID to only get this user's availability blocks
+      const response = await getAppointments(startDate, endDate, currentUser.id);
 
       // Filter to only show availability blocks (Type 1 categories)
       // Use categoryType field from API response instead of checking against categories array
@@ -160,24 +170,30 @@ function CalendarAvailability() {
     return { hour, minutes };
   });
 
-  const getBlocksForSlot = (date, hour, minutes) => {
-    const dateStr = date.toISOString().split('T')[0];
-    return availabilityBlocks.filter(block => {
-      if (block.eventDate !== dateStr) return false;
+  // Calculate absolute position for blocks (OpenEMR style)
+  const calculateBlockPosition = (block) => {
+    const [hours, minutes] = block.startTime.split(':').map(Number);
+    const startMinutes = hours * 60 + minutes;
+    const scheduleStartMinutes = 8 * 60; // 8 AM start
 
-      // Parse block start time
-      const [blockHour, blockMin] = block.startTime.split(':').map(Number);
+    // Calculate top position in pixels
+    const minutesFromStart = startMinutes - scheduleStartMinutes;
+    const intervalsFromStart = minutesFromStart / 15;
+    const slotHeight = 60; // Each 15-minute slot is 60px tall
+    const top = intervalsFromStart * slotHeight;
 
-      // Only return blocks that START in this specific time slot
-      return blockHour === hour && blockMin === minutes;
-    });
+    // Calculate height in pixels
+    const durationMinutes = block.duration || 0;
+    const durationIntervals = durationMinutes / 15;
+    const height = durationIntervals * slotHeight;
+
+    return { top, height };
   };
 
-  // Calculate how many time slots a block spans
-  const calculateSlotSpan = (block) => {
-    if (!block.duration) return 1;
-    const slots = Math.ceil(block.duration / 15); // 15-minute slots
-    return slots;
+  // Get all blocks for a specific date (for absolute positioning)
+  const getBlocksForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return availabilityBlocks.filter(block => block.eventDate === dateStr);
   };
 
   return (
@@ -248,8 +264,8 @@ function CalendarAvailability() {
           {view === 'week' && (
             <div>
               {/* Day Headers */}
-              <div className="grid grid-cols-8 border-b border-gray-200">
-                <div className="p-4 bg-gray-50 border-r border-gray-200 font-semibold text-gray-700">
+              <div className="flex border-b border-gray-200">
+                <div className="w-20 p-4 bg-gray-50 border-r border-gray-200 font-semibold text-gray-700 flex-shrink-0">
                   Time
                 </div>
                 {getWeekDays().map((day, index) => {
@@ -257,7 +273,7 @@ function CalendarAvailability() {
                   return (
                     <div
                       key={index}
-                      className={`p-4 border-r border-gray-200 text-center ${
+                      className={`flex-1 p-4 border-r border-gray-200 text-center ${
                         isToday ? 'bg-blue-50' : 'bg-gray-50'
                       }`}
                     >
@@ -272,52 +288,74 @@ function CalendarAvailability() {
                 })}
               </div>
 
-              {/* Time Slots */}
-              {timeSlots.map(slot => (
-                <div key={`${slot.hour}-${slot.minutes}`} className="grid grid-cols-8 border-b border-gray-200">
-                  {/* Time Label */}
-                  <div className="p-3 border-r border-gray-200 bg-gray-50 text-sm text-gray-700 font-medium">
-                    {slot.hour === 0 ? '12' : slot.hour < 12 ? slot.hour : slot.hour === 12 ? '12' : slot.hour - 12}:{slot.minutes.toString().padStart(2, '0')} {slot.hour < 12 ? 'AM' : 'PM'}
-                  </div>
+              {/* Calendar Body with Absolute Positioning */}
+              <div className="flex">
+                {/* Time Labels Column */}
+                <div className="w-20 flex-shrink-0 border-r border-gray-200 bg-gray-50">
+                  {timeSlots.map(slot => (
+                    <div
+                      key={`time-${slot.hour}-${slot.minutes}`}
+                      className="h-[60px] p-3 border-b border-gray-200 text-sm text-gray-700 font-medium"
+                    >
+                      {slot.hour === 0 ? '12' : slot.hour < 12 ? slot.hour : slot.hour === 12 ? '12' : slot.hour - 12}:{slot.minutes.toString().padStart(2, '0')} {slot.hour < 12 ? 'AM' : 'PM'}
+                    </div>
+                  ))}
+                </div>
 
-                  {/* Day Cells */}
+                {/* Day Columns with Absolute Positioning */}
+                <div className="flex-1 flex">
                   {getWeekDays().map((day, dayIndex) => {
-                    const blocks = getBlocksForSlot(day, slot.hour, slot.minutes);
+                    const dayBlocks = getBlocksForDate(day);
+                    const totalHeight = timeSlots.length * 60;
+
                     return (
                       <div
                         key={dayIndex}
-                        onClick={() => handleTimeSlotClick(day, slot.hour, slot.minutes)}
-                        className="p-2 border-r border-gray-200 hover:bg-blue-50 cursor-pointer transition-colors min-h-[60px]"
+                        className="flex-1 border-r border-gray-200 relative"
+                        style={{ height: `${totalHeight}px` }}
                       >
-                        {blocks.map(block => {
-                          // Calculate how many slots this block spans
-                          const slotsSpan = calculateSlotSpan(block);
-                          const heightPx = slotsSpan * 60 - 8; // 60px per slot, minus padding
+                        {/* Time slot grid lines (for clicking) */}
+                        {timeSlots.map(slot => (
+                          <div
+                            key={`slot-${slot.hour}-${slot.minutes}`}
+                            onClick={() => handleTimeSlotClick(day, slot.hour, slot.minutes)}
+                            className="absolute w-full h-[60px] border-b border-gray-200 hover:bg-blue-50 cursor-pointer transition-colors"
+                            style={{
+                              top: `${timeSlots.findIndex(s => s.hour === slot.hour && s.minutes === slot.minutes) * 60}px`
+                            }}
+                          />
+                        ))}
+
+                        {/* Blocks with absolute positioning */}
+                        {dayBlocks.map(block => {
+                          const { top, height } = calculateBlockPosition(block);
+                          const bgColor = block.categoryColor || '#E5E7EB';
+                          const borderColor = block.categoryColor ? `${block.categoryColor}80` : '#9CA3AF80';
 
                           return (
                             <div
                               key={block.id}
                               onClick={(e) => handleBlockClick(block, e)}
-                              className="mb-1 px-2 py-1 rounded text-xs border bg-gray-100 border-gray-300 hover:opacity-80 cursor-pointer transition-opacity"
+                              className="absolute left-1 right-1 px-2 py-1 rounded-lg text-xs border hover:opacity-80 hover:shadow-md transition-all cursor-pointer z-10 overflow-hidden"
                               style={{
-                                height: `${heightPx}px`,
-                                backgroundColor: `${block.categoryColor || '#E5E7EB'}80`,
-                                borderColor: `${block.categoryColor || '#9CA3AF'}80`
+                                top: `${top}px`,
+                                height: `${height}px`,
+                                backgroundColor: `${bgColor}B3`,
+                                borderColor: borderColor
                               }}
                             >
-
-                            <div className="font-semibold text-gray-900">{block.categoryName}</div>
-                            {block.comments && (
-                              <div className="text-gray-700 text-[10px] truncate">{block.comments}</div>
-                            )}
-                          </div>
+                              <div className="font-semibold text-gray-900">{block.categoryName}</div>
+                              {height > 30 && block.comments && (
+                                <div className="text-gray-700 text-[10px] truncate">{block.comments}</div>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
                     );
                   })}
                 </div>
-              ))}
+              </div>
             </div>
           )}
         </div>
