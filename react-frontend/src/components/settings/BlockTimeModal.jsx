@@ -25,11 +25,12 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
   const [categoryId, setCategoryId] = useState('');
   const [eventDate, setEventDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState(initialTime || '09:00');
+  const [endTime, setEndTime] = useState('');
   const [duration, setDuration] = useState(50);
   const [comments, setComments] = useState('');
 
-  // Duration presets
-  const durationPresets = [15, 30, 50, 90, 240, 480]; // 4 hours, 8 hours for vacation
+  // Duration presets (removed 15min, added note about 12 hours)
+  const durationPresets = [30, 50, 90, 240, 480]; // 30min, 50min, 1.5h, 4h, 8h
 
   // Update date/time when props change
   useEffect(() => {
@@ -57,6 +58,20 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
       }
     }
   }, [categories]);
+
+  // Calculate duration when start or end time changes
+  useEffect(() => {
+    if (startTime && endTime) {
+      const [startHour, startMin] = startTime.split(':').map(Number);
+      const [endHour, endMin] = endTime.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMin;
+      const endMinutes = endHour * 60 + endMin;
+      const calculatedDuration = endMinutes - startMinutes;
+      if (calculatedDuration > 0) {
+        setDuration(calculatedDuration);
+      }
+    }
+  }, [startTime, endTime]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -237,24 +252,25 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
               </select>
             </div>
 
-            {/* Date and Time */}
+            {/* Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                required
+              />
+            </div>
+
+            {/* Start and End Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Time <span className="text-red-500">*</span>
+                  Start Time <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="time"
@@ -264,6 +280,18 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
                   required
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  End Time
+                </label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                />
+              </div>
             </div>
 
             {/* Duration */}
@@ -271,7 +299,7 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Duration (minutes) <span className="text-red-500">*</span>
               </label>
-              <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex flex-wrap gap-2 mb-3 items-center">
                 {durationPresets.map((preset) => (
                   <button
                     key={preset}
@@ -286,6 +314,7 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
                     {preset >= 60 ? `${preset / 60}h` : `${preset}m`}
                   </button>
                 ))}
+                <span className="text-xs text-gray-500 ml-2">(12-hours = 720 minutes)</span>
               </div>
               <input
                 type="number"
