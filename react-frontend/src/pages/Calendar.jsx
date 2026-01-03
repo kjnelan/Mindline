@@ -226,6 +226,33 @@ function Calendar() {
     return slots;
   };
 
+  // Calculate absolute position for appointments (OpenEMR style)
+  const calculateAppointmentPosition = (appointment) => {
+    const [hours, minutes] = appointment.startTime.split(':').map(Number);
+    const startMinutes = hours * 60 + minutes;
+    const scheduleStartMinutes = calendarSettings.startHour * 60;
+
+    // Calculate top position in pixels
+    const minutesFromStart = startMinutes - scheduleStartMinutes;
+    const intervalsFromStart = minutesFromStart / calendarSettings.interval;
+    const slotHeight = 60; // Each 15-minute slot is 60px tall
+    const top = intervalsFromStart * slotHeight;
+
+    // Calculate height in pixels
+    // API already converts duration to minutes
+    const durationMinutes = appointment.duration || 0;
+    const durationIntervals = durationMinutes / calendarSettings.interval;
+    const height = durationIntervals * slotHeight;
+
+    return { top, height };
+  };
+
+  // Get all appointments for a specific day (for absolute positioning)
+  const getAppointmentsForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return appointments.filter(apt => apt.eventDate === dateStr);
+  };
+
   // Get appointments for a specific day (for month view)
   const getAppointmentsForDay = (date) => {
     const dateStr = date.toISOString().split('T')[0];
@@ -445,31 +472,34 @@ function Calendar() {
           /* Week View */
           view === 'week' && (
             <div className="glass-card overflow-hidden">
-              <div className="grid grid-cols-8 border-b border-white/30">
+              {/* Header Row */}
+              <div className="flex border-b border-white/30">
                 {/* Time column header */}
-                <div className="p-4 bg-white/20 border-r border-white/30 font-semibold text-gray-700">
+                <div className="w-20 flex-shrink-0 p-4 bg-white/20 border-r border-white/30 font-semibold text-gray-700">
                   Time
                 </div>
 
                 {/* Day headers */}
-                {getWeekDays().map((day, index) => {
-                  const isToday = day.toDateString() === new Date().toDateString();
-                  return (
-                    <div
-                      key={index}
-                      className={`p-4 border-r border-white/30 text-center ${
-                        isToday ? 'bg-blue-100/40' : 'bg-white/20'
-                      }`}
-                    >
-                      <div className="text-sm text-gray-600">
-                        {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                <div className="flex-1 flex">
+                  {getWeekDays().map((day, index) => {
+                    const isToday = day.toDateString() === new Date().toDateString();
+                    return (
+                      <div
+                        key={index}
+                        className={`flex-1 p-4 border-r border-white/30 text-center ${
+                          isToday ? 'bg-blue-100/40' : 'bg-white/20'
+                        }`}
+                      >
+                        <div className="text-sm text-gray-600">
+                          {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                        </div>
+                        <div className={`text-lg font-semibold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                          {day.getDate()}
+                        </div>
                       </div>
-                      <div className={`text-lg font-semibold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
-                        {day.getDate()}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Time slots */}
