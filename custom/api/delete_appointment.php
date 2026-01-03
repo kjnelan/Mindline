@@ -75,9 +75,14 @@ try {
 
     $appointmentId = intval($input['appointmentId']);
 
+    // Check for series delete data
+    $seriesData = isset($input['seriesData']) ? $input['seriesData'] : null;
+    $deleteScope = $seriesData ? $seriesData['scope'] : 'single'; // 'single', 'all', 'future'
+    $recurrenceId = $seriesData ? $seriesData['recurrenceId'] : null;
+
     // Verify the appointment exists and belongs to the current user (for provider blocks)
     $existing = sqlQuery(
-        "SELECT pc_eid, pc_pid, pc_aid, pc_catid
+        "SELECT pc_eid, pc_pid, pc_aid, pc_catid, pc_eventDate, pc_recurrspec
          FROM openemr_postcalendar_events
          WHERE pc_eid = ?",
         [$appointmentId]
@@ -93,23 +98,49 @@ try {
         throw new Exception('You can only delete your own availability blocks');
     }
 
-    // Delete the appointment
-    $sql = "DELETE FROM openemr_postcalendar_events WHERE pc_eid = ?";
+    // Determine what to delete based on scope
+    $whereClause = "pc_eid = ?";
+    $whereParams = [$appointmentId];
 
-    error_log("Delete appointment SQL: " . $sql . " [ID: $appointmentId]");
+    if ($seriesData && $deleteScope !== 'single') {
+        if ($deleteScope === 'all') {
+            // Delete all occurrences in the series
+            $whereClause = "pc_recurrspec = ?";
+            $whereParams = [$recurrenceId];
+            error_log("Delete appointment: Deleting ALL occurrences with recurrence ID: $recurrenceId");
+        } elseif ($deleteScope === 'future') {
+            // Delete this and future occurrences
+            $splitDate = $existing['pc_eventDate'];
+            $whereClause = "pc_recurrspec = ? AND pc_eventDate >= ?";
+            $whereParams = [$recurrenceId, $splitDate];
+            error_log("Delete appointment: Deleting this and future occurrences with recurrence ID: $recurrenceId from date: $splitDate");
+        }
+    }
 
-    $result = sqlStatement($sql, [$appointmentId]);
+    // Delete the appointment(s)
+    $sql = "DELETE FROM openemr_postcalendar_events WHERE $whereClause";
+
+    error_log("Delete appointment SQL: " . $sql);
+    error_log("Delete appointment params: " . print_r($whereParams, true));
+
+    $result = sqlStatement($sql, $whereParams);
 
     if ($result === false) {
         throw new Exception('Failed to delete appointment');
     }
 
-    error_log("Delete appointment: Successfully deleted appointment ID $appointmentId");
+    $deletedCount = sqlNumRows($result);
+    if ($deletedCount === 0) {
+        $deletedCount = 1; // At least one was deleted
+    }
+
+    error_log("Delete appointment: Successfully deleted $deletedCount appointment(s)");
 
     http_response_code(200);
     echo json_encode([
         'success' => true,
-        'message' => 'Appointment deleted successfully'
+        'message' => 'Appointment deleted successfully',
+        'deletedCount' => $deletedCount
     ]);
 
 } catch (Exception $e) {

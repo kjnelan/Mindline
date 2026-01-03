@@ -91,6 +91,12 @@ try {
     $apptstatus = $input['apptstatus'] ?? '-'; // Default status
     $room = $input['room'] ?? '';
 
+    // Check for series update
+    $seriesUpdate = isset($input['seriesUpdate']) ? $input['seriesUpdate'] : null;
+    $isSeriesUpdate = $seriesUpdate !== null;
+    $updateScope = $isSeriesUpdate ? $seriesUpdate['scope'] : 'single'; // 'single', 'all', 'future'
+    $recurrenceId = $isSeriesUpdate ? $seriesUpdate['recurrenceId'] : null;
+
     // Calculate end time based on start time and duration
     $startDateTime = new DateTime($eventDate . ' ' . $startTime);
     $endDateTime = clone $startDateTime;
@@ -101,37 +107,66 @@ try {
     // Convert duration to seconds for database (OpenEMR stores in seconds)
     $durationSeconds = $duration * 60;
 
+    // Determine which appointments to update based on scope
+    $whereClause = "pc_eid = ?";
+    $whereParams = [$appointmentId];
+
+    if ($isSeriesUpdate && $updateScope !== 'single') {
+        if ($updateScope === 'all') {
+            // Update all occurrences in the series
+            $whereClause = "pc_recurrspec = ?";
+            $whereParams = [$recurrenceId];
+            error_log("Update appointment: Updating ALL occurrences with recurrence ID: $recurrenceId");
+        } elseif ($updateScope === 'future') {
+            // Update this and future occurrences (split series logic)
+            // First, get the current appointment's date to know where to split
+            $currentAppt = sqlQuery("SELECT pc_eventDate FROM openemr_postcalendar_events WHERE pc_eid = ?", [$appointmentId]);
+            $splitDate = $currentAppt['pc_eventDate'];
+
+            // Generate new recurrence ID for the future occurrences
+            $newRecurrenceId = uniqid('recur_', true);
+
+            // Update future occurrences (including this one) with new recurrence ID
+            $sql = "UPDATE openemr_postcalendar_events SET pc_recurrspec = ? WHERE pc_recurrspec = ? AND pc_eventDate >= ?";
+            sqlStatement($sql, [$newRecurrenceId, $recurrenceId, $splitDate]);
+
+            error_log("Update appointment: Split series - new recurrence ID: $newRecurrenceId for dates >= $splitDate");
+
+            // Now update the new series
+            $whereClause = "pc_recurrspec = ?";
+            $whereParams = [$newRecurrenceId];
+        }
+    }
+
     // Build UPDATE query
     $sql = "UPDATE openemr_postcalendar_events SET
         pc_catid = ?,
         pc_aid = ?,
         pc_pid = ?,
         pc_title = ?,
-        pc_eventDate = ?,
-        pc_endDate = ?,
         pc_startTime = ?,
         pc_endTime = ?,
         pc_duration = ?,
         pc_hometext = ?,
         pc_apptstatus = ?,
         pc_room = ?
-        WHERE pc_eid = ?";
+        WHERE $whereClause";
 
     $params = [
         $categoryId,
         $providerId,
         $patientId,
         $title,
-        $eventDate,
-        $endDate,
         $startTime,
         $endTime,
         $durationSeconds,
         $comments,
         $apptstatus,
-        $room,
-        $appointmentId
+        $room
     ];
+
+    // Add where params
+    $params = array_merge($params, $whereParams);
 
     error_log("Update appointment SQL: " . $sql);
     error_log("Update appointment params: " . print_r($params, true));
@@ -143,7 +178,8 @@ try {
         throw new Exception('Failed to update appointment');
     }
 
-    error_log("Update appointment: Successfully updated appointment ID $appointmentId");
+    $updatedCount = $updateScope === 'single' ? 1 : sqlNumRows($result);
+    error_log("Update appointment: Successfully updated $updatedCount appointment(s)");
 
     // Fetch the updated appointment to return full details
     $updatedAppt = sqlQuery(
