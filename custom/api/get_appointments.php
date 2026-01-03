@@ -80,6 +80,8 @@ try {
         e.pc_pid,
         e.pc_aid,
         e.pc_room,
+        e.pc_recurrtype,
+        e.pc_recurrspec,
         c.pc_catname,
         c.pc_catcolor,
         c.pc_cattype,
@@ -135,7 +137,9 @@ try {
             'providerName' => $row['provider_name'],
             'facilityName' => $row['facility_name'],
             'room' => $row['room_name'] ?? $row['pc_room'], // Use friendly name, fallback to ID
-            'roomId' => $row['pc_room'] // Keep room ID for editing
+            'roomId' => $row['pc_room'], // Keep room ID for editing
+            'isRecurring' => intval($row['pc_recurrtype']) === 1, // Is this part of a recurring series?
+            'recurrenceId' => $row['pc_recurrspec'] // Recurrence series ID
         ];
     }
 
