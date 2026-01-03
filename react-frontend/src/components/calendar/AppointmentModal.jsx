@@ -52,6 +52,11 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const [recurCount, setRecurCount] = useState(10);
   const [recurEndDate, setRecurEndDate] = useState('');
 
+  // Series management (for editing existing recurring appointments)
+  const [isEditingRecurringSeries, setIsEditingRecurringSeries] = useState(false);
+  const [seriesScope, setSeriesScope] = useState('single'); // 'single', 'all', 'future'
+  const [currentRecurrenceId, setCurrentRecurrenceId] = useState(null);
+
   // Dropdown data
   const [categories, setCategories] = useState([]);
   const [rooms, setRooms] = useState([]);
@@ -94,6 +99,16 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
       setTitle(appointment.title || '');
       setComments(appointment.comments || '');
       setRoom(appointment.room || '');
+
+      // Check if this is part of a recurring series
+      if (appointment.isRecurring && appointment.recurrenceId) {
+        setIsEditingRecurringSeries(true);
+        setCurrentRecurrenceId(appointment.recurrenceId);
+        setSeriesScope('single'); // Default to editing just this occurrence
+      } else {
+        setIsEditingRecurringSeries(false);
+        setCurrentRecurrenceId(null);
+      }
     }
   }, [appointment, isOpen]);
 
@@ -228,8 +243,16 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
         overrideAvailability: overrideAvailability // Pass override flag
       };
 
-      // Add recurrence data if enabled
-      if (isRecurring) {
+      // Add series management data if editing a recurring series
+      if (isEditingRecurringSeries) {
+        appointmentData.seriesUpdate = {
+          scope: seriesScope, // 'single', 'all', or 'future'
+          recurrenceId: currentRecurrenceId
+        };
+      }
+
+      // Add recurrence data if enabled (for new recurring appointments)
+      if (isRecurring && !appointment) {
         appointmentData.recurrence = {
           enabled: true,
           days: recurDays,
@@ -299,7 +322,17 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const handleDelete = async () => {
     if (!appointment) return;
 
-    if (!confirm(`Are you sure you want to delete this appointment for ${patientName}?`)) {
+    // Build confirmation message based on series scope
+    let confirmMessage = `Are you sure you want to delete this appointment for ${patientName}?`;
+    if (isEditingRecurringSeries) {
+      if (seriesScope === 'all') {
+        confirmMessage = `Are you sure you want to delete ALL occurrences in this recurring series for ${patientName}?`;
+      } else if (seriesScope === 'future') {
+        confirmMessage = `Are you sure you want to delete this and all future occurrences for ${patientName}?`;
+      }
+    }
+
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -308,10 +341,19 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     setSuccess(null);
 
     try {
-      const response = await deleteAppointment(appointment.id);
+      // Pass series data if deleting from a recurring series
+      const deleteData = isEditingRecurringSeries ? {
+        scope: seriesScope,
+        recurrenceId: currentRecurrenceId
+      } : null;
+
+      const response = await deleteAppointment(appointment.id, deleteData);
 
       if (response.success) {
-        setSuccess('Appointment deleted successfully!');
+        const successMsg = isEditingRecurringSeries && seriesScope !== 'single'
+          ? `${response.deletedCount || 'Multiple'} appointment(s) deleted successfully!`
+          : 'Appointment deleted successfully!';
+        setSuccess(successMsg);
         setTimeout(() => {
           handleClose();
           if (onSave) onSave();
@@ -349,6 +391,10 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     setRecurEndType('count');
     setRecurCount(10);
     setRecurEndDate('');
+    // Reset series management fields
+    setIsEditingRecurringSeries(false);
+    setSeriesScope('single');
+    setCurrentRecurrenceId(null);
     onClose();
   };
 
@@ -485,6 +531,60 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <span>{success}</span>
+            </div>
+          )}
+
+          {/* Recurring Series Banner */}
+          {isEditingRecurringSeries && (
+            <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 mt-0.5 flex-shrink-0 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-blue-700 font-medium mb-2">
+                    Recurring Appointment Series
+                  </p>
+                  <p className="text-blue-600 text-sm mb-3">
+                    This appointment is part of a recurring series. Choose what to update:
+                  </p>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="seriesScope"
+                        value="single"
+                        checked={seriesScope === 'single'}
+                        onChange={(e) => setSeriesScope(e.target.value)}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-blue-700">Just this occurrence ({new Date(eventDate).toLocaleDateString()})</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="seriesScope"
+                        value="future"
+                        checked={seriesScope === 'future'}
+                        onChange={(e) => setSeriesScope(e.target.value)}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-blue-700">This and all future occurrences</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="seriesScope"
+                        value="all"
+                        checked={seriesScope === 'all'}
+                        onChange={(e) => setSeriesScope(e.target.value)}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-blue-700">All occurrences in the series</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

@@ -38,6 +38,11 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
   const [recurCount, setRecurCount] = useState(10);
   const [recurEndDate, setRecurEndDate] = useState('');
 
+  // Series management (for editing existing recurring blocks)
+  const [isEditingRecurringSeries, setIsEditingRecurringSeries] = useState(false);
+  const [seriesScope, setSeriesScope] = useState('single'); // 'single', 'all', 'future'
+  const [currentRecurrenceId, setCurrentRecurrenceId] = useState(null);
+
   // Duration presets (removed 15min, added note about 12 hours)
   const durationPresets = [30, 50, 90, 240, 480]; // 30min, 50min, 1.5h, 4h, 8h
 
@@ -55,6 +60,16 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
       setStartTime(block.startTime ? block.startTime.substring(0, 5) : '');
       setDuration(block.duration || 50);
       setComments(block.comments || '');
+
+      // Check if this is part of a recurring series
+      if (block.isRecurring && block.recurrenceId) {
+        setIsEditingRecurringSeries(true);
+        setCurrentRecurrenceId(block.recurrenceId);
+        setSeriesScope('single'); // Default to editing just this occurrence
+      } else {
+        setIsEditingRecurringSeries(false);
+        setCurrentRecurrenceId(null);
+      }
     }
   }, [block, isOpen]);
 
