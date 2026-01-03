@@ -150,18 +150,20 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-gray-900/60 backdrop-blur-md transition-opacity"
-        onClick={handleClose}
-        aria-hidden="true"
-      />
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+    >
+      <div className="flex min-h-screen items-center justify-center p-4">
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 bg-gray-900/60 backdrop-blur-md transition-opacity"
+          onClick={handleClose}
+          aria-hidden="true"
+        />
 
-      {/* Modal - Centered in viewport */}
-      <div
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl max-w-2xl w-[calc(100%-2rem)] border border-gray-200 z-10 max-h-[90vh] overflow-y-auto"
-      >
+        {/* Modal */}
+        <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8 border border-gray-200 z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 px-8 pt-6 bg-gradient-to-r from-purple-50 to-pink-50">
           <div>
@@ -330,6 +332,7 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
               </button>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>
