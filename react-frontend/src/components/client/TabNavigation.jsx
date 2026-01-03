@@ -5,8 +5,8 @@ function TabNavigation({ activeTab, onTabChange }) {
     { id: 'summary', label: 'Summary' },
     { id: 'demographics', label: 'Demographics' },
     { id: 'insurance', label: 'Insurance' },
-    { id: 'encounters', label: 'Encounters' },
-    { id: 'clinical', label: 'Clinical' },
+    { id: 'encounters', label: 'Sessions' },
+    { id: 'clinical', label: 'Clinical Notes' },
     { id: 'documents', label: 'Documents' },
     { id: 'billing', label: 'Billing' },
     { id: 'admin', label: 'Admin Notes' }

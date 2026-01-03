@@ -9,9 +9,11 @@ import Clients from './components/Clients';
 import Reports from './components/Reports';
 import Calendar from './pages/Calendar';
 import Admin from './pages/Admin';
+import Settings from './pages/Settings';
 import NewClientModal from './components/client/NewClientModal';
+import AppointmentModal from './components/calendar/AppointmentModal';
 import { useAuth } from './hooks/useAuth';
-import { logout, getClientStats } from './utils/api';
+import { logout, getClientStats, getProviders } from './utils/api';
 
 function Dashboard() {
   const location = useLocation();
@@ -20,6 +22,9 @@ function Dashboard() {
   const { user, appointments, loading } = useAuth();
   const [clientStats, setClientStats] = useState({ activeClients: 0 });
   const [showNewClientModal, setShowNewClientModal] = useState(false);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [providers, setProviders] = useState([]);
 
   // Update activeNav when navigating from client detail or other pages
   useEffect(() => {
@@ -38,28 +43,42 @@ function Dashboard() {
       }
     };
 
+    const fetchProviders = async () => {
+      try {
+        const response = await getProviders();
+        setProviders(response.providers || []);
+      } catch (err) {
+        console.error('Failed to fetch providers:', err);
+      }
+    };
+
     if (user) {
       fetchClientStats();
+      fetchProviders();
     }
   }, [user]);
 
   const stats = {
-    todayAppointments: { value: appointments.length || 0, trend: { direction: 'up', change: 0, label: 'from yesterday' } },
+    todayAppointments: { value: appointments.filter(apt => apt.categoryType !== 1).length || 0, trend: { direction: 'up', change: 0, label: 'from yesterday' } },
     unbilledAppointments: { value: 0, trend: { direction: 'up', change: 0, label: 'from last week' } },
     sessionsYTD: { value: 0, trend: { direction: 'up', change: 0, label: 'from last month' } },
     activeClients: { value: clientStats.activeClients || 0, trend: { direction: 'down', change: 0, label: 'from last month' } }
   };
 
-  const todaysAppointments = appointments.map(appt => ({
-    time: new Date(appt.eventDate + ' ' + appt.startTime).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit'
-    }),
-    client: appt.patientName || 'Unknown',
-    type: appt.categoryName || 'Appointment',
-    duration: appt.duration ? `${appt.duration} min` : '',
-    isNext: false
-  }));
+  const todaysAppointments = appointments
+    .filter(appt => appt.categoryType !== 1) // Exclude availability blocks
+    .map(appt => ({
+      ...appt, // Include all original appointment data
+      time: new Date(appt.eventDate + ' ' + appt.startTime).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      }),
+      client: appt.patientName || 'Unknown',
+      type: appt.categoryName || 'Appointment',
+      duration: appt.duration ? `${appt.duration} min` : '',
+      room: appt.room || '',
+      isNext: false
+    }));
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -81,6 +100,29 @@ function Dashboard() {
     setShowNewClientModal(false);
     // Navigate to the new client's detail page
     navigate(`/clients/${patientId}`);
+  };
+
+  const handleNewAppointment = () => {
+    setSelectedAppointment(null);
+    setShowAppointmentModal(true);
+  };
+
+  const handleAppointmentClick = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowAppointmentModal(true);
+  };
+
+  const handleAppointmentSave = () => {
+    console.log('Appointment saved');
+    setSelectedAppointment(null);
+    setShowAppointmentModal(false);
+    // Optionally refresh appointments here
+    window.location.reload(); // Simple way to refresh data
+  };
+
+  const handleAppointmentClose = () => {
+    setSelectedAppointment(null);
+    setShowAppointmentModal(false);
   };
 
   if (loading || !user) {
@@ -108,8 +150,11 @@ function Dashboard() {
           <Greeting />
           <StatsGrid stats={stats} />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <QuickActions onNewClient={handleNewClient} />
-            <AppointmentsList todaysAppointments={todaysAppointments} />
+            <QuickActions onNewClient={handleNewClient} onNewAppointment={handleNewAppointment} />
+            <AppointmentsList
+              todaysAppointments={todaysAppointments}
+              onAppointmentClick={handleAppointmentClick}
+            />
           </div>
         </>
       )}
@@ -122,7 +167,9 @@ function Dashboard() {
 
       {activeNav === 'admin' && <Admin />}
 
-      {activeNav !== 'dashboard' && activeNav !== 'clients' && activeNav !== 'calendar' && activeNav !== 'reports' && activeNav !== 'admin' && (
+      {activeNav === 'settings' && <Settings />}
+
+      {activeNav !== 'dashboard' && activeNav !== 'clients' && activeNav !== 'calendar' && activeNav !== 'reports' && activeNav !== 'admin' && activeNav !== 'settings' && (
         <div className="backdrop-blur-2xl bg-white/40 rounded-3xl shadow-2xl border border-white/50 p-8 text-center">
           <p className="text-gray-700 text-lg font-semibold">
             {activeNav.charAt(0).toUpperCase() + activeNav.slice(1)} - Coming Soon
@@ -138,6 +185,15 @@ function Dashboard() {
           onClientCreated={handleNewClientCreated}
         />
       )}
+
+      {/* New/Edit Appointment Modal */}
+      <AppointmentModal
+        isOpen={showAppointmentModal}
+        onClose={handleAppointmentClose}
+        onSave={handleAppointmentSave}
+        appointment={selectedAppointment}
+        providers={providers}
+      />
     </AppShell>
   );
 }

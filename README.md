@@ -1,253 +1,238 @@
-# Mindline EMHR
+# Mindline EMHR - Mental Health EMR System
 
-**Version 0.3.0-alpha**
-*Where modern design meets clinical insight.*
+**Specialized Electronic Medical Health Record for Mental Health Clinicians**
 
----
-
-## What is Mindline?
-
-Mindline is a purpose-built **Electronic Mental Health Records (EMHR)** system designed specifically for outpatient mental health practices. Unlike traditional medical EMRs retrofitted for therapy, Mindline prioritizes therapeutic workflows, warm design, and the unique needs of mental health practitioners.
-
-### Why EMHR, not EMR?
-
-We're introducing the term **EMHR (Electronic Mental Health Records)** to distinguish mental health documentation systems from general medical EMRs. Mental health practice has fundamentally different clinical workflows, documentation needs, and patient relationships that deserve purpose-built software.
+[![Version](https://img.shields.io/badge/version-ALPHA-orange.svg)](https://github.com/yourusername/sacwan-openemr-mh)
+[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
+[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
+[![PHP](https://img.shields.io/badge/PHP-8+-purple.svg)](https://php.net/)
 
 ---
 
-## Key Features
+## 🎯 Overview
 
-### ✨ Modern, Warm Interface
-- Glassmorphism design with gradient aesthetics
-- Human-centered UI that feels welcoming, not clinical
-- Fast, responsive React frontend
-- Intuitive navigation designed for therapists
+Mindline EMHR is a modern, beautiful, and intuitive electronic medical health record system specifically designed for therapists and mental health clinicians. Built with a React frontend and PHP backend (currently using OpenEMR infrastructure), it provides advanced scheduling, patient management, and clinical documentation.
 
-### 🧠 Mental Health-Optimized Workflows
-- **Client-focused** (not patient processing)
-- Session-based documentation
-- Risk assessment tracking (SI, HI, self-harm, substance, etc.)
-- Treatment plan management
-- Guardian/family relationship tracking
-- Outcome measures integration (future)
-
-### 🔒 HIPAA Compliant & Secure
-- Session-based authentication
-- Encrypted data transmission (HTTPS)
-- Role-based access controls
-- Audit logging
-- Automatic session timeout
-
-### 📅 Integrated Scheduling
-- Visual calendar with provider scheduling
-- Appointment management
-- SMS/Email reminders (coming soon)
-- No-show tracking
-
-### 💰 Built-in Billing
-- Insurance claims tracking
-- Payment recording
-- Sliding scale management
-- Session billing
-- Credit card integration (Square)
+**Key Features:**
+- ✨ Beautiful glassmorphic UI design
+- 📅 Advanced recurring appointments with conflict detection
+- 👥 Complete patient demographics and management
+- 🔒 Secure session-based authentication
+- 📊 Dashboard with real-time statistics
+- 🔄 Series management (edit/delete single, all, or future occurrences)
+- 🏥 Multi-provider and facility support
 
 ---
 
-## Current Status: v0.3.0-alpha
+## 📚 Documentation
 
-### ✅ Completed
-- Authentication & session management
-- Main dashboard with widgets
-- Client search (HIPAA-compliant)
-- Client management (create, edit, view)
-- Demographics with full CRUD
-- Guardian/related persons management
-- Insurance display and editing
-- Documents viewing
-- Calendar interface
-- Provider scheduling
+**Complete documentation is available in the [`docs/`](./docs/) folder.**
 
-### 🚧 In Progress
-- Appointment creation/editing
-- Clinical documentation forms
-- Billing workflows
+### Quick Links
 
-### 📋 Roadmap to v1.0 (2-3 weeks)
-See [MINDLINE_PROJECT_DOCUMENTATION.md](MINDLINE_PROJECT_DOCUMENTATION.md) for detailed roadmap.
+**Getting Started:**
+- 📖 [Complete Documentation Index](./docs/README.md)
+- 🚀 [Installation Guide](./docs/setup/INSTALLATION.md)
+- ⚙️ [Configuration](./docs/setup/CONFIGURATION.md) (coming soon)
+
+**Architecture:**
+- 🏗️ [System Architecture Overview](./docs/architecture/OVERVIEW.md)
+- 🔧 [Technology Stack](./docs/architecture/TECH_STACK.md) (coming soon)
+- 🔐 [Security Model](./docs/architecture/SECURITY.md) (coming soon)
+
+**Development:**
+- 💻 [API Endpoints Reference](./docs/api/ENDPOINTS.md)
+- 🎨 [Component Library](./docs/components/README.md)
+- 🗃️ [Database Tables](./docs/database/TABLES.md)
+- 📝 [Development Guide](./docs/guides/DEVELOPMENT.md) (coming soon)
+
+**Reference:**
+- 📋 [TODO List](./docs/TODO.md)
+- 📰 [Changelog](./docs/CHANGELOG.md)
+- 🐛 [Known Issues](./docs/KNOWN_ISSUES.md)
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-- Linux server (Ubuntu recommended)
-- Apache with PHP 8.3+ and PHP-FPM
-- MySQL 8.0+
-- Node.js 18+ (for frontend build)
+
+- PHP 8.0+
+- MySQL 8.0+ or MariaDB 10.4+
+- Node.js 18+
+- Apache or Nginx
+- OpenEMR installation
 
 ### Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/kjnelan/sacwan-openemr-mh.git mindline
-   cd mindline
-   ```
-
-2. **Set up the database:**
-   ```bash
-   # Import OpenEMR 7.0.3 schema (provides base tables)
-   mysql -u root -p < sql/7_0_3-to-7_0_4_upgrade.sql
-
-   # Run Mindline customizations
-   mysql -u root -p openemr < custom/sql/add_discharged_status.sql
-   mysql -u root -p openemr < custom/sql/add_client_payment_type.sql
-   mysql -u root -p openemr < custom/sql/rename_gender_identity_codes.sql
-   mysql -u root -p openemr < custom/sql/rename_sexual_orientation_codes.sql
-   ```
-
-3. **Configure Apache virtual host:**
-   ```apache
-   <VirtualHost *:443>
-       ServerName your-mindline-domain.com
-       DocumentRoot /path/to/mindline
-
-       SSLEngine on
-       SSLCertificateFile /path/to/cert.pem
-       SSLCertificateKeyFile /path/to/key.pem
-
-       <Directory /path/to/mindline>
-           AllowOverride All
-           Require all granted
-       </Directory>
-   </VirtualHost>
-   ```
-
-4. **Build the React frontend:**
-   ```bash
-   cd react-frontend
-   npm install
-   npm run build
-   # Built files go to /app/
-   ```
-
-5. **Access Mindline:**
-   ```
-   https://your-mindline-domain.com/app/
-   ```
-
----
-
-## For Developers
-
-### Tech Stack
-- **Frontend:** React 18, Vite, Tailwind CSS v4
-- **Backend:** PHP 8.3, Custom REST APIs
-- **Database:** MySQL (OpenEMR schema)
-- **Authentication:** Session-based (cookies)
-
-### Development Setup
-
 ```bash
-# Frontend development server
+# 1. Clone repository
+git clone https://github.com/yourusername/sacwan-openemr-mh.git
+cd sacwan-openemr-mh
+
+# 2. Install frontend dependencies
 cd react-frontend
+npm install
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# 4. Run development server
 npm run dev
-# Opens at http://localhost:5173
 
-# Backend uses Apache + PHP-FPM
-# APIs located in /custom/api/
+# Frontend: http://localhost:5173
+# Backend API: http://localhost/custom/api
 ```
 
-### File Structure
+**Full installation instructions:** [docs/setup/INSTALLATION.md](./docs/setup/INSTALLATION.md)
+
+---
+
+## 🏗️ Architecture
+
 ```
-/custom/api/          # Custom API endpoints (session-based)
-/app/                 # React frontend build output
-/react-frontend/      # React source code
-  /src/
-    /components/      # React components
-    /utils/           # API utilities
-/custom/sql/          # Database migrations & setup
-/interface/           # OpenEMR core (minimal usage)
+┌─────────────────┐
+│  React Frontend │  (Port 5173)
+│   (Vite + React)│
+└────────┬────────┘
+         │ REST API
+         ↓
+┌─────────────────┐
+│   PHP Backend   │  (Port 80/443)
+│ Custom API Layer│
+└────────┬────────┘
+         │ MySQL
+         ↓
+┌─────────────────┐
+│ MySQL Database  │
+│  (OpenEMR Schema)│
+└─────────────────┘
 ```
 
-### Key Documentation
-- [MINDLINE_PROJECT_DOCUMENTATION.md](MINDLINE_PROJECT_DOCUMENTATION.md) - Full project vision & architecture
-- [ToDo.md](ToDo.md) - Development roadmap & tasks
-- [custom/sql/PAYMENT_TYPE_REFERENCE.md](custom/sql/PAYMENT_TYPE_REFERENCE.md) - List options reference
+**Details:** [docs/architecture/OVERVIEW.md](./docs/architecture/OVERVIEW.md)
 
 ---
 
-## Architecture Philosophy
+## ✨ Features
 
-Mindline is a **standalone EMHR** that currently uses OpenEMR's database schema as infrastructure. We are NOT building a React UI for OpenEMR - we're building our own mental health records system.
+### Completed ✅
 
-**What we use from OpenEMR:**
-- Database schema (patient_data, encounters, billing tables)
-- Database connection infrastructure
-- Session management
+**Phase 3 - Series Management:**
+- Edit/delete single occurrence, all occurrences, or "this and future"
+- Series splitting for future occurrences
+- Custom confirmation messages
 
-**What we DON'T use:**
-- OpenEMR's service layer or business logic
-- OpenEMR's REST APIs
-- OpenEMR's frontend interface
+**Phase 2 - Conflict Detection:**
+- Pre-flight conflict checking before creating series
+- Detailed conflict information
+- User decision: Create anyway or cancel
 
-**Future:** v2.0 will fork the database schema to `mindline_*` tables optimized for mental health workflows.
+**Phase 1 - Recurring Appointments:**
+- Weekly patterns with specific days (Mon/Wed/Fri, etc.)
+- Intervals: Weekly, Every 2/3/4 weeks
+- End conditions: After X occurrences OR on specific date
+- Backend validation and conflict checks
 
-See [MINDLINE_PROJECT_DOCUMENTATION.md](MINDLINE_PROJECT_DOCUMENTATION.md#architectural-decision) for details.
+**Core Features:**
+- Patient demographics and management
+- Insurance tracking
+- Emergency contacts/related persons
+- Provider accounts and permissions
+- Room/location tracking
+- Appointment categories with colors
+- Dashboard with statistics
+- Session-based authentication
 
----
+### Planned 📋
 
-## Target Users
+- Custom backend migration (away from OpenEMR)
+- PostgreSQL database
+- GraphQL API
+- Real-time updates
+- Mobile app
+- Appointment reminders
+- Billing integration
 
-- Outpatient mental health clinics
-- Solo practitioners and small group practices
-- Nonprofit counseling centers
-- Faith-based counseling organizations
-- Therapists who want modern tools without enterprise complexity
-
----
-
-## Support & Community
-
-**Current Status:** Internal tool for Sacred Wandering (active development)
-
-**Future:** Open source release or product offering (TBD after v1.0)
-
-### Contact
-- **Developer:** Fr. Kenn, Sacred Wandering
-- **Repository:** https://github.com/kjnelan/sacwan-openemr-mh (private)
-
----
-
-## License
-
-**Current:** Internal use only (Sacred Wandering)
-**Future:** TBD (likely GPL-3.0 or MIT after v1.0)
+**Full roadmap:** [docs/TODO.md](./docs/TODO.md)
 
 ---
 
-## Acknowledgments
+## 🛠️ Technology Stack
 
-**Built with:**
-- React & Vite
-- Tailwind CSS
-- OpenEMR database schema (foundation)
-- Claude.ai & Claude Code (development partners)
+**Frontend:**
+- React 18+
+- Vite
+- TailwindCSS
+- React Router
 
-**Inspired by:**
-- Mental health professionals tired of medical EMRs
-- Sacred Wandering clients who deserve better tools
-- The belief that therapy software should feel therapeutic
+**Backend:**
+- PHP 8+
+- OpenEMR framework
+- MySQL/MariaDB
+
+**Future Stack (Planned):**
+- Node.js/TypeScript or Go
+- PostgreSQL
+- Prisma ORM
+- GraphQL
 
 ---
 
-## Why "Mindline"?
+## 📊 Project Status
 
-Mental health work walks the line between science and art, structure and flexibility, protocol and humanity. Mindline represents that balance - providing the structure clinicians need while honoring the human connection at the heart of therapy.
-
----
-
-**Current Version:** 0.3.0-alpha
-**Last Updated:** December 31, 2024
+**Current Version:** ALPHA
 **Status:** Active Development
+**Last Updated:** January 3, 2026
 
-*Mental health practitioners deserve software built for how therapy actually works.*
+### Milestones
+
+- ✅ Phase 1: Recurring Appointments Core (Dec 2025)
+- ✅ Phase 2: Conflict Detection (Dec 2025)
+- ✅ Phase 3: Series Management (Jan 2026)
+- ✅ Complete Documentation (Jan 2026)
+- 🚧 Phase 4: Backend Migration (Planned)
+- 📋 Phase 5: Production Deployment (Planned)
+
+---
+
+## 🤝 Contributing
+
+This is currently a private/proprietary project. For questions or collaboration:
+
+**Contact:** Kenneth J. Nelan / Sacred Wandering
+
+---
+
+## 📄 License
+
+**Proprietary and Confidential**
+
+Copyright © 2026 Sacred Wandering
+All Rights Reserved
+
+This software is proprietary. Unauthorized copying, modification, distribution, or use is strictly prohibited.
+
+---
+
+## 🔗 Links
+
+- **Documentation:** [/docs](/docs)
+- **API Reference:** [/docs/api/ENDPOINTS.md](/docs/api/ENDPOINTS.md)
+- **Changelog:** [/docs/CHANGELOG.md](/docs/CHANGELOG.md)
+- **Issue Tracker:** [/docs/KNOWN_ISSUES.md](/docs/KNOWN_ISSUES.md)
+
+---
+
+## 💡 Support
+
+For support, questions, or issues:
+1. Check [Documentation](/docs)
+2. Review [Known Issues](/docs/KNOWN_ISSUES.md)
+3. Contact: Kenneth J. Nelan / Sacred Wandering
+
+---
+
+**Built with ❤️ for mental health clinicians**
+
+*Mindline EMHR - Making mental health record keeping intuitive and beautiful*

@@ -79,19 +79,25 @@ try {
         e.pc_hometext,
         e.pc_pid,
         e.pc_aid,
+        e.pc_room,
+        e.pc_recurrtype,
+        e.pc_recurrspec,
         c.pc_catname,
         c.pc_catcolor,
+        c.pc_cattype,
         pd.fname AS patient_fname,
         pd.lname AS patient_lname,
         pd.DOB AS patient_dob,
         CONCAT(u.fname, ' ', u.lname) AS provider_name,
         u.id AS provider_id,
-        f.name AS facility_name
+        f.name AS facility_name,
+        r.title AS room_name
     FROM openemr_postcalendar_events e
     LEFT JOIN openemr_postcalendar_categories c ON e.pc_catid = c.pc_catid
     LEFT JOIN patient_data pd ON e.pc_pid = pd.pid
     LEFT JOIN users u ON e.pc_aid = u.id
     LEFT JOIN facility f ON e.pc_facility = f.id
+    LEFT JOIN list_options r ON r.list_id = 'rooms' AND r.option_id = e.pc_room
     WHERE e.pc_eventDate >= ? AND e.pc_eventDate <= ?";
 
     $params = [$start_date, $end_date];
@@ -115,10 +121,12 @@ try {
             'eventDate' => $row['pc_eventDate'],
             'startTime' => $row['pc_startTime'],
             'endTime' => $row['pc_endTime'],
-            'duration' => $row['pc_duration'],
+            'duration' => intval($row['pc_duration'] / 60), // Convert seconds to minutes
             'categoryId' => $row['pc_catid'],
             'categoryName' => $row['pc_catname'],
             'categoryColor' => $row['pc_catcolor'],
+            'categoryType' => intval($row['pc_cattype']), // 0=appointment, 1=availability block
+            'apptstatus' => $row['pc_apptstatus'],
             'status' => $row['pc_apptstatus'],
             'title' => $row['pc_title'],
             'comments' => $row['pc_hometext'],
@@ -127,7 +135,11 @@ try {
             'patientDOB' => $row['patient_dob'],
             'providerId' => $row['provider_id'],
             'providerName' => $row['provider_name'],
-            'facilityName' => $row['facility_name']
+            'facilityName' => $row['facility_name'],
+            'room' => $row['room_name'] ?? $row['pc_room'], // Use friendly name, fallback to ID
+            'roomId' => $row['pc_room'], // Keep room ID for editing
+            'isRecurring' => intval($row['pc_recurrtype']) === 1, // Is this part of a recurring series?
+            'recurrenceId' => $row['pc_recurrspec'] // Recurrence series ID
         ];
     }
 
