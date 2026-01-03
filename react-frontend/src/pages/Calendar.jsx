@@ -502,32 +502,49 @@ function Calendar() {
                 </div>
               </div>
 
-              {/* Time slots */}
-              {timeSlots.map(slot => (
-                <div key={`${slot.hour}-${slot.minutes}`} className="grid grid-cols-8 border-b border-white/30">
-                  {/* Time label */}
-                  <div className="p-3 border-r border-white/30 bg-white/20 text-sm text-gray-700 font-medium">
-                    {slot.hour === 0 ? '12' : slot.hour < 12 ? slot.hour : slot.hour === 12 ? '12' : slot.hour - 12}:{slot.minutes.toString().padStart(2, '0')} {slot.hour < 12 ? 'AM' : 'PM'}
-                  </div>
+              {/* Calendar Body */}
+              <div className="flex">
+                {/* Time labels column */}
+                <div className="w-20 flex-shrink-0 border-r border-white/30 bg-white/20">
+                  {timeSlots.map(slot => (
+                    <div
+                      key={`time-${slot.hour}-${slot.minutes}`}
+                      className="h-[60px] p-2 border-b border-white/30 text-xs text-gray-700 font-medium"
+                    >
+                      {slot.hour === 0 ? '12' : slot.hour < 12 ? slot.hour : slot.hour === 12 ? '12' : slot.hour - 12}:{slot.minutes.toString().padStart(2, '0')} {slot.hour < 12 ? 'AM' : 'PM'}
+                    </div>
+                  ))}
+                </div>
 
-                  {/* Day cells */}
+                {/* Day columns with absolute positioning */}
+                <div className="flex-1 flex">
                   {getWeekDays().map((day, dayIndex) => {
-                    const slotAppointments = getAppointmentsForSlot(day, slot.hour, slot.minutes);
+                    const dayAppointments = getAppointmentsForDate(day);
+                    const totalHeight = timeSlots.length * 60;
+
                     return (
                       <div
                         key={dayIndex}
-                        onClick={() => handleTimeSlotClick(day, slot.hour, slot.minutes)}
-                        className="p-2 border-r border-white/30 hover:bg-white/10 cursor-pointer transition-colors min-h-[60px]"
+                        className="flex-1 border-r border-white/30 relative"
+                        style={{ height: `${totalHeight}px` }}
                       >
-                        {slotAppointments.map(apt => {
-                          // Check if this is an availability block (Type 1) or regular appointment (Type 0)
+                        {/* Time slot grid lines (for clicking) */}
+                        {timeSlots.map(slot => (
+                          <div
+                            key={`slot-${slot.hour}-${slot.minutes}`}
+                            onClick={() => handleTimeSlotClick(day, slot.hour, slot.minutes)}
+                            className="absolute w-full h-[60px] border-b border-white/30 hover:bg-white/10 cursor-pointer transition-colors"
+                            style={{
+                              top: `${timeSlots.findIndex(s => s.hour === slot.hour && s.minutes === slot.minutes) * 60}px`
+                            }}
+                          />
+                        ))}
+
+                        {/* Appointments with absolute positioning */}
+                        {dayAppointments.map(apt => {
+                          const { top, height } = calculateAppointmentPosition(apt);
                           const isAvailabilityBlock = apt.categoryType === 1;
 
-                          // Calculate how many slots this appointment spans
-                          const slotsSpan = calculateSlotSpan(apt);
-                          const heightPx = slotsSpan * 60 - 8; // 60px per slot, minus padding
-
-                          // Use category color if available, otherwise default
                           const bgColor = apt.categoryColor || (isAvailabilityBlock ? '#E5E7EB' : '#DBEAFE');
                           const borderColor = apt.categoryColor ? `${apt.categoryColor}80` : (isAvailabilityBlock ? '#9CA3AF80' : '#93C5FD80');
 
@@ -535,12 +552,13 @@ function Calendar() {
                             <div
                               key={apt.id}
                               onClick={(e) => handleAppointmentClick(apt, e)}
-                              className={`mb-1 px-2 py-1 rounded-lg text-xs border hover:opacity-80 hover:shadow-md transition-all cursor-pointer ${
+                              className={`absolute left-1 right-1 px-2 py-1 rounded-lg text-xs border hover:opacity-80 hover:shadow-md transition-all cursor-pointer z-10 overflow-hidden ${
                                 isAvailabilityBlock ? 'border-dashed' : ''
                               }`}
                               style={{
-                                height: `${heightPx}px`,
-                                backgroundColor: isAvailabilityBlock ? `${bgColor}99` : `${bgColor}B3`, // 60% vs 70% opacity
+                                top: `${top}px`,
+                                height: `${height}px`,
+                                backgroundColor: isAvailabilityBlock ? `${bgColor}99` : `${bgColor}B3`,
                                 borderColor: borderColor,
                                 backgroundImage: isAvailabilityBlock ? 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,.3) 4px, rgba(255,255,255,.3) 8px)' : 'none'
                               }}
@@ -548,20 +566,20 @@ function Calendar() {
                               {isAvailabilityBlock ? (
                                 <>
                                   <div className="font-semibold text-gray-900 flex items-center gap-1">
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 715.636 5.636m12.728 12.728L5.636 5.636" />
                                     </svg>
-                                    {apt.categoryName}
+                                    <span className="truncate">{apt.categoryName}</span>
                                   </div>
-                                  {apt.comments && (
-                                    <div className="text-gray-700 truncate text-[10px] italic">{apt.comments}</div>
+                                  {apt.comments && height > 40 && (
+                                    <div className="text-gray-700 truncate text-[10px] italic mt-1">{apt.comments}</div>
                                   )}
                                 </>
                               ) : (
                                 <>
                                   <div className="font-semibold text-gray-900">{formatTime12Hour(apt.startTime)}</div>
-                                  <div className="text-gray-800 truncate">{apt.patientName}</div>
-                                  <div className="text-gray-700 truncate text-[10px]">{apt.categoryName}</div>
+                                  {height > 30 && <div className="text-gray-800 truncate">{apt.patientName}</div>}
+                                  {height > 50 && <div className="text-gray-700 truncate text-[10px]">{apt.categoryName}</div>}
                                 </>
                               )}
                             </div>
@@ -571,7 +589,7 @@ function Calendar() {
                     );
                   })}
                 </div>
-              ))}
+              </div>
             </div>
           )
         )}
