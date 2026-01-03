@@ -90,6 +90,7 @@ try {
     $apptstatus = $input['apptstatus'] ?? '-'; // Default status
     $room = $input['room'] ?? '';
     $facilityId = isset($input['facilityId']) ? intval($input['facilityId']) : 0;
+    $overrideAvailability = isset($input['overrideAvailability']) ? boolval($input['overrideAvailability']) : false;
 
     // Calculate end time based on start time and duration
     $startDateTime = new DateTime($eventDate . ' ' . $startTime);
@@ -162,13 +163,13 @@ try {
                     }
                 }
 
-                if ($isBlocking) {
-                    // This availability block prevents appointments
+                if ($isBlocking && !$overrideAvailability) {
+                    // This availability block prevents appointments (unless overridden)
                     throw new Exception("Provider is unavailable at this time: " . $conflictResult['pc_catname']);
                 }
-                // If not blocking (e.g., "In Office"), allow the appointment to be created
+                // If not blocking (e.g., "In Office") or override is enabled, allow the appointment to be created
             } else {
-                // Conflict with another appointment
+                // Conflict with another appointment - always block (cannot override patient appointments)
                 throw new Exception("Provider already has an appointment at this time");
             }
         }
