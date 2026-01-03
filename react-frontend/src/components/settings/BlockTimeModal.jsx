@@ -29,6 +29,14 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
   const [duration, setDuration] = useState(50);
   const [comments, setComments] = useState('');
 
+  // Recurrence fields
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurDays, setRecurDays] = useState({ mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false });
+  const [recurInterval, setRecurInterval] = useState('1'); // 1=weekly, 2=bi-weekly, 3=every 3 weeks, 4=every 4 weeks
+  const [recurEndType, setRecurEndType] = useState('count'); // 'count' or 'date'
+  const [recurCount, setRecurCount] = useState(10);
+  const [recurEndDate, setRecurEndDate] = useState('');
+
   // Duration presets (removed 15min, added note about 12 hours)
   const durationPresets = [30, 50, 90, 240, 480]; // 30min, 50min, 1.5h, 4h, 8h
 
@@ -85,6 +93,26 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
       return;
     }
 
+    // Validate recurrence fields if recurring is enabled
+    if (isRecurring) {
+      const selectedDays = Object.values(recurDays).filter(Boolean).length;
+      if (selectedDays === 0) {
+        setError('Please select at least one day for recurrence');
+        setLoading(false);
+        return;
+      }
+      if (recurEndType === 'date' && !recurEndDate) {
+        setError('Please select an end date for recurrence');
+        setLoading(false);
+        return;
+      }
+      if (recurEndType === 'count' && (!recurCount || recurCount < 1)) {
+        setError('Please enter a valid number of occurrences');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const formattedTime = startTime.includes(':') ? `${startTime}:00` : `${startTime}:00:00`;
 
@@ -101,6 +129,18 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
         room: '',
         apptstatus: block ? block.apptstatus : '-'
       };
+
+      // Add recurrence data if enabled
+      if (isRecurring) {
+        blockData.recurrence = {
+          enabled: true,
+          days: recurDays,
+          interval: parseInt(recurInterval),
+          endType: recurEndType,
+          endCount: recurEndType === 'count' ? parseInt(recurCount) : null,
+          endDate: recurEndType === 'date' ? recurEndDate : null
+        };
+      }
 
       console.log(block ? 'Updating availability block:' : 'Creating availability block:', blockData);
 
@@ -159,6 +199,13 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
     setComments('');
     setError(null);
     setSuccess(null);
+    // Reset recurrence fields
+    setIsRecurring(false);
+    setRecurDays({ mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false });
+    setRecurInterval('1');
+    setRecurEndType('count');
+    setRecurCount(10);
+    setRecurEndDate('');
     onClose();
     if (onSave) onSave();
   };
@@ -325,6 +372,117 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
                 required
               />
+            </div>
+
+            {/* Recurrence Section */}
+            <div className="border-t border-gray-200 pt-6 mt-6">
+              <div className="mb-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={isRecurring}
+                    onChange={(e) => setIsRecurring(e.target.checked)}
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  Make this recurring
+                </label>
+              </div>
+
+              {isRecurring && (
+                <div className="space-y-4 pl-6 border-l-2 border-purple-200">
+                  {/* Day Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Repeat on <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: 'sun', label: 'Sun' },
+                        { key: 'mon', label: 'Mon' },
+                        { key: 'tue', label: 'Tue' },
+                        { key: 'wed', label: 'Wed' },
+                        { key: 'thu', label: 'Thu' },
+                        { key: 'fri', label: 'Fri' },
+                        { key: 'sat', label: 'Sat' }
+                      ].map(day => (
+                        <button
+                          key={day.key}
+                          type="button"
+                          onClick={() => setRecurDays(prev => ({ ...prev, [day.key]: !prev[day.key] }))}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                            recurDays[day.key]
+                              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {day.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Interval Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Frequency <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={recurInterval}
+                      onChange={(e) => setRecurInterval(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    >
+                      <option value="1">Weekly</option>
+                      <option value="2">Every 2 weeks</option>
+                      <option value="3">Every 3 weeks</option>
+                      <option value="4">Every 4 weeks</option>
+                    </select>
+                  </div>
+
+                  {/* End Condition */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ends <span className="text-red-500">*</span>
+                    </label>
+                    <div className="space-y-3">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          checked={recurEndType === 'count'}
+                          onChange={() => setRecurEndType('count')}
+                          className="text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm text-gray-700">After</span>
+                        <input
+                          type="number"
+                          value={recurCount}
+                          onChange={(e) => setRecurCount(parseInt(e.target.value) || 1)}
+                          disabled={recurEndType !== 'count'}
+                          min="1"
+                          max="52"
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm disabled:bg-gray-100 focus:ring-2 focus:ring-purple-500"
+                        />
+                        <span className="text-sm text-gray-700">occurrences</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          checked={recurEndType === 'date'}
+                          onChange={() => setRecurEndType('date')}
+                          className="text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm text-gray-700">On</span>
+                        <input
+                          type="date"
+                          value={recurEndDate}
+                          onChange={(e) => setRecurEndDate(e.target.value)}
+                          disabled={recurEndType !== 'date'}
+                          className="px-2 py-1 border border-gray-300 rounded text-sm disabled:bg-gray-100 focus:ring-2 focus:ring-purple-500"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Comments */}
