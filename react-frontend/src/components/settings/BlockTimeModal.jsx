@@ -158,10 +158,19 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
         aria-hidden="true"
       />
 
-      {/* Modal - Centered with transform */}
+      {/* Modal - Centered with inline styles */}
       <div
-        className="fixed top-1/2 left-1/2 bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-200 z-10 max-h-[90vh] overflow-y-auto"
-        style={{ transform: 'translate(-50%, -50%)' }}
+        className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-y-auto"
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '100%',
+          maxWidth: '48rem',
+          maxHeight: '90vh',
+          zIndex: 10
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 px-8 pt-6 bg-gradient-to-r from-purple-50 to-pink-50">
