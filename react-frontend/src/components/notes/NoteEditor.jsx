@@ -331,13 +331,13 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
       </div>
 
       {/* Actions */}
-      <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-4 -mx-6 -mb-6">
+      <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-6 -mx-6 -mb-6 rounded-b-3xl">
         <div className="flex gap-3 max-w-5xl mx-auto">
           <button
             type="button"
             onClick={handleCancel}
             disabled={saving}
-            className="btn-secondary"
+            className="btn-action btn-cancel px-6"
           >
             Cancel
           </button>
@@ -346,7 +346,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             type="button"
             onClick={handleSaveDraft}
             disabled={saving || autoSaving}
-            className="btn-secondary flex-1"
+            className="btn-action btn-secondary flex-1"
           >
             {saving ? 'Saving...' : 'Save Draft'}
           </button>
@@ -355,9 +355,9 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             type="button"
             onClick={handleSign}
             disabled={saving || autoSaving}
-            className="btn-primary flex-1"
+            className="btn-action btn-success flex-1"
           >
-            {saving ? 'Signing...' : 'Sign & Lock Note'}
+            {saving ? 'Signing...' : '✓ Sign & Lock Note'}
           </button>
         </div>
       </div>

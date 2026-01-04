@@ -73,7 +73,7 @@ function BIRPTemplate({ note, onChange, patientId, autoSave }) {
   return (
     <div className="space-y-6">
       {/* B - Behavior/Observations */}
-      <div className="card-inner">
+      <div className="card-main">
         <label className="block">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold text-gray-800">
@@ -123,7 +123,7 @@ function BIRPTemplate({ note, onChange, patientId, autoSave }) {
       </div>
 
       {/* I - Intervention */}
-      <div className="card-inner">
+      <div className="card-main">
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold text-gray-800">
@@ -152,7 +152,7 @@ function BIRPTemplate({ note, onChange, patientId, autoSave }) {
       </div>
 
       {/* R - Response */}
-      <div className="card-inner">
+      <div className="card-main">
         <label className="block">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold text-gray-800">
@@ -172,7 +172,7 @@ function BIRPTemplate({ note, onChange, patientId, autoSave }) {
       </div>
 
       {/* P - Plan */}
-      <div className="card-inner">
+      <div className="card-main">
         <label className="block mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold text-gray-800">
@@ -222,7 +222,7 @@ function BIRPTemplate({ note, onChange, patientId, autoSave }) {
       </div>
 
       {/* Risk Assessment (Optional - only shows if risk is flagged) */}
-      <div className="card-inner bg-gray-50 border-2 border-gray-200">
+      <div className="card-main bg-orange-50 border-2 border-orange-300">
         <label className="flex items-center gap-3 mb-3 cursor-pointer">
           <input
             type="checkbox"
