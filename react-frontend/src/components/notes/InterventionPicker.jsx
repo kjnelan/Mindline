@@ -29,6 +29,7 @@ function InterventionPicker({ selectedInterventions = [], onChange, riskPresent 
   const [error, setError] = useState(null);
   const [interventions, setInterventions] = useState(null);
   const [expandedModalities, setExpandedModalities] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadInterventions();
@@ -81,10 +82,67 @@ function InterventionPicker({ selectedInterventions = [], onChange, riskPresent 
 
   const { grouped, favorites } = interventions;
 
+  // Filter all interventions by search term
+  const allInterventions = [
+    ...(grouped.tier1 || []),
+    ...(grouped.tier3 || []),
+    ...(grouped.tier4 || []),
+    ...Object.values(grouped.tier2 || {}).flat(),
+  ];
+
+  const filteredInterventions = searchTerm
+    ? allInterventions.filter(i =>
+        i.intervention_name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : null;
+
   return (
     <div className="space-y-6">
-      {/* Favorites Section */}
-      {showFavorites && favorites && favorites.length > 0 && (
+      {/* Search Bar */}
+      <div>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search interventions..."
+          className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+        />
+      </div>
+
+      {/* Search Results */}
+      {searchTerm && filteredInterventions && (
+        <div>
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">
+            Search Results ({filteredInterventions.length})
+          </h4>
+          {filteredInterventions.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {filteredInterventions.map((intervention) => (
+                <label
+                  key={intervention.id}
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedInterventions.includes(intervention.intervention_name)}
+                    onChange={() => handleToggle(intervention.intervention_name)}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-800">{intervention.intervention_name}</span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm">No interventions found matching "{searchTerm}"</div>
+          )}
+        </div>
+      )}
+
+      {/* Show tiered view only when not searching */}
+      {!searchTerm && (
+        <>
+          {/* Favorites Section */}
+          {showFavorites && favorites && favorites.length > 0 && (
         <div>
           <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <span>⭐</span>
@@ -227,6 +285,8 @@ function InterventionPicker({ selectedInterventions = [], onChange, riskPresent 
             ))}
           </div>
         </div>
+      )}
+        </>
       )}
 
       {/* Selection Summary */}
