@@ -14,6 +14,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createNote, updateNote, autosaveNote, signNote, getNote, getDraft, getClinicalSettings } from '../../utils/api';
 import BIRPTemplate from './BIRPTemplate';
+import PIRPTemplate from './PIRPTemplate';
 import QuickNoteForm from './QuickNoteForm';
 
 /**
@@ -324,9 +325,12 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
           />
         )}
         {note.templateType === 'PIRP' && (
-          <div className="card-main p-6 text-center text-gray-600">
-            PIRP Template - Coming Soon
-          </div>
+          <PIRPTemplate
+            note={note}
+            onChange={handleFieldChange}
+            patientId={patientId}
+            autoSave={triggerAutoSave}
+          />
         )}
       </div>
 
