@@ -16,6 +16,7 @@ import { createNote, updateNote, autosaveNote, signNote, getNote, getDraft, getC
 import BIRPTemplate from './BIRPTemplate';
 import PIRPTemplate from './PIRPTemplate';
 import MSETemplate from './MSETemplate';
+import IntakeTemplate from './IntakeTemplate';
 import QuickNoteForm from './QuickNoteForm';
 
 /**
@@ -335,6 +336,13 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
         )}
         {note.templateType === 'MSE' && (
           <MSETemplate
+            note={note}
+            onChange={handleFieldChange}
+            autoSave={triggerAutoSave}
+          />
+        )}
+        {note.templateType === 'Intake' && (
+          <IntakeTemplate
             note={note}
             onChange={handleFieldChange}
             autoSave={triggerAutoSave}
