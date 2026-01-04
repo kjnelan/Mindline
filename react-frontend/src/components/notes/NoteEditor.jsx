@@ -24,6 +24,25 @@ import AdministrativeTemplate from './AdministrativeTemplate';
 import QuickNoteForm from './QuickNoteForm';
 
 /**
+ * Map note type to template type
+ */
+const getNoteTemplateType = (noteType) => {
+  const mapping = {
+    'progress': 'BIRP',           // Progress notes use BIRP by default
+    'intake': 'Intake',           // Intake Assessment
+    'crisis': 'Crisis',           // Crisis Note
+    'discharge': 'Discharge',     // Discharge Summary
+    'mse': 'MSE',                 // Mental Status Exam
+    'risk_assessment': 'RiskAssessment',  // Risk Assessment
+    'admin': 'Administrative',    // Administrative Note
+    'noshow': null,               // Uses QuickNoteForm
+    'cancel': null                // Uses QuickNoteForm
+  };
+
+  return mapping[noteType] || 'BIRP'; // Default to BIRP if unknown
+};
+
+/**
  * Props:
  * - noteId: number - Existing note ID (for editing)
  * - patientId: number - Patient ID (required for new notes)
@@ -37,7 +56,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
     patientId,
     appointmentId,
     noteType,
-    templateType: 'BIRP',
+    templateType: getNoteTemplateType(noteType),
     serviceDate: new Date().toISOString().split('T')[0],
     behaviorProblem: '',
     intervention: '',
@@ -284,6 +303,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             {noteType === 'crisis' && '⚠️ Crisis Note'}
             {noteType === 'discharge' && '✅ Discharge Summary'}
             {noteType === 'mse' && '🧠 Mental Status Exam'}
+            {noteType === 'risk_assessment' && '🛡️ Risk Assessment'}
             {noteType === 'admin' && '📋 Administrative Note'}
           </h1>
 
