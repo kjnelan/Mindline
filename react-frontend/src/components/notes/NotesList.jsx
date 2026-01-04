@@ -125,7 +125,7 @@ function NotesList({ patientId, onNoteClick, onCreateNote }) {
     return (
       <div className="p-6 text-center">
         <div className="text-red-600 mb-4">Error loading notes: {error}</div>
-        <button onClick={loadNotes} className="btn-action btn-secondary">
+        <button onClick={loadNotes} className="px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg">
           Retry
         </button>
       </div>
@@ -143,14 +143,14 @@ function NotesList({ patientId, onNoteClick, onCreateNote }) {
           </span>
         </h2>
         {onCreateNote && (
-          <button onClick={onCreateNote} className="btn-action btn-primary">
+          <button onClick={onCreateNote} className="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg">
             + New Note
           </button>
         )}
       </div>
 
       {/* Filters */}
-      <div className="card-inner">
+      <div className="card-main">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Note Type Filter */}
           <div>
@@ -232,7 +232,7 @@ function NotesList({ patientId, onNoteClick, onCreateNote }) {
             <div
               key={note.id}
               onClick={() => onNoteClick && onNoteClick(note.id, isDraft, note.note_type)}
-              className="card-inner hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all"
+              className="card-main hover:bg-white/50 hover:border-blue-300 cursor-pointer transition-all"
             >
               <div className="flex items-start justify-between gap-4">
                 {/* Note Info */}
@@ -277,7 +277,7 @@ function NotesList({ patientId, onNoteClick, onCreateNote }) {
                 </div>
 
                 {/* Action */}
-                <button className="btn-mini">
+                <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md">
                   {isDraft ? 'Edit' : 'View'}
                 </button>
               </div>

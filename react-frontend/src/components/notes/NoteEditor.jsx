@@ -337,7 +337,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             type="button"
             onClick={handleCancel}
             disabled={saving}
-            className="btn-action btn-cancel px-6"
+            className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -346,7 +346,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             type="button"
             onClick={handleSaveDraft}
             disabled={saving || autoSaving}
-            className="btn-action btn-secondary flex-1"
+            className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? 'Saving...' : 'Save Draft'}
           </button>
@@ -355,7 +355,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             type="button"
             onClick={handleSign}
             disabled={saving || autoSaving}
-            className="btn-action btn-success flex-1"
+            className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? 'Signing...' : '✓ Sign & Lock Note'}
           </button>

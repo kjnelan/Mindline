@@ -270,18 +270,18 @@ function NoteViewer({ noteId, onClose, onEdit, onAddendum }) {
 
       {/* Actions */}
       <div className="flex gap-3 mt-8 pt-6 border-t border-gray-200">
-        <button onClick={onClose} className="btn-action btn-cancel px-6">
+        <button onClick={onClose} className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 transition-all shadow-lg">
           Close
         </button>
 
         {isDraft && onEdit && (
-          <button onClick={() => onEdit(note.id)} className="btn-action btn-primary flex-1">
+          <button onClick={() => onEdit(note.id)} className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg">
             Edit Draft
           </button>
         )}
 
         {isLocked && onAddendum && (
-          <button onClick={() => onAddendum(note.id)} className="btn-action btn-secondary flex-1">
+          <button onClick={() => onAddendum(note.id)} className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg">
             Add Addendum
           </button>
         )}

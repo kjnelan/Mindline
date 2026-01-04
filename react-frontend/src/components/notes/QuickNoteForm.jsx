@@ -229,14 +229,14 @@ function QuickNoteForm({ noteType, patientId, appointmentId = null, serviceDate,
               type="button"
               onClick={onCancel}
               disabled={saving}
-              className="btn-action btn-cancel flex-1"
+              className="flex-1 px-6 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="btn-action btn-primary flex-1"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Saving...' : 'Save Note'}
             </button>
