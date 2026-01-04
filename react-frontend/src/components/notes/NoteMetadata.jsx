@@ -61,10 +61,10 @@ function NoteMetadata({ patient, provider, serviceInfo, diagnosis, serviceDate }
             <div className="flex items-baseline gap-2">
               <span className="text-sm font-medium text-gray-600">DOB:</span>
               <span className="text-sm text-gray-800">
-                {patient?.dob ? formatDate(patient.dob) : 'N/A'}
-                {patient?.dob && (
+                {patient?.DOB ? formatDate(patient.DOB) : 'N/A'}
+                {patient?.DOB && (
                   <span className="ml-2 text-gray-500">
-                    (Age {new Date().getFullYear() - new Date(patient.dob).getFullYear()})
+                    (Age {new Date().getFullYear() - new Date(patient.DOB).getFullYear()})
                   </span>
                 )}
               </span>

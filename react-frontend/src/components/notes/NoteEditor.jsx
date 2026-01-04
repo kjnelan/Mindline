@@ -14,7 +14,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   createNote, updateNote, autosaveNote, signNote, getNote, getDraft, getClinicalSettings,
-  getClientDetail, getCurrentUser, getTreatmentGoals
+  getClientDetail, getCurrentUser
 } from '../../utils/api';
 import BIRPTemplate from './BIRPTemplate';
 import PIRPTemplate from './PIRPTemplate';
@@ -196,33 +196,30 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
       if (patientId) {
         try {
           const patientData = await getClientDetail(patientId);
+          console.log('✅ Patient data loaded:', patientData);
           setPatient(patientData.patient);
+
+          // Get primary diagnosis from patient's problems list
+          if (patientData.problems && patientData.problems.length > 0) {
+            // Use the most recent active problem as primary diagnosis
+            const primaryProblem = patientData.problems[0];
+            const diagnosisText = primaryProblem.title || primaryProblem.diagnosis || null;
+            setDiagnosis(diagnosisText);
+            console.log('✅ Primary diagnosis loaded:', diagnosisText);
+          }
         } catch (err) {
-          console.error('Error loading patient data:', err);
+          console.error('❌ Error loading patient data:', err);
         }
       }
 
       // Fetch provider data (current user)
       try {
         const userData = await getCurrentUser();
-        setProvider(userData.user);
+        console.log('✅ Provider data loaded:', userData);
+        // getCurrentUser returns the user object directly, not wrapped
+        setProvider(userData);
       } catch (err) {
-        console.error('Error loading provider data:', err);
-      }
-
-      // Fetch diagnosis from treatment goals
-      if (patientId) {
-        try {
-          const goalsData = await getTreatmentGoals(patientId, { status: 'active' });
-          // Get primary diagnosis from active treatment goals
-          if (goalsData.goals && goalsData.goals.length > 0) {
-            // Assuming diagnosis is in the first goal or goals have a diagnosis field
-            const primaryDiagnosis = goalsData.diagnosis || goalsData.goals[0]?.diagnosis || null;
-            setDiagnosis(primaryDiagnosis);
-          }
-        } catch (err) {
-          console.error('Error loading diagnosis:', err);
-        }
+        console.error('❌ Error loading provider data:', err);
       }
 
       // Set service info defaults (will be enhanced with appointment integration)
@@ -233,7 +230,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
       });
 
     } catch (err) {
-      console.error('Error loading metadata:', err);
+      console.error('❌ Error loading metadata:', err);
     }
   };
 
@@ -414,7 +411,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
       )}
 
       {/* Auto-populated Metadata */}
-      {patient && provider && (
+      {(patient || provider) && (
         <NoteMetadata
           patient={patient}
           provider={provider}
