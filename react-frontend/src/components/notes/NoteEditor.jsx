@@ -17,6 +17,10 @@ import BIRPTemplate from './BIRPTemplate';
 import PIRPTemplate from './PIRPTemplate';
 import MSETemplate from './MSETemplate';
 import IntakeTemplate from './IntakeTemplate';
+import DischargeTemplate from './DischargeTemplate';
+import CrisisTemplate from './CrisisTemplate';
+import RiskAssessmentTemplate from './RiskAssessmentTemplate';
+import AdministrativeTemplate from './AdministrativeTemplate';
 import QuickNoteForm from './QuickNoteForm';
 
 /**
@@ -343,6 +347,34 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
         )}
         {note.templateType === 'Intake' && (
           <IntakeTemplate
+            note={note}
+            onChange={handleFieldChange}
+            autoSave={triggerAutoSave}
+          />
+        )}
+        {note.templateType === 'Discharge' && (
+          <DischargeTemplate
+            note={note}
+            onChange={handleFieldChange}
+            autoSave={triggerAutoSave}
+          />
+        )}
+        {note.templateType === 'Crisis' && (
+          <CrisisTemplate
+            note={note}
+            onChange={handleFieldChange}
+            autoSave={triggerAutoSave}
+          />
+        )}
+        {note.templateType === 'RiskAssessment' && (
+          <RiskAssessmentTemplate
+            note={note}
+            onChange={handleFieldChange}
+            autoSave={triggerAutoSave}
+          />
+        )}
+        {note.templateType === 'Administrative' && (
+          <AdministrativeTemplate
             note={note}
             onChange={handleFieldChange}
             autoSave={triggerAutoSave}
