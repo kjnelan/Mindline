@@ -12,7 +12,10 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { createNote, updateNote, autosaveNote, signNote, getNote, getDraft, getClinicalSettings } from '../../utils/api';
+import {
+  createNote, updateNote, autosaveNote, signNote, getNote, getDraft, getClinicalSettings,
+  getClientDetail, getCurrentUser, getTreatmentGoals
+} from '../../utils/api';
 import BIRPTemplate from './BIRPTemplate';
 import PIRPTemplate from './PIRPTemplate';
 import MSETemplate from './MSETemplate';
@@ -22,6 +25,7 @@ import CrisisTemplate from './CrisisTemplate';
 import RiskAssessmentTemplate from './RiskAssessmentTemplate';
 import AdministrativeTemplate from './AdministrativeTemplate';
 import QuickNoteForm from './QuickNoteForm';
+import NoteMetadata from './NoteMetadata';
 
 /**
  * Map note type to template type
@@ -79,13 +83,20 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
   const [error, setError] = useState(null);
   const [settings, setSettings] = useState(null);
 
+  // Metadata for auto-population
+  const [patient, setPatient] = useState(null);
+  const [provider, setProvider] = useState(null);
+  const [serviceInfo, setServiceInfo] = useState(null);
+  const [diagnosis, setDiagnosis] = useState(null);
+
   const autoSaveTimer = useRef(null);
   const noteIdRef = useRef(noteId);
 
-  // Load existing note or draft
+  // Load existing note or draft and metadata
   useEffect(() => {
     loadNoteData();
     loadSettings();
+    loadMetadata();
   }, [noteId, appointmentId, patientId]);
 
   // Auto-save every 3 seconds after changes
@@ -176,6 +187,53 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
       }
     } catch (err) {
       console.error('Error loading settings:', err);
+    }
+  };
+
+  const loadMetadata = async () => {
+    try {
+      // Fetch patient data
+      if (patientId) {
+        try {
+          const patientData = await getClientDetail(patientId);
+          setPatient(patientData.patient);
+        } catch (err) {
+          console.error('Error loading patient data:', err);
+        }
+      }
+
+      // Fetch provider data (current user)
+      try {
+        const userData = await getCurrentUser();
+        setProvider(userData.user);
+      } catch (err) {
+        console.error('Error loading provider data:', err);
+      }
+
+      // Fetch diagnosis from treatment goals
+      if (patientId) {
+        try {
+          const goalsData = await getTreatmentGoals(patientId, { status: 'active' });
+          // Get primary diagnosis from active treatment goals
+          if (goalsData.goals && goalsData.goals.length > 0) {
+            // Assuming diagnosis is in the first goal or goals have a diagnosis field
+            const primaryDiagnosis = goalsData.diagnosis || goalsData.goals[0]?.diagnosis || null;
+            setDiagnosis(primaryDiagnosis);
+          }
+        } catch (err) {
+          console.error('Error loading diagnosis:', err);
+        }
+      }
+
+      // Set service info defaults (will be enhanced with appointment integration)
+      setServiceInfo({
+        type: 'Individual Therapy',
+        location: 'Office',
+        duration: null  // Will be filled from appointment when available
+      });
+
+    } catch (err) {
+      console.error('Error loading metadata:', err);
     }
   };
 
@@ -353,6 +411,17 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
           {error}
         </div>
+      )}
+
+      {/* Auto-populated Metadata */}
+      {patient && provider && (
+        <NoteMetadata
+          patient={patient}
+          provider={provider}
+          serviceInfo={serviceInfo}
+          diagnosis={diagnosis}
+          serviceDate={note.serviceDate}
+        />
       )}
 
       {/* Template */}
