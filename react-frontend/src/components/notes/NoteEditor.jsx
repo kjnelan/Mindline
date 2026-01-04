@@ -15,6 +15,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createNote, updateNote, autosaveNote, signNote, getNote, getDraft, getClinicalSettings } from '../../utils/api';
 import BIRPTemplate from './BIRPTemplate';
 import PIRPTemplate from './PIRPTemplate';
+import MSETemplate from './MSETemplate';
 import QuickNoteForm from './QuickNoteForm';
 
 /**
@@ -329,6 +330,13 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             note={note}
             onChange={handleFieldChange}
             patientId={patientId}
+            autoSave={triggerAutoSave}
+          />
+        )}
+        {note.templateType === 'MSE' && (
+          <MSETemplate
+            note={note}
+            onChange={handleFieldChange}
             autoSave={triggerAutoSave}
           />
         )}
