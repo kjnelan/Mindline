@@ -137,12 +137,19 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
         }
 
         // Also check localStorage for instant recovery
-        const localDraft = localStorage.getItem(`note_draft_${patientId}_${appointmentId || 'new'}`);
+        const localDraft = localStorage.getItem(`note_draft_${patientId}_${appointmentId || 'new'}_${noteType}`);
         if (localDraft) {
           try {
             const parsed = JSON.parse(localDraft);
-            setNote({ ...note, ...parsed });
-            console.log('Restored draft from localStorage');
+            // Only restore if note type matches
+            if (parsed.noteType === noteType) {
+              setNote({ ...note, ...parsed });
+              console.log('Restored draft from localStorage');
+            } else {
+              console.log('Draft note type mismatch, skipping restore');
+              // Clear the mismatched draft
+              localStorage.removeItem(`note_draft_${patientId}_${appointmentId || 'new'}_${noteType}`);
+            }
           } catch (err) {
             console.error('Failed to parse localStorage draft');
           }
@@ -181,7 +188,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
     try {
       // Save to localStorage immediately (instant recovery)
       localStorage.setItem(
-        `note_draft_${patientId}_${appointmentId || 'new'}`,
+        `note_draft_${patientId}_${appointmentId || 'new'}_${note.noteType}`,
         JSON.stringify(note)
       );
 
@@ -253,7 +260,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
       await signNote(noteIdRef.current);
 
       // Clear localStorage draft
-      localStorage.removeItem(`note_draft_${patientId}_${appointmentId || 'new'}`);
+      localStorage.removeItem(`note_draft_${patientId}_${appointmentId || 'new'}_${note.noteType}`);
 
       if (onSave) {
         onSave({ noteId: noteIdRef.current, status: 'signed' });
