@@ -331,8 +331,9 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
       </div>
 
       {/* Actions */}
-      <div className="sticky bottom-0 bg-white/40 backdrop-blur-xl border-t border-white/50 p-6 -mx-6 -mb-6 rounded-b-3xl shadow-lg">
-        <div className="flex gap-3 max-w-5xl mx-auto">
+      <div className="sticky bottom-6 mt-8">
+        <div className="card-main shadow-2xl">
+          <div className="flex gap-3">
           <button
             type="button"
             onClick={handleCancel}
@@ -359,6 +360,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
           >
             {saving ? 'Signing...' : '✓ Sign & Lock Note'}
           </button>
+          </div>
         </div>
       </div>
     </div>
