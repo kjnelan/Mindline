@@ -295,6 +295,23 @@ export async function getTreatmentGoals(patientId, filters = {}) {
 }
 
 /**
+ * Search diagnosis/procedure codes (ICD-10, CPT, etc.)
+ * @param {string} searchTerm - Search term for code or description
+ * @param {string} codeType - Code type (ICD10, CPT4, etc.)
+ * @param {number} limit - Maximum results to return
+ */
+export async function searchCodes(searchTerm, codeType = 'ICD10', limit = 50) {
+  console.log('Searching codes:', { searchTerm, codeType, limit });
+  const params = new URLSearchParams({
+    search: searchTerm,
+    code_type: codeType,
+    limit: limit.toString()
+  });
+
+  return apiRequest(`/custom/api/search_codes.php?${params.toString()}`);
+}
+
+/**
  * Get saved draft for a note
  * @param {object} params - Query params (note_id, appointment_id, or patient_id)
  */

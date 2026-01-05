@@ -24,6 +24,7 @@ import DischargeTemplate from './DischargeTemplate';
 import CrisisTemplate from './CrisisTemplate';
 import RiskAssessmentTemplate from './RiskAssessmentTemplate';
 import AdministrativeTemplate from './AdministrativeTemplate';
+import DiagnosisTemplate from './DiagnosisTemplate';
 import QuickNoteForm from './QuickNoteForm';
 import NoteMetadata from './NoteMetadata';
 
@@ -38,6 +39,7 @@ const getNoteTemplateType = (noteType) => {
     'discharge': 'Discharge',     // Discharge Summary
     'mse': 'MSE',                 // Mental Status Exam
     'risk_assessment': 'RiskAssessment',  // Risk Assessment
+    'diagnosis': 'Diagnosis',     // Diagnosis Note (ICD-10)
     'admin': 'Administrative',    // Administrative Note
     'noshow': null,               // Uses QuickNoteForm
     'cancel': null                // Uses QuickNoteForm
@@ -374,6 +376,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             {noteType === 'discharge' && '✅ Discharge Summary'}
             {noteType === 'mse' && '🧠 Mental Status Exam'}
             {noteType === 'risk_assessment' && '🛡️ Risk Assessment'}
+            {noteType === 'diagnosis' && '🏥 Diagnosis Note'}
             {noteType === 'admin' && '📋 Administrative Note'}
           </h1>
 
@@ -472,6 +475,13 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             note={note}
             onChange={handleFieldChange}
             autoSave={triggerAutoSave}
+          />
+        )}
+        {note.templateType === 'Diagnosis' && (
+          <DiagnosisTemplate
+            note={note}
+            onChange={handleFieldChange}
+            disabled={note.is_locked}
           />
         )}
         {note.templateType === 'Administrative' && (

@@ -59,6 +59,13 @@ function NoteTypeSelector({ onSelect, preselected = null, appointment = null }) 
       common: false
     },
     {
+      id: 'diagnosis',
+      label: 'Diagnosis Note',
+      description: 'ICD-10 diagnosis assessment and documentation',
+      icon: '🏥',
+      common: false
+    },
+    {
       id: 'crisis',
       label: 'Crisis Note',
       description: 'Emergency or high-risk session',
