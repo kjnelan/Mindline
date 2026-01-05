@@ -12,7 +12,10 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { createNote, updateNote, autosaveNote, signNote, getNote, getDraft, getClinicalSettings } from '../../utils/api';
+import {
+  createNote, updateNote, autosaveNote, signNote, getNote, getDraft, getClinicalSettings,
+  getClientDetail, getCurrentUser
+} from '../../utils/api';
 import BIRPTemplate from './BIRPTemplate';
 import PIRPTemplate from './PIRPTemplate';
 import MSETemplate from './MSETemplate';
@@ -21,7 +24,9 @@ import DischargeTemplate from './DischargeTemplate';
 import CrisisTemplate from './CrisisTemplate';
 import RiskAssessmentTemplate from './RiskAssessmentTemplate';
 import AdministrativeTemplate from './AdministrativeTemplate';
+import DiagnosisTemplate from './DiagnosisTemplate';
 import QuickNoteForm from './QuickNoteForm';
+import NoteMetadata from './NoteMetadata';
 
 /**
  * Map note type to template type
@@ -34,6 +39,7 @@ const getNoteTemplateType = (noteType) => {
     'discharge': 'Discharge',     // Discharge Summary
     'mse': 'MSE',                 // Mental Status Exam
     'risk_assessment': 'RiskAssessment',  // Risk Assessment
+    'diagnosis': 'Diagnosis',     // Diagnosis Note (ICD-10)
     'admin': 'Administrative',    // Administrative Note
     'noshow': null,               // Uses QuickNoteForm
     'cancel': null                // Uses QuickNoteForm
@@ -79,13 +85,20 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
   const [error, setError] = useState(null);
   const [settings, setSettings] = useState(null);
 
+  // Metadata for auto-population
+  const [patient, setPatient] = useState(null);
+  const [provider, setProvider] = useState(null);
+  const [serviceInfo, setServiceInfo] = useState(null);
+  const [diagnosis, setDiagnosis] = useState(null);
+
   const autoSaveTimer = useRef(null);
   const noteIdRef = useRef(noteId);
 
-  // Load existing note or draft
+  // Load existing note or draft and metadata
   useEffect(() => {
     loadNoteData();
     loadSettings();
+    loadMetadata();
   }, [noteId, appointmentId, patientId]);
 
   // Auto-save every 3 seconds after changes
@@ -176,6 +189,50 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
       }
     } catch (err) {
       console.error('Error loading settings:', err);
+    }
+  };
+
+  const loadMetadata = async () => {
+    try {
+      // Fetch patient data
+      if (patientId) {
+        try {
+          const patientData = await getClientDetail(patientId);
+          console.log('✅ Patient data loaded:', patientData);
+          setPatient(patientData.patient);
+
+          // Get primary diagnosis from patient's problems list
+          if (patientData.problems && patientData.problems.length > 0) {
+            // Use the most recent active problem as primary diagnosis
+            const primaryProblem = patientData.problems[0];
+            const diagnosisText = primaryProblem.title || primaryProblem.diagnosis || null;
+            setDiagnosis(diagnosisText);
+            console.log('✅ Primary diagnosis loaded:', diagnosisText);
+          }
+        } catch (err) {
+          console.error('❌ Error loading patient data:', err);
+        }
+      }
+
+      // Fetch provider data (current user)
+      try {
+        const userData = await getCurrentUser();
+        console.log('✅ Provider data loaded:', userData);
+        // getCurrentUser returns the user object directly, not wrapped
+        setProvider(userData);
+      } catch (err) {
+        console.error('❌ Error loading provider data:', err);
+      }
+
+      // Set service info defaults (will be enhanced with appointment integration)
+      setServiceInfo({
+        type: 'Individual Therapy',
+        location: 'Office',
+        duration: null  // Will be filled from appointment when available
+      });
+
+    } catch (err) {
+      console.error('❌ Error loading metadata:', err);
     }
   };
 
@@ -319,6 +376,7 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             {noteType === 'discharge' && '✅ Discharge Summary'}
             {noteType === 'mse' && '🧠 Mental Status Exam'}
             {noteType === 'risk_assessment' && '🛡️ Risk Assessment'}
+            {noteType === 'diagnosis' && '🏥 Diagnosis Note'}
             {noteType === 'admin' && '📋 Administrative Note'}
           </h1>
 
@@ -353,6 +411,17 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
           {error}
         </div>
+      )}
+
+      {/* Auto-populated Metadata */}
+      {(patient || provider) && (
+        <NoteMetadata
+          patient={patient}
+          provider={provider}
+          serviceInfo={serviceInfo}
+          diagnosis={diagnosis}
+          serviceDate={note.serviceDate}
+        />
       )}
 
       {/* Template */}
@@ -406,6 +475,13 @@ function NoteEditor({ noteId = null, patientId, appointmentId = null, noteType, 
             note={note}
             onChange={handleFieldChange}
             autoSave={triggerAutoSave}
+          />
+        )}
+        {note.templateType === 'Diagnosis' && (
+          <DiagnosisTemplate
+            note={note}
+            onChange={handleFieldChange}
+            disabled={note.is_locked}
           />
         )}
         {note.templateType === 'Administrative' && (
