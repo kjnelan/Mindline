@@ -158,9 +158,10 @@ try {
         $params[] = json_encode($input['clientPresentation']);
     }
 
-    if (isset($input['diagnosisCodes'])) {
+    // diagnosis_codes is already JSON stringified by frontend
+    if (isset($input['diagnosis_codes'])) {
         $updateFields[] = "diagnosis_codes = ?";
-        $params[] = json_encode($input['diagnosisCodes']);
+        $params[] = $input['diagnosis_codes']; // Don't encode again
     }
 
     // Status update

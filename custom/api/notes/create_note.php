@@ -99,11 +99,11 @@ try {
     $riskPresent = isset($input['riskPresent']) ? boolval($input['riskPresent']) : false;
     $riskAssessment = $input['riskAssessment'] ?? null;
 
-    // JSON fields
+    // JSON fields - diagnosis_codes already JSON stringified by frontend
     $goalsAddressed = isset($input['goalsAddressed']) ? json_encode($input['goalsAddressed']) : null;
     $interventionsSelected = isset($input['interventionsSelected']) ? json_encode($input['interventionsSelected']) : null;
     $clientPresentation = isset($input['clientPresentation']) ? json_encode($input['clientPresentation']) : null;
-    $diagnosisCodes = isset($input['diagnosisCodes']) ? json_encode($input['diagnosisCodes']) : null;
+    $diagnosisCodes = $input['diagnosis_codes'] ?? null; // Already stringified by frontend, don't encode again
 
     // Free-form fields
     $presentingConcerns = $input['presentingConcerns'] ?? null;
