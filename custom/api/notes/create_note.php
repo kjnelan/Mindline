@@ -231,6 +231,12 @@ try {
         throw new Exception("Failed to get note ID after insert");
     }
 
+    // CRITICAL FIX: Explicitly commit the transaction
+    // OpenEMR may have autocommit disabled, causing INSERTs to not be visible
+    error_log("Committing transaction...");
+    $GLOBALS['adodb']['db']->CommitTrans();
+    error_log("Transaction committed");
+
     error_log("Note created with ID from Insert_ID(): " . $noteId);
 
     // Write to custom debug log for user visibility
