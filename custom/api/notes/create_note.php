@@ -206,73 +206,16 @@ try {
         $supervisorReviewRequired
     ];
 
-    error_log("Creating note with SQL: " . $sql);
-    error_log("Params: " . print_r($params, true));
-
-    // Check current autocommit state
-    $autocommitResult = $GLOBALS['adodb']['db']->GetOne("SELECT @@autocommit");
-    error_log("Current autocommit setting: " . var_export($autocommitResult, true));
-
-    // Check which database we're connected to
-    $currentDb = $GLOBALS['adodb']['db']->GetOne("SELECT DATABASE()");
-    error_log("Current database: " . var_export($currentDb, true));
-
-    // Check if clinical_notes table exists and get its schema
-    $tableCheck = $GLOBALS['adodb']['db']->GetOne("SHOW TABLES LIKE 'clinical_notes'");
-    error_log("clinical_notes table exists: " . var_export($tableCheck, true));
-
-    // Execute INSERT and capture any errors
-    $insertResult = sqlStatement($sql, $params);
-
-    // Check for SQL errors (OpenEMR's sqlStatement may not return false on error)
-    $sqlError = $GLOBALS['adodb']['db']->ErrorMsg();
-    $sqlErrNo = $GLOBALS['adodb']['db']->ErrorNo();
-
-    error_log("After INSERT - ErrorNo: $sqlErrNo, ErrorMsg: $sqlError");
-
-    if ($sqlErrNo != 0) {
-        error_log("CRITICAL: SQL INSERT failed - Error #$sqlErrNo: " . $sqlError);
-        throw new Exception("Database error (#$sqlErrNo): " . $sqlError);
-    }
-
+    // Execute INSERT
+    sqlStatement($sql, $params);
     $noteId = $GLOBALS['adodb']['db']->Insert_ID();
-    error_log("Insert_ID() returned: " . var_export($noteId, true));
 
     if (!$noteId || $noteId == 0) {
-        error_log("CRITICAL: Insert_ID() returned invalid ID: " . var_export($noteId, true));
-        throw new Exception("Failed to get note ID after insert");
+        error_log("ERROR: Failed to get note ID after insert");
+        throw new Exception("Failed to create note - no ID returned");
     }
 
-    // CRITICAL FIX: Force commit using raw SQL
-    // ADODB CommitTrans() may not work if we're not in an explicit transaction
-    error_log("Attempting raw SQL COMMIT...");
-    try {
-        $GLOBALS['adodb']['db']->Execute("COMMIT");
-        error_log("COMMIT executed successfully");
-    } catch (Exception $commitEx) {
-        error_log("COMMIT failed: " . $commitEx->getMessage() . " - Trying to enable autocommit");
-        // If COMMIT fails, try enabling autocommit
-        $GLOBALS['adodb']['db']->Execute("SET autocommit=1");
-        error_log("Autocommit enabled");
-    }
-
-    error_log("Note created with ID from Insert_ID(): " . $noteId);
-
-    // Write to custom debug log for user visibility
-    $debugLog = __DIR__ . '/../../../logs/diagnosis_note_debug.log';
-    @file_put_contents($debugLog, "[" . date('Y-m-d H:i:s') . "] Note created - ID: $noteId, UUID: $noteUuid\n", FILE_APPEND);
-
-    // VERIFICATION: Confirm the note actually exists in the database
-    $verifySql = "SELECT id, note_uuid, patient_id, template_type FROM clinical_notes WHERE id = ?";
-    $verifyResult = sqlStatement($verifySql, [$noteId]);
-    $verifiedNote = sqlFetchArray($verifyResult);
-
-    if (!$verifiedNote) {
-        error_log("CRITICAL ERROR: Note ID $noteId was returned but doesn't exist in database!");
-        throw new Exception("Note creation failed - database verification failed");
-    }
-
-    error_log("Note verified in database: ID=" . $verifiedNote['id'] . ", UUID=" . $verifiedNote['note_uuid'] . ", Patient=" . $verifiedNote['patient_id']);
+    error_log("Clinical note created successfully - ID: $noteId, Type: $templateType, Patient: $patientId");
 
     // If this note is linked to an appointment, update the appointment's clinical_note_id
     if ($appointmentId) {
