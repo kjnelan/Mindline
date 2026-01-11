@@ -213,6 +213,14 @@ try {
     $autocommitResult = $GLOBALS['adodb']['db']->GetOne("SELECT @@autocommit");
     error_log("Current autocommit setting: " . var_export($autocommitResult, true));
 
+    // Check which database we're connected to
+    $currentDb = $GLOBALS['adodb']['db']->GetOne("SELECT DATABASE()");
+    error_log("Current database: " . var_export($currentDb, true));
+
+    // Check if clinical_notes table exists and get its schema
+    $tableCheck = $GLOBALS['adodb']['db']->GetOne("SHOW TABLES LIKE 'clinical_notes'");
+    error_log("clinical_notes table exists: " . var_export($tableCheck, true));
+
     // Execute INSERT and capture any errors
     $insertResult = sqlStatement($sql, $params);
 
