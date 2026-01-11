@@ -36,12 +36,20 @@ function DiagnosisTemplate({ note, onChange, disabled = false }) {
     handleFieldChange('diagnosis_codes', JSON.stringify(codes));
   };
 
-  // Parse diagnosis_codes from JSON string
-  const diagnosisCodes = note.diagnosis_codes
-    ? (typeof note.diagnosis_codes === 'string'
-        ? JSON.parse(note.diagnosis_codes)
-        : note.diagnosis_codes)
-    : [];
+  // Parse diagnosis_codes from JSON string (handle empty strings safely)
+  let diagnosisCodes = [];
+  if (note.diagnosis_codes && note.diagnosis_codes !== '') {
+    if (typeof note.diagnosis_codes === 'string') {
+      try {
+        diagnosisCodes = JSON.parse(note.diagnosis_codes);
+      } catch (e) {
+        console.error('Failed to parse diagnosis_codes:', e);
+        diagnosisCodes = [];
+      }
+    } else {
+      diagnosisCodes = note.diagnosis_codes;
+    }
+  }
 
   return (
     <div className="space-y-8">
