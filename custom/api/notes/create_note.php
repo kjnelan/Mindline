@@ -209,6 +209,10 @@ try {
     error_log("Creating note with SQL: " . $sql);
     error_log("Params: " . print_r($params, true));
 
+    // Check current autocommit state
+    $autocommitResult = $GLOBALS['adodb']['db']->GetOne("SELECT @@autocommit");
+    error_log("Current autocommit setting: " . var_export($autocommitResult, true));
+
     // Execute INSERT and capture any errors
     $insertResult = sqlStatement($sql, $params);
 
@@ -231,11 +235,18 @@ try {
         throw new Exception("Failed to get note ID after insert");
     }
 
-    // CRITICAL FIX: Explicitly commit the transaction
-    // OpenEMR may have autocommit disabled, causing INSERTs to not be visible
-    error_log("Committing transaction...");
-    $GLOBALS['adodb']['db']->CommitTrans();
-    error_log("Transaction committed");
+    // CRITICAL FIX: Force commit using raw SQL
+    // ADODB CommitTrans() may not work if we're not in an explicit transaction
+    error_log("Attempting raw SQL COMMIT...");
+    try {
+        $GLOBALS['adodb']['db']->Execute("COMMIT");
+        error_log("COMMIT executed successfully");
+    } catch (Exception $commitEx) {
+        error_log("COMMIT failed: " . $commitEx->getMessage() . " - Trying to enable autocommit");
+        // If COMMIT fails, try enabling autocommit
+        $GLOBALS['adodb']['db']->Execute("SET autocommit=1");
+        error_log("Autocommit enabled");
+    }
 
     error_log("Note created with ID from Insert_ID(): " . $noteId);
 
