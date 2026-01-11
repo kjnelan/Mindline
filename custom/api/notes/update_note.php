@@ -158,10 +158,13 @@ try {
         $params[] = json_encode($input['clientPresentation']);
     }
 
-    // diagnosis_codes is already JSON stringified by frontend
+    // diagnosis_codes - may be string (from frontend) or array (from loaded note)
     if (isset($input['diagnosis_codes'])) {
         $updateFields[] = "diagnosis_codes = ?";
-        $params[] = $input['diagnosis_codes']; // Don't encode again
+        // If it's already a string, use as-is. If it's an array, encode it.
+        $params[] = is_string($input['diagnosis_codes'])
+            ? $input['diagnosis_codes']
+            : json_encode($input['diagnosis_codes']);
     }
 
     // Status update
