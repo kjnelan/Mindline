@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -429,7 +430,7 @@ function UserManagement() {
       )}
 
       {/* Add/Edit Modal */}
-      {(showAddModal || showEditModal) && (
+      {(showAddModal || showEditModal) && createPortal(
         <UserFormModal
           isEdit={showEditModal}
           formData={formData}
@@ -442,7 +443,8 @@ function UserManagement() {
           onFormChange={handleFormChange}
           onSave={showEditModal ? handleSaveEdit : handleSaveNew}
           onClose={handleCloseModals}
-        />
+        />,
+        document.body
       )}
     </div>
   );
@@ -463,9 +465,9 @@ function UserFormModal({
   onClose
 }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 my-8">
-        <div className="p-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] overflow-y-auto p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full my-8">
+        <div className="p-6 max-h-[85vh] overflow-y-auto">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
             {isEdit ? 'Edit User' : 'Add New User'}
           </h2>
