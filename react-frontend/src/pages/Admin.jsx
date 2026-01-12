@@ -13,6 +13,7 @@
 import { useState } from 'react';
 import CalendarSettings from '../components/admin/CalendarSettings';
 import DocumentCategories from '../components/settings/DocumentCategories';
+import UserManagement from '../components/admin/UserManagement';
 import About from '../components/admin/About';
 
 function Admin() {
@@ -26,7 +27,7 @@ function Admin() {
     { id: 'features', label: 'Features', available: false },
     { id: 'providers', label: 'Providers', available: false },
     { id: 'facilities', label: 'Facilities', available: false },
-    { id: 'users', label: 'Users', available: false },
+    { id: 'users', label: 'Users', available: true },
     { id: 'security', label: 'Security', available: false },
     { id: 'about', label: 'About', available: true },
   ];
@@ -72,9 +73,10 @@ function Admin() {
         <div className="flex-1">
           {activeSection === 'calendar' && <CalendarSettings />}
           {activeSection === 'document-categories' && <DocumentCategories />}
+          {activeSection === 'users' && <UserManagement />}
           {activeSection === 'about' && <About />}
 
-          {activeSection !== 'calendar' && activeSection !== 'document-categories' && activeSection !== 'about' && (
+          {activeSection !== 'calendar' && activeSection !== 'document-categories' && activeSection !== 'users' && activeSection !== 'about' && (
             <div className="glass-card p-12 text-center">
               <div className="text-gray-700 text-lg font-semibold">
                 {sections.find(s => s.id === activeSection)?.label} Settings
