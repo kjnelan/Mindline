@@ -43,6 +43,17 @@ function NoteMetadata({ patient, provider, serviceInfo, diagnosis, serviceDate }
     return `${mins}m`;
   };
 
+  // Clean up ICD-10 description - remove duplicates and extra spaces
+  const cleanDiagnosisDescription = (description) => {
+    if (!description) return '';
+    // Many ICD-10 descriptions have duplicate text separated by multiple spaces
+    const parts = description.split(/\s{3,}/);
+    if (parts.length > 1) {
+      return parts[1].trim();
+    }
+    return description.trim();
+  };
+
   return (
     <div className="card-main mb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -130,7 +141,7 @@ function NoteMetadata({ patient, provider, serviceInfo, diagnosis, serviceDate }
         <div className="mt-6 pt-4 border-t border-gray-200">
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-semibold text-gray-600">Primary Diagnosis:</span>
-            <span className="text-sm text-gray-900 font-medium">{diagnosis}</span>
+            <span className="text-sm text-gray-900 font-medium">{cleanDiagnosisDescription(diagnosis)}</span>
           </div>
         </div>
       )}
