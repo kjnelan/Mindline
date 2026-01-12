@@ -12,6 +12,7 @@
  */
 
 import React, { useState } from 'react';
+import MedicationList from './MedicationList';
 
 /**
  * Props:
@@ -116,18 +117,6 @@ function IntakeTemplate({ note, onChange, autoSave }) {
           </div>
           <div>
             <label className="block">
-              <span className="text-sm font-semibold text-gray-700 mb-2 block">Psychiatric Medications (Current & Past)</span>
-              <textarea
-                value={getField('medications')}
-                onChange={(e) => setField('medications', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none bg-white shadow-sm"
-                rows="2"
-                placeholder="Current meds, dosages, effectiveness, side effects..."
-              />
-            </label>
-          </div>
-          <div>
-            <label className="block">
               <span className="text-sm font-semibold text-gray-700 mb-2 block">Psychiatric Hospitalizations</span>
               <textarea
                 value={getField('hospitalizations')}
@@ -201,7 +190,23 @@ function IntakeTemplate({ note, onChange, autoSave }) {
           onChange={(e) => setField('medicalHistory', e.target.value)}
           className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none bg-white shadow-sm"
           rows="3"
-          placeholder="Chronic conditions, surgeries, medications, head injuries, neurological issues..."
+          placeholder="Chronic conditions, surgeries, head injuries, neurological issues..."
+        />
+      </div>
+
+      {/* Current Medications */}
+      <div className="card-main">
+        <h3 className="text-lg font-semibold text-indigo-700 mb-4">
+          <span className="mr-2">💊</span>
+          Current Medications
+        </h3>
+        <div className="text-sm text-gray-600 mb-4">
+          Document all medications the client is currently taking (psychiatric, medical, OTC, supplements).
+          This includes medications prescribed by psychiatrists, PCPs, and other providers.
+        </div>
+        <MedicationList
+          medications={note.currentMedications || []}
+          onChange={(medications) => handleChange('currentMedications', medications)}
         />
       </div>
 

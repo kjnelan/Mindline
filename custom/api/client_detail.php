@@ -325,28 +325,34 @@ try {
     }
     error_log("Found " . count($problems) . " active problems");
 
-    // Fetch active medications
-    // NOTE: 'interval' is a reserved keyword - must escape with backticks
+    // Fetch current medications from most recent Intake note
+    // For mental health professionals who document but don't prescribe
     $medicationsSql = "SELECT
         id,
-        drug,
-        dosage,
-        `interval`,
-        refills,
-        date_added,
-        date_modified
-    FROM prescriptions
-    WHERE patient_id = ? AND active = 1
-    ORDER BY date_added DESC
-    LIMIT 20";
+        current_medications
+    FROM clinical_notes
+    WHERE patient_id = ?
+      AND note_type = 'intake'
+      AND is_signed = 1
+      AND current_medications IS NOT NULL
+      AND current_medications != ''
+      AND current_medications != '[]'
+    ORDER BY date_of_service DESC
+    LIMIT 1";
 
-    error_log("Medications SQL: " . $medicationsSql);
-    $medicationsResult = sqlStatement($medicationsSql, [$clientId]);
+    error_log("Medications SQL (from intake): " . $medicationsSql);
+    $medicationsResult = sqlQuery($medicationsSql, [$clientId]);
     $medications = [];
-    while ($row = sqlFetchArray($medicationsResult)) {
-        $medications[] = $row;
+
+    if ($medicationsResult && !empty($medicationsResult['current_medications'])) {
+        // Parse the JSON medications list from intake
+        $medicationsJson = $medicationsResult['current_medications'];
+        $medications = json_decode($medicationsJson, true);
+        if (!is_array($medications)) {
+            $medications = [];
+        }
     }
-    error_log("Found " . count($medications) . " active medications");
+    error_log("Found " . count($medications) . " medications from intake");
 
     // Fetch all encounters with provider and facility information
     $encountersSql = "SELECT

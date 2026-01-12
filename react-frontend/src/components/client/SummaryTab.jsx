@@ -131,23 +131,29 @@ function SummaryTab({ data }) {
             )}
           </div>
 
-          {/* Active Medications Card */}
+          {/* Current Medications Card */}
           <div className="card-main">
-            <h2 className="card-header">Active Medications</h2>
+            <h2 className="card-header">
+              <span className="flex items-center gap-2">
+                💊 Current Medications
+              </span>
+            </h2>
             {medications && medications.length > 0 ? (
               <div className="space-y-3">
-                {medications.map((med) => (
-                  <div key={med.id} className="card-inner">
-                    <div className="item-title">{med.drug}</div>
-                    <div className="item-secondary">
-                      {med.dosage}
-                      {med.interval && ` - ${med.interval}`}
-                    </div>
-                    {med.refills !== null && med.refills !== undefined && (
-                      <div className="item-tertiary">Refills: {med.refills}</div>
+                {medications.map((med, index) => (
+                  <div key={index} className="card-inner border-l-4 border-green-400">
+                    <div className="item-title text-gray-900">{med.name}</div>
+                    {med.dosage && (
+                      <div className="item-secondary text-green-700 font-semibold">
+                        {med.dosage}
+                        {med.frequency && ` - ${med.frequency}`}
+                      </div>
                     )}
-                    {med.date_added && (
-                      <div className="item-tertiary">Added: {formatDate(med.date_added)}</div>
+                    {med.purpose && (
+                      <div className="item-tertiary">For: {med.purpose}</div>
+                    )}
+                    {med.prescriber && (
+                      <div className="item-tertiary">Prescribed by: {med.prescriber}</div>
                     )}
                   </div>
                 ))}
