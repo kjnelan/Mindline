@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import InterventionPicker from './InterventionPicker';
+import DiagnosisSelector from './DiagnosisSelector';
 import { getTreatmentGoals } from '../../utils/api';
 
 /**
@@ -72,6 +73,25 @@ function PIRPTemplate({ note, onChange, patientId, autoSave }) {
 
   return (
     <div className="space-y-6">
+      {/* Diagnosis Selection for Billing */}
+      <div className="card-main bg-blue-50 border-2 border-blue-300">
+        <div className="mb-3">
+          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+            <span>🏥</span>
+            <span>Diagnosis Codes for This Session</span>
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Select all diagnoses addressed in this session. Required for billing and clinical documentation.
+          </p>
+        </div>
+        <DiagnosisSelector
+          patientId={patientId}
+          serviceDate={note.date_of_service || new Date().toISOString().split('T')[0]}
+          selectedDiagnoses={note.diagnosis_codes || []}
+          onChange={(diagnoses) => handleChange('diagnosis_codes', diagnoses)}
+        />
+      </div>
+
       {/* P - Problem/Presenting Issue */}
       <div className="card-main">
         <label className="block">

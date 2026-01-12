@@ -324,6 +324,29 @@ export async function searchCodes(searchTerm, codeType = 'ICD10', limit = 50) {
 }
 
 /**
+ * Get patient diagnoses (active and/or historical)
+ * @param {number} patientId - Patient ID
+ * @param {object} options - Query options
+ * @param {string} options.activeAsOf - Date to check for active diagnoses (YYYY-MM-DD)
+ * @param {boolean} options.includeRetired - Include retired diagnoses
+ */
+export async function getPatientDiagnoses(patientId, options = {}) {
+  console.log('Fetching patient diagnoses:', { patientId, options });
+  const params = new URLSearchParams({
+    patient_id: patientId.toString()
+  });
+
+  if (options.activeAsOf) {
+    params.append('active_as_of', options.activeAsOf);
+  }
+  if (options.includeRetired !== undefined) {
+    params.append('include_retired', options.includeRetired ? '1' : '0');
+  }
+
+  return apiRequest(`/custom/api/get_patient_diagnoses.php?${params.toString()}`);
+}
+
+/**
  * Get saved draft for a note
  * @param {object} params - Query params (note_id, appointment_id, or patient_id)
  */
