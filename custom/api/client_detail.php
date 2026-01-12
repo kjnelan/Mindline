@@ -329,7 +329,17 @@ try {
     // For mental health professionals who document but don't prescribe
     $medications = [];
 
-    try {
+    // Check if current_medications column exists before querying
+    $columnCheckSql = "SELECT COUNT(*) as col_exists
+                       FROM information_schema.COLUMNS
+                       WHERE TABLE_SCHEMA = DATABASE()
+                       AND TABLE_NAME = 'clinical_notes'
+                       AND COLUMN_NAME = 'current_medications'";
+
+    $columnCheck = sqlQuery($columnCheckSql);
+
+    if ($columnCheck && $columnCheck['col_exists'] > 0) {
+        // Column exists, safe to query
         $medicationsSql = "SELECT
             id,
             current_medications
@@ -355,8 +365,8 @@ try {
             }
         }
         error_log("Found " . count($medications) . " medications from intake");
-    } catch (Exception $e) {
-        error_log("Error fetching medications (column may not exist yet): " . $e->getMessage());
+    } else {
+        error_log("current_medications column does not exist yet - run SQL migration");
         $medications = [];
     }
 
