@@ -327,32 +327,38 @@ try {
 
     // Fetch current medications from most recent Intake note
     // For mental health professionals who document but don't prescribe
-    $medicationsSql = "SELECT
-        id,
-        current_medications
-    FROM clinical_notes
-    WHERE patient_id = ?
-      AND note_type = 'intake'
-      AND is_signed = 1
-      AND current_medications IS NOT NULL
-      AND current_medications != ''
-      AND current_medications != '[]'
-    ORDER BY date_of_service DESC
-    LIMIT 1";
-
-    error_log("Medications SQL (from intake): " . $medicationsSql);
-    $medicationsResult = sqlQuery($medicationsSql, [$clientId]);
     $medications = [];
 
-    if ($medicationsResult && !empty($medicationsResult['current_medications'])) {
-        // Parse the JSON medications list from intake
-        $medicationsJson = $medicationsResult['current_medications'];
-        $medications = json_decode($medicationsJson, true);
-        if (!is_array($medications)) {
-            $medications = [];
+    try {
+        $medicationsSql = "SELECT
+            id,
+            current_medications
+        FROM clinical_notes
+        WHERE patient_id = ?
+          AND note_type = 'intake'
+          AND is_signed = 1
+          AND current_medications IS NOT NULL
+          AND current_medications != ''
+          AND current_medications != '[]'
+        ORDER BY date_of_service DESC
+        LIMIT 1";
+
+        error_log("Medications SQL (from intake): " . $medicationsSql);
+        $medicationsResult = sqlQuery($medicationsSql, [$clientId]);
+
+        if ($medicationsResult && !empty($medicationsResult['current_medications'])) {
+            // Parse the JSON medications list from intake
+            $medicationsJson = $medicationsResult['current_medications'];
+            $medications = json_decode($medicationsJson, true);
+            if (!is_array($medications)) {
+                $medications = [];
+            }
         }
+        error_log("Found " . count($medications) . " medications from intake");
+    } catch (Exception $e) {
+        error_log("Error fetching medications (column may not exist yet): " . $e->getMessage());
+        $medications = [];
     }
-    error_log("Found " . count($medications) . " medications from intake");
 
     // Fetch all encounters with provider and facility information
     $encountersSql = "SELECT
