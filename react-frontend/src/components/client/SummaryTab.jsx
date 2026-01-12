@@ -121,11 +121,6 @@ function SummaryTab({ data }) {
                           Started: {formatDate(problem.begdate)}
                           {problem.enddate && ` • Ended: ${formatDate(problem.enddate)}`}
                         </div>
-                        {problem.outcome && problem.outcome !== '0' && problem.outcome !== 0 && (
-                          <div className="text-xs text-gray-600 mt-1">
-                            Outcome: {problem.outcome}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
