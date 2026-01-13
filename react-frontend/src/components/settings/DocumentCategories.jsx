@@ -130,7 +130,11 @@ function DocumentCategories() {
 
   const handleEdit = (category) => {
     setSelectedCategory(category);
-    setFormData({ name: category.name, parent_id: category.parent || null });
+    // Ensure parent_id is a number or null
+    setFormData({
+      name: category.name,
+      parent_id: category.parent ? parseInt(category.parent) : null
+    });
     setFormError(null);
     setShowEditModal(true);
   };
@@ -388,7 +392,7 @@ function DocumentCategories() {
                 </label>
                 <select
                   value={formData.parent_id || ''}
-                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value ? parseInt(e.target.value) : null })}
                   className="input-field"
                 >
                   <option value="">None (Top Level)</option>
@@ -470,7 +474,7 @@ function DocumentCategories() {
                 </label>
                 <select
                   value={formData.parent_id || ''}
-                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value ? parseInt(e.target.value) : null })}
                   className="input-field"
                 >
                   <option value="">None (Top Level)</option>

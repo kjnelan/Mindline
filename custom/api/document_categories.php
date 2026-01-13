@@ -75,11 +75,15 @@ try {
 
             $categories = [];
             while ($row = sqlFetchArray($result)) {
-                // Convert parent = 0 to null for frontend (0 means top-level in DB)
-                if (isset($row['parent']) && $row['parent'] == 0) {
-                    $row['parent'] = null;
-                }
-                $categories[] = $row;
+                // Ensure numeric fields are integers, convert parent=0 to null
+                $categories[] = [
+                    'id' => (int)$row['id'],
+                    'name' => $row['name'],
+                    'parent' => ($row['parent'] == 0) ? null : (int)$row['parent'],
+                    'lft' => (int)$row['lft'],
+                    'rght' => (int)$row['rght'],
+                    'aco_spec' => $row['aco_spec']
+                ];
             }
 
             http_response_code(200);
