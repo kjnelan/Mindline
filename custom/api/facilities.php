@@ -140,11 +140,10 @@ try {
                 $input['email'] ?? ''
             ];
 
-            sqlInsert($sql, $params);
-            $newId = sqlInsert("SELECT LAST_INSERT_ID() as id");
+            $newId = sqlInsert($sql, $params);
 
             http_response_code(201);
-            echo json_encode(['success' => true, 'id' => $newId['id']]);
+            echo json_encode(['success' => true, 'id' => $newId]);
             break;
 
         case 'PUT':
