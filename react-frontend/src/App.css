@@ -247,8 +247,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 9999;
   padding: 1rem;
+  overflow-y: auto;
 }
 
 /* Modal container */
@@ -259,6 +260,8 @@
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 /* Modal container - small */
