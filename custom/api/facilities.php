@@ -61,7 +61,8 @@ try {
                     federal_ein, facility_npi, facility_taxonomy,
                     tax_id_type, color, primary_business_entity, billing_location,
                     accepts_assignment, service_location, pos_code,
-                    billing_attn, info, inactive, website, email
+                    attn, mail_street, mail_city, mail_state, mail_zip,
+                    info, inactive, website, email
                 FROM facility
                 WHERE id = ?";
 
@@ -105,8 +106,9 @@ try {
                 federal_ein, facility_npi, facility_taxonomy,
                 tax_id_type, color, primary_business_entity, billing_location,
                 accepts_assignment, service_location, pos_code,
-                billing_attn, info, inactive, website, email
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                attn, mail_street, mail_city, mail_state, mail_zip,
+                info, inactive, website, email
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $params = [
                 $name,
@@ -127,7 +129,11 @@ try {
                 $input['accepts_assignment'] ?? 0,
                 $input['service_location'] ?? 1,
                 $input['pos_code'] ?? '11',
-                $input['billing_attn'] ?? '',
+                $input['attn'] ?? '',
+                $input['mail_street'] ?? '',
+                $input['mail_city'] ?? '',
+                $input['mail_state'] ?? '',
+                $input['mail_zip'] ?? '',
                 $input['info'] ?? '',
                 $input['inactive'] ?? 0,
                 $input['website'] ?? '',
@@ -157,7 +163,8 @@ try {
                 postal_code = ?, country_code = ?, federal_ein = ?, facility_npi = ?,
                 facility_taxonomy = ?, tax_id_type = ?, color = ?,
                 primary_business_entity = ?, billing_location = ?, accepts_assignment = ?,
-                service_location = ?, pos_code = ?, billing_attn = ?, info = ?,
+                service_location = ?, pos_code = ?, attn = ?, mail_street = ?,
+                mail_city = ?, mail_state = ?, mail_zip = ?, info = ?,
                 inactive = ?, website = ?, email = ?
             WHERE id = ?";
 
@@ -180,7 +187,11 @@ try {
                 $input['accepts_assignment'] ?? 0,
                 $input['service_location'] ?? 1,
                 $input['pos_code'] ?? '11',
-                $input['billing_attn'] ?? '',
+                $input['attn'] ?? '',
+                $input['mail_street'] ?? '',
+                $input['mail_city'] ?? '',
+                $input['mail_state'] ?? '',
+                $input['mail_zip'] ?? '',
                 $input['info'] ?? '',
                 $input['inactive'] ?? 0,
                 $input['website'] ?? '',

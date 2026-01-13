@@ -35,13 +35,17 @@ function Facilities() {
     state: '',
     postal_code: '',
     country_code: 'United States',
+    mail_street: '',
+    mail_city: '',
+    mail_state: '',
+    mail_zip: '',
     color: '#99FFFF',
     pos_code: '11',
     facility_npi: '',
     federal_ein: '',
     tax_id_type: 'EIN',
     facility_taxonomy: '',
-    billing_attn: '',
+    attn: '',
     info: '',
     billing_location: 0,
     accepts_assignment: 0,
@@ -107,13 +111,17 @@ function Facilities() {
       state: '',
       postal_code: '',
       country_code: 'United States',
+      mail_street: '',
+      mail_city: '',
+      mail_state: '',
+      mail_zip: '',
       color: '#99FFFF',
       pos_code: '11',
       facility_npi: '',
       federal_ein: '',
       tax_id_type: 'EIN',
       facility_taxonomy: '',
-      billing_attn: '',
+      attn: '',
       info: '',
       billing_location: 0,
       accepts_assignment: 0,
@@ -551,61 +559,109 @@ function FacilityFormModal({
             </div>
 
             {/* Address Fields */}
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Street Address</label>
-                <input
-                  type="text"
-                  value={formData.street || ''}
-                  onChange={(e) => onFormChange('street', e.target.value)}
-                  className="input-field"
-                  placeholder="Enter street address"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
+            {addressTab === 'physical' ? (
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">City</label>
+                  <label className="block text-gray-700 font-semibold mb-2">Street Address</label>
                   <input
                     type="text"
-                    value={formData.city || ''}
-                    onChange={(e) => onFormChange('city', e.target.value)}
+                    value={formData.street || ''}
+                    onChange={(e) => onFormChange('street', e.target.value)}
                     className="input-field"
-                    placeholder="City"
+                    placeholder="Enter street address"
                   />
                 </div>
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2">State</label>
-                  <input
-                    type="text"
-                    value={formData.state || ''}
-                    onChange={(e) => onFormChange('state', e.target.value)}
-                    className="input-field"
-                    placeholder="WI"
-                    maxLength={2}
-                  />
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">City</label>
+                    <input
+                      type="text"
+                      value={formData.city || ''}
+                      onChange={(e) => onFormChange('city', e.target.value)}
+                      className="input-field"
+                      placeholder="City"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">State</label>
+                    <input
+                      type="text"
+                      value={formData.state || ''}
+                      onChange={(e) => onFormChange('state', e.target.value)}
+                      className="input-field"
+                      placeholder="WI"
+                      maxLength={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">Zip Code</label>
+                    <input
+                      type="text"
+                      value={formData.postal_code || ''}
+                      onChange={(e) => onFormChange('postal_code', e.target.value)}
+                      className="input-field"
+                      placeholder="53092"
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Zip Code</label>
+                  <label className="block text-gray-700 font-semibold mb-2">Country</label>
                   <input
                     type="text"
-                    value={formData.postal_code || ''}
-                    onChange={(e) => onFormChange('postal_code', e.target.value)}
+                    value={formData.country_code || ''}
+                    onChange={(e) => onFormChange('country_code', e.target.value)}
                     className="input-field"
-                    placeholder="53092"
+                    placeholder="United States"
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Country</label>
-                <input
-                  type="text"
-                  value={formData.country_code || ''}
-                  onChange={(e) => onFormChange('country_code', e.target.value)}
-                  className="input-field"
-                  placeholder="United States"
-                />
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Mailing Street</label>
+                  <input
+                    type="text"
+                    value={formData.mail_street || ''}
+                    onChange={(e) => onFormChange('mail_street', e.target.value)}
+                    className="input-field"
+                    placeholder="Enter mailing street address"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">City</label>
+                    <input
+                      type="text"
+                      value={formData.mail_city || ''}
+                      onChange={(e) => onFormChange('mail_city', e.target.value)}
+                      className="input-field"
+                      placeholder="City"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">State</label>
+                    <input
+                      type="text"
+                      value={formData.mail_state || ''}
+                      onChange={(e) => onFormChange('mail_state', e.target.value)}
+                      className="input-field"
+                      placeholder="WI"
+                      maxLength={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">Zip Code</label>
+                    <input
+                      type="text"
+                      value={formData.mail_zip || ''}
+                      onChange={(e) => onFormChange('mail_zip', e.target.value)}
+                      className="input-field"
+                      placeholder="53092"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Contact Information */}
@@ -718,11 +774,11 @@ function FacilityFormModal({
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Billing Attn</label>
+              <label className="block text-gray-700 font-semibold mb-2">Attn</label>
               <input
                 type="text"
-                value={formData.billing_attn || ''}
-                onChange={(e) => onFormChange('billing_attn', e.target.value)}
+                value={formData.attn || ''}
+                onChange={(e) => onFormChange('attn', e.target.value)}
                 className="input-field"
                 placeholder="Kenneth J Nelan"
               />
