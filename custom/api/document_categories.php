@@ -4,8 +4,12 @@
  * CRUD operations for document categories
  */
 
-// Start output buffering to prevent any PHP warnings/notices from breaking JSON
+// Start output buffering FIRST to catch any output
 ob_start();
+
+// Suppress any PHP warnings/notices that might break JSON
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', '0');
 
 // IMPORTANT: Set these BEFORE loading globals.php to prevent redirects
 $ignoreAuth = true;
@@ -16,6 +20,9 @@ require_once(__DIR__ . '/../../interface/globals.php');
 
 // Clear any output that globals.php might have generated
 ob_end_clean();
+
+// Start fresh output buffering
+ob_start();
 
 // Set JSON header
 header('Content-Type: application/json');
@@ -67,6 +74,13 @@ try {
             $name = $input['name'] ?? null;
             $parentId = $input['parent_id'] ?? null;
 
+            // Convert parent_id to integer or null
+            if ($parentId !== null && $parentId !== '') {
+                $parentId = intval($parentId);
+            } else {
+                $parentId = null;
+            }
+
             if (!$name || trim($name) === '') {
                 http_response_code(400);
                 echo json_encode(['error' => 'Category name is required']);
@@ -115,6 +129,16 @@ try {
             $categoryId = $input['id'] ?? null;
             $name = $input['name'] ?? null;
             $parentId = $input['parent_id'] ?? null;
+
+            // Convert IDs to integers or null
+            if ($categoryId !== null) {
+                $categoryId = intval($categoryId);
+            }
+            if ($parentId !== null && $parentId !== '') {
+                $parentId = intval($parentId);
+            } else {
+                $parentId = null;
+            }
 
             if (!$categoryId || !$name || trim($name) === '') {
                 http_response_code(400);
@@ -213,3 +237,6 @@ try {
         'message' => $e->getMessage()
     ]);
 }
+
+// Flush the output buffer to send the JSON response
+ob_end_flush();
