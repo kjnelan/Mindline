@@ -75,6 +75,10 @@ try {
 
             $categories = [];
             while ($row = sqlFetchArray($result)) {
+                // Convert parent = 0 to null for frontend (0 means top-level in DB)
+                if (isset($row['parent']) && $row['parent'] == 0) {
+                    $row['parent'] = null;
+                }
                 $categories[] = $row;
             }
 
@@ -87,11 +91,11 @@ try {
             $name = $input['name'] ?? null;
             $parentId = $input['parent_id'] ?? null;
 
-            // Convert parent_id to integer or null
+            // Convert parent_id to integer - use 0 for top-level (parent field is NOT NULL)
             if ($parentId !== null && $parentId !== '') {
                 $parentId = intval($parentId);
             } else {
-                $parentId = null;
+                $parentId = 0;  // Database requires 0 for top-level, not NULL
             }
 
             if (!$name || trim($name) === '') {
@@ -143,14 +147,15 @@ try {
             $name = $input['name'] ?? null;
             $parentId = $input['parent_id'] ?? null;
 
-            // Convert IDs to integers or null
+            // Convert IDs to integers
             if ($categoryId !== null) {
                 $categoryId = intval($categoryId);
             }
+            // Convert parent_id to integer - use 0 for top-level (parent field is NOT NULL)
             if ($parentId !== null && $parentId !== '') {
                 $parentId = intval($parentId);
             } else {
-                $parentId = null;
+                $parentId = 0;  // Database requires 0 for top-level, not NULL
             }
 
             if (!$categoryId || !$name || trim($name) === '') {
