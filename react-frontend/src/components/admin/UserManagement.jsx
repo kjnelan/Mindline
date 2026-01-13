@@ -150,6 +150,7 @@ function UserManagement() {
   const handleEdit = async (user) => {
     console.log('handleEdit called for user:', user);
     setSelectedUser(user);
+    setFormError(null);
 
     // Fetch full user details
     try {
@@ -158,10 +159,34 @@ function UserManagement() {
         credentials: 'include'
       });
 
-      if (!response.ok) throw new Error('Failed to fetch user details');
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers.get('content-type'));
 
-      const result = await response.json();
+      // Check if response is empty
+      const text = await response.text();
+      console.log('Response text:', text);
+
+      if (!text) {
+        throw new Error('Empty response from server. Check server logs.');
+      }
+
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (parseErr) {
+        console.error('JSON parse error:', parseErr);
+        throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+      }
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch user details');
+      }
+
       const userData = result.user;
+
+      if (!userData) {
+        throw new Error('No user data in response');
+      }
 
       setFormData({
         id: userData.id,
@@ -192,6 +217,7 @@ function UserManagement() {
 
     } catch (err) {
       console.error('Error fetching user details:', err);
+      alert('Failed to load user details: ' + err.message + '\n\nCheck the browser console and server logs for more details.');
       setFormError(err.message);
     }
   };

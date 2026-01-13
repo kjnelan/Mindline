@@ -123,7 +123,10 @@ try {
                 // Get single user details
                 $userId = $_GET['id'] ?? null;
 
+                error_log("Users API: Get user - ID: $userId");
+
                 if (!$userId) {
+                    error_log("Users API: No user ID provided");
                     http_response_code(400);
                     echo json_encode(['error' => 'User ID required']);
                     exit;
@@ -137,14 +140,17 @@ try {
                 LEFT JOIN users sup ON u.supervisor_id = sup.id
                 WHERE u.id = ?";
 
+                error_log("Users API: Executing query for user ID: $userId");
                 $user = sqlQuery($sql, [$userId]);
 
                 if (!$user) {
+                    error_log("Users API: User not found - ID: $userId");
                     http_response_code(404);
                     echo json_encode(['error' => 'User not found']);
                     exit;
                 }
 
+                error_log("Users API: User found - ID: $userId, Username: " . $user['username']);
                 http_response_code(200);
                 echo json_encode(['user' => $user]);
 
