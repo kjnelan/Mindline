@@ -487,22 +487,15 @@ function UserManagement() {
               key={user.id}
               className="card-item"
             >
-              {/* Card Header with Avatar and Status */}
+              {/* Card Header with Name and Status */}
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-blue-600"
-                  >
-                    {user.fname?.[0]}{user.lname?.[0]}
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-800">
-                      {user.fname} {user.lname}
-                    </h4>
-                    {user.title && (
-                      <p className="text-xs text-gray-600">{user.title}</p>
-                    )}
-                  </div>
+                <div>
+                  <h4 className="text-lg font-bold text-gray-800">
+                    {user.fname} {user.lname}
+                  </h4>
+                  {user.title && (
+                    <p className="text-xs text-gray-600">{user.title}</p>
+                  )}
                 </div>
                 <span className={user.active === '1' ? 'badge-solid-success' : 'badge-solid-danger'}>
                   {user.active === '1' ? 'ACTIVE' : 'INACTIVE'}
@@ -511,31 +504,30 @@ function UserManagement() {
 
               {/* Card Body with User Details */}
               <div className="space-y-1 text-sm text-gray-600 mb-4">
-                <div>
-                  <span className="font-semibold">Username:</span> {user.username}
-                </div>
+                {(user.phonecell || user.phone) && (
+                  <div>
+                    <span className="font-semibold">Phone:</span> {user.phonecell || user.phone}
+                  </div>
+                )}
                 {user.email && (
                   <div>
                     <span className="font-semibold">Email:</span> {user.email}
                   </div>
                 )}
-                {user.phone && (
-                  <div>
-                    <span className="font-semibold">Phone:</span> {user.phone}
+                {/* Role Badges - Only show if at least one is enabled */}
+                {(user.is_supervisor === '1' || user.authorized === '1' || user.calendar === '1') && (
+                  <div className="flex gap-2 mt-2">
+                    {user.is_supervisor === '1' && (
+                      <span className="badge-outline-warning text-xs">Supervisor</span>
+                    )}
+                    {user.authorized === '1' && (
+                      <span className="badge-outline-success text-xs">Provider</span>
+                    )}
+                    {user.calendar === '1' && (
+                      <span className="badge-outline-info text-xs">Admin</span>
+                    )}
                   </div>
                 )}
-                {/* Role Badges */}
-                <div className="flex gap-2 mt-2">
-                  {user.authorized === '1' && (
-                    <span className="badge-outline-success text-xs">Provider</span>
-                  )}
-                  {user.calendar === '1' && (
-                    <span className="badge-outline-info text-xs">Admin</span>
-                  )}
-                  {user.is_supervisor === '1' && (
-                    <span className="badge-outline-warning text-xs">Supervisor</span>
-                  )}
-                </div>
               </div>
 
               {/* Card Footer with Action Buttons */}
