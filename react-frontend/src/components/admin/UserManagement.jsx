@@ -401,6 +401,7 @@ function UserManagement() {
 
   return (
     <div className="glass-card p-6">
+      {/* Header Section */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-semibold text-gray-800">User Management</h2>
@@ -408,82 +409,147 @@ function UserManagement() {
         </div>
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          className="btn-solid btn-solid-green btn-icon"
         >
-          + Add User
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add User
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search by name, username, or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="all">All Users</option>
-          <option value="active">Active Only</option>
-          <option value="inactive">Inactive Only</option>
-        </select>
+      {/* Search Bar */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search by name, username, or email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="input-lg"
+        />
       </div>
+
+      {/* Filter Buttons */}
+      <div className="flex gap-3 mb-6">
+        <button
+          onClick={() => setStatusFilter('active')}
+          className={`filter-btn-enhanced ${
+            statusFilter === 'active'
+              ? 'filter-btn-active-base bg-green-500'
+              : 'filter-btn-inactive'
+          }`}
+        >
+          Active
+        </button>
+        <button
+          onClick={() => setStatusFilter('inactive')}
+          className={`filter-btn-enhanced ${
+            statusFilter === 'inactive'
+              ? 'filter-btn-active-base bg-red-500'
+              : 'filter-btn-inactive'
+          }`}
+        >
+          Inactive
+        </button>
+        <button
+          onClick={() => setStatusFilter('all')}
+          className={`filter-btn-enhanced ${
+            statusFilter === 'all'
+              ? 'filter-btn-active-base bg-blue-500'
+              : 'filter-btn-inactive'
+          }`}
+        >
+          All Users
+        </button>
+      </div>
+
+      {/* User Count */}
+      {filteredUsers.length > 0 && (
+        <div className="mb-4">
+          <p className="text-gray-700 font-semibold">
+            {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
 
       {/* User List */}
       {filteredUsers.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No users found
+        <div className="text-center py-12">
+          <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <p className="text-gray-600 text-lg">No {statusFilter !== 'all' ? statusFilter : ''} users found</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredUsers.map(user => (
             <div
               key={user.id}
-              className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="card-item"
             >
-              <div className="flex items-center gap-4 flex-1">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold bg-blue-600"
-                >
-                  {user.fname?.[0]}{user.lname?.[0]}
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">
-                    {user.fname} {user.lname}
-                    {user.title && <span className="text-sm text-gray-600 ml-2">{user.title}</span>}
+              {/* Card Header with Avatar and Status */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-blue-600"
+                  >
+                    {user.fname?.[0]}{user.lname?.[0]}
                   </div>
-                  <div className="text-sm text-gray-600">
-                    {user.username} • {user.email || 'No email'}
-                    {user.authorized === '1' && <span className="ml-2 text-green-600">• Provider</span>}
-                    {user.calendar === '1' && <span className="ml-2 text-blue-600">• Admin</span>}
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-800">
+                      {user.fname} {user.lname}
+                    </h4>
+                    {user.title && (
+                      <p className="text-xs text-gray-600">{user.title}</p>
+                    )}
                   </div>
                 </div>
-                <div className="text-sm">
-                  {user.active === '1' ? (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
-                  ) : (
-                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">Inactive</span>
+                <span className={user.active === '1' ? 'badge-solid-success' : 'badge-solid-danger'}>
+                  {user.active === '1' ? 'ACTIVE' : 'INACTIVE'}
+                </span>
+              </div>
+
+              {/* Card Body with User Details */}
+              <div className="space-y-1 text-sm text-gray-600 mb-4">
+                <div>
+                  <span className="font-semibold">Username:</span> {user.username}
+                </div>
+                {user.email && (
+                  <div>
+                    <span className="font-semibold">Email:</span> {user.email}
+                  </div>
+                )}
+                {user.phone && (
+                  <div>
+                    <span className="font-semibold">Phone:</span> {user.phone}
+                  </div>
+                )}
+                {/* Role Badges */}
+                <div className="flex gap-2 mt-2">
+                  {user.authorized === '1' && (
+                    <span className="badge-outline-success text-xs">Provider</span>
+                  )}
+                  {user.calendar === '1' && (
+                    <span className="badge-outline-info text-xs">Admin</span>
+                  )}
+                  {user.is_supervisor === '1' && (
+                    <span className="badge-outline-warning text-xs">Supervisor</span>
                   )}
                 </div>
               </div>
-              <div className="flex gap-2">
+
+              {/* Card Footer with Action Buttons */}
+              <div className="flex gap-2 pt-3 border-t border-gray-200">
                 <button
                   onClick={() => handleEdit(user)}
-                  className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
                 >
                   Edit
                 </button>
                 {user.active === '1' && (
                   <button
                     onClick={() => handleDeactivate(user.id)}
-                    className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                    className="flex-1 px-3 py-2 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     Deactivate
                   </button>
