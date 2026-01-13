@@ -120,7 +120,7 @@ try {
             // Get the highest rght value to append new category
             $maxRghtSql = "SELECT MAX(rght) as max_rght FROM categories";
             $maxRghtResult = sqlQuery($maxRghtSql);
-            $maxRght = $maxRghtResult['max_rght'] ?? 1;
+            $maxRght = intval($maxRghtResult['max_rght'] ?? 1);
 
             // Insert new category
             $insertSql = "INSERT INTO categories (name, parent, lft, rght, aco_spec)
@@ -128,20 +128,32 @@ try {
             $newLft = $maxRght + 1;
             $newRght = $maxRght + 2;
 
-            $categoryId = sqlInsert($insertSql, [
-                trim($name),
-                $parentId,  // parent from request
-                $newLft,
-                $newRght,
-                'patients|docs'  // aco_spec for document access control
-            ]);
+            try {
+                $categoryId = sqlInsert($insertSql, [
+                    trim($name),
+                    $parentId,
+                    $newLft,
+                    $newRght,
+                    'patients|docs'
+                ]);
 
-            http_response_code(201);
-            echo json_encode([
-                'success' => true,
-                'category_id' => $categoryId,
-                'message' => 'Category created successfully'
-            ]);
+                if (!$categoryId) {
+                    throw new Exception('Failed to insert category');
+                }
+
+                http_response_code(201);
+                echo json_encode([
+                    'success' => true,
+                    'category_id' => $categoryId,
+                    'message' => 'Category created successfully'
+                ]);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode([
+                    'error' => 'Database error',
+                    'message' => $e->getMessage()
+                ]);
+            }
             break;
 
         case 'PUT':
@@ -186,13 +198,22 @@ try {
 
             // Update category
             $updateSql = "UPDATE categories SET name = ?, parent = ? WHERE id = ?";
-            sqlStatement($updateSql, [trim($name), $parentId, $categoryId]);
 
-            http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => 'Category updated successfully'
-            ]);
+            try {
+                sqlStatement($updateSql, [trim($name), $parentId, $categoryId]);
+
+                http_response_code(200);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Category updated successfully'
+                ]);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode([
+                    'error' => 'Database error',
+                    'message' => $e->getMessage()
+                ]);
+            }
             break;
 
         case 'DELETE':
