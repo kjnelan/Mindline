@@ -167,20 +167,7 @@ function DocumentCategories() {
         })
       });
 
-      // Get response text first to debug
-      const responseText = await response.text();
-      console.log('Response status:', response.status);
-      console.log('Response text:', responseText);
-
-      // Try to parse as JSON
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (e) {
-        console.error('JSON parse error:', e);
-        console.error('Response was:', responseText);
-        throw new Error('Invalid JSON response from server');
-      }
+      const result = await response.json();
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create category');
@@ -221,20 +208,7 @@ function DocumentCategories() {
         })
       });
 
-      // Get response text first to debug
-      const responseText = await response.text();
-      console.log('PUT Response status:', response.status);
-      console.log('PUT Response text:', responseText);
-
-      // Try to parse as JSON
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (e) {
-        console.error('JSON parse error:', e);
-        console.error('Response was:', responseText);
-        throw new Error('Invalid JSON response from server');
-      }
+      const result = await response.json();
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to update category');
