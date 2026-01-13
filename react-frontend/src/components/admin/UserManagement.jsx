@@ -506,6 +506,7 @@ function UserManagement() {
           supervisors={supervisors}
           facilities={facilities}
           onFormChange={handleFormChange}
+          onToggleSupervisor={toggleSupervisor}
           onSave={showEditModal ? handleSaveEdit : handleSaveNew}
           onClose={handleCloseModals}
         />,
@@ -526,6 +527,7 @@ function UserFormModal({
   supervisors,
   facilities,
   onFormChange,
+  onToggleSupervisor,
   onSave,
   onClose
 }) {
@@ -834,7 +836,7 @@ function UserFormModal({
                             <input
                               type="checkbox"
                               checked={formData.supervisor_ids.includes(String(sup.id))}
-                              onChange={() => toggleSupervisor(sup.id)}
+                              onChange={() => onToggleSupervisor(sup.id)}
                               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                             />
                             <span className="text-sm text-gray-700">
