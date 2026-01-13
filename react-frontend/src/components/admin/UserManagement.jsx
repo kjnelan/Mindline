@@ -465,46 +465,59 @@ function UserFormModal({
   onClose
 }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] overflow-y-auto p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full my-8">
-        <div className="p-6 max-h-[85vh] overflow-y-auto">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+    <div className="modal-backdrop">
+      <div className="modal-container modal-lg">
+        {/* Header */}
+        <div className="modal-header">
+          <h2 className="text-2xl font-bold text-gray-800">
             {isEdit ? 'Edit User' : 'Add New User'}
           </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
+        {/* Form */}
+        <form onSubmit={(e) => { e.preventDefault(); onSave(); }} className="modal-body">
+          {/* Error message */}
           {formError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="error-message">
               {formError}
             </div>
           )}
 
           <div className="space-y-6">
             {/* Login Credentials */}
-            <div className="border-b border-gray-200 pb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Login Credentials</h3>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Login Credentials</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Username *
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Username <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.username}
                     onChange={(e) => onFormChange('username', e.target.value)}
                     disabled={isEdit}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                    className="input-field disabled:bg-gray-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {isEdit ? 'New Password (leave blank to keep current)' : 'Password *'}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {isEdit ? 'New Password (leave blank to keep current)' : 'Password'} {!isEdit && <span className="text-red-500">*</span>}
                   </label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => onFormChange('password', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="input-field"
                     />
                     <button
                       type="button"
@@ -519,46 +532,44 @@ function UserFormModal({
             </div>
 
             {/* Personal Information */}
-            <div className="border-b border-gray-200 pb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Personal Information</h3>
-              <div className="grid grid-cols-3 gap-4">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Legal First Name *
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Legal First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.fname}
                     onChange={(e) => onFormChange('fname', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Middle Name
                   </label>
                   <input
                     type="text"
                     value={formData.mname}
                     onChange={(e) => onFormChange('mname', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Legal Last Name *
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Legal Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.lname}
                     onChange={(e) => onFormChange('lname', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4 mt-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Professional Credentials
                   </label>
                   <input
@@ -566,11 +577,11 @@ function UserFormModal({
                     value={formData.title}
                     onChange={(e) => onFormChange('title', e.target.value)}
                     placeholder="MD, LCSW, PhD, etc."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Suffix
                   </label>
                   <input
@@ -578,91 +589,91 @@ function UserFormModal({
                     value={formData.suffix}
                     onChange={(e) => onFormChange('suffix', e.target.value)}
                     placeholder="Jr., Sr., III, etc."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     State License Number
                   </label>
                   <input
                     type="text"
                     value={formData.state_license_number}
                     onChange={(e) => onFormChange('state_license_number', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
               </div>
             </div>
 
             {/* Contact Information */}
-            <div className="border-b border-gray-200 pb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Contact Information</h3>
-              <div className="grid grid-cols-3 gap-4">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Email
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => onFormChange('email', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Office Phone
                   </label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => onFormChange('phone', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Cell Phone
                   </label>
                   <input
                     type="tel"
                     value={formData.phonecell}
                     onChange={(e) => onFormChange('phonecell', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
               </div>
             </div>
 
             {/* Professional Information */}
-            <div className="border-b border-gray-200 pb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Professional Information</h3>
-              <div className="grid grid-cols-3 gap-4">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Professional Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     NPI
                   </label>
                   <input
                     type="text"
                     value={formData.npi}
                     onChange={(e) => onFormChange('npi', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Federal Tax ID
                   </label>
                   <input
                     type="text"
                     value={formData.federaltaxid}
                     onChange={(e) => onFormChange('federaltaxid', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Taxonomy Code
                   </label>
                   <input
@@ -670,24 +681,24 @@ function UserFormModal({
                     value={formData.taxonomy}
                     onChange={(e) => onFormChange('taxonomy', e.target.value)}
                     placeholder="207Q00000X"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   />
                 </div>
               </div>
             </div>
 
             {/* Organization */}
-            <div className="border-b border-gray-200 pb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Organization</h3>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Organization</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Supervisor
                   </label>
                   <select
                     value={formData.supervisor_id}
                     onChange={(e) => onFormChange('supervisor_id', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   >
                     <option value="">None</option>
                     {supervisors.map(sup => (
@@ -698,13 +709,13 @@ function UserFormModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Default Facility
                   </label>
                   <select
                     value={formData.facility_id}
                     onChange={(e) => onFormChange('facility_id', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="input-field"
                   >
                     <option value="">None</option>
                     {facilities.map(fac => (
@@ -718,8 +729,8 @@ function UserFormModal({
             </div>
 
             {/* Access Control */}
-            <div className="border-b border-gray-200 pb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Access Control</h3>
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Access Control</h3>
               <div className="space-y-3">
                 <label className="flex items-center gap-2">
                   <input
@@ -769,38 +780,39 @@ function UserFormModal({
             </div>
 
             {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Notes
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => onFormChange('notes', e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-field"
                 placeholder="Additional information about this user..."
               />
             </div>
           </div>
 
-          {/* Modal Actions */}
-          <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+          {/* Action Buttons */}
+          <div className="modal-footer">
             <button
-              onClick={onSave}
-              disabled={saving}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {saving ? 'Saving...' : (isEdit ? 'Save Changes' : 'Create User')}
-            </button>
-            <button
+              type="button"
               onClick={onClose}
               disabled={saving}
-              className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-400 transition-colors disabled:bg-gray-200 disabled:cursor-not-allowed"
+              className="btn-action btn-cancel btn-compact disabled:opacity-50"
             >
               Cancel
             </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-action btn-primary btn-compact disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : (isEdit ? 'Save Changes' : 'Create User')}
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
