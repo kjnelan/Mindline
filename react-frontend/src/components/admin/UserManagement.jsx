@@ -833,7 +833,7 @@ function UserFormModal({
                           <label key={sup.id} className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded cursor-pointer">
                             <input
                               type="checkbox"
-                              checked={formData.supervisor_ids.includes(sup.id)}
+                              checked={formData.supervisor_ids.includes(String(sup.id))}
                               onChange={() => toggleSupervisor(sup.id)}
                               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                             />
