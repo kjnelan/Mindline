@@ -10,11 +10,21 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
+// Start output buffering to prevent header issues
+ob_start();
+
+// Set these BEFORE loading globals.php
+$ignoreAuth = true;
+$ignoreAuth_onsite_portal = true;
+$ignoreAuth_onsite_portal_two = true;
+
 require_once dirname(__FILE__) . '/../../interface/globals.php';
-require_once dirname(__FILE__) . '/../../library/sql.inc.php';
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Acl\AclMain;
+
+// Clear any buffered output and start fresh
+ob_end_clean();
 
 // Enable CORS
 header('Access-Control-Allow-Origin: *');
