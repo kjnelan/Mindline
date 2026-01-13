@@ -21,10 +21,7 @@ require_once(__DIR__ . '/../../interface/globals.php');
 // Clear any output that globals.php might have generated
 ob_end_clean();
 
-// Start fresh output buffering
-ob_start();
-
-// Set JSON header
+// Set JSON header - no more buffering, send directly
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -44,11 +41,27 @@ if (!isset($_SESSION['authUserID']) || empty($_SESSION['authUserID'])) {
     exit;
 }
 
+// Close session to prevent any session-related output
+session_write_close();
+
 // TODO: Check if user has admin privileges
 // For now, allowing all authenticated users
 
 $method = $_SERVER['REQUEST_METHOD'];
-$input = json_decode(file_get_contents('php://input'), true);
+
+// Parse JSON input for POST/PUT requests
+$input = null;
+if (in_array($method, ['POST', 'PUT'])) {
+    $rawInput = file_get_contents('php://input');
+    if ($rawInput) {
+        $input = json_decode($rawInput, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid JSON input: ' . json_last_error_msg()]);
+            exit;
+        }
+    }
+}
 
 try {
     switch ($method) {
@@ -237,6 +250,3 @@ try {
         'message' => $e->getMessage()
     ]);
 }
-
-// Flush the output buffer to send the JSON response
-ob_end_flush();
