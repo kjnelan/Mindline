@@ -148,10 +148,12 @@ function UserManagement() {
   };
 
   const handleEdit = async (user) => {
+    console.log('handleEdit called for user:', user);
     setSelectedUser(user);
 
     // Fetch full user details
     try {
+      console.log('Fetching user details for ID:', user.id);
       const response = await fetch(`/custom/api/users.php?action=get&id=${user.id}`, {
         credentials: 'include'
       });
