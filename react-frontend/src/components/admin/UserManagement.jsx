@@ -200,7 +200,8 @@ function UserManagement() {
       let supervisor_ids = [];
       if (supervisorsResponse.ok) {
         const supervisorsResult = await supervisorsResponse.json();
-        supervisor_ids = supervisorsResult.supervisor_ids || [];
+        // Convert to strings to match supervisor IDs from the list
+        supervisor_ids = (supervisorsResult.supervisor_ids || []).map(id => String(id));
       }
 
       setFormData({
@@ -348,15 +349,18 @@ function UserManagement() {
   };
 
   const toggleSupervisor = (supervisorId) => {
+    // Ensure supervisorId is a string for consistent comparison
+    const idAsString = String(supervisorId);
+
     setFormData(prev => {
       const currentIds = prev.supervisor_ids || [];
-      const isSelected = currentIds.includes(supervisorId);
+      const isSelected = currentIds.includes(idAsString);
 
       return {
         ...prev,
         supervisor_ids: isSelected
-          ? currentIds.filter(id => id !== supervisorId)
-          : [...currentIds, supervisorId]
+          ? currentIds.filter(id => id !== idAsString)
+          : [...currentIds, idAsString]
       };
     });
   };
