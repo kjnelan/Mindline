@@ -22,7 +22,7 @@ function DocumentCategories() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [formData, setFormData] = useState({ name: '' });
+  const [formData, setFormData] = useState({ name: '', parent_id: null });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState(null);
 
@@ -53,15 +53,84 @@ function DocumentCategories() {
     }
   };
 
+  // Build hierarchical tree structure
+  const buildCategoryTree = (categories) => {
+    const tree = [];
+    const categoryMap = {};
+
+    // Create a map of categories by ID
+    categories.forEach(cat => {
+      categoryMap[cat.id] = { ...cat, children: [] };
+    });
+
+    // Build the tree
+    categories.forEach(cat => {
+      if (cat.parent && categoryMap[cat.parent]) {
+        categoryMap[cat.parent].children.push(categoryMap[cat.id]);
+      } else {
+        tree.push(categoryMap[cat.id]);
+      }
+    });
+
+    return tree;
+  };
+
+  // Flatten tree for display with indentation levels
+  const flattenTree = (tree, level = 0) => {
+    let flat = [];
+    tree.forEach(node => {
+      flat.push({ ...node, level });
+      if (node.children && node.children.length > 0) {
+        flat = flat.concat(flattenTree(node.children, level + 1));
+      }
+    });
+    return flat;
+  };
+
+  // Get categories that can be parents (exclude self and descendants)
+  const getAvailableParents = () => {
+    if (!selectedCategory) {
+      return categories;
+    }
+
+    // When editing, exclude the category itself and its descendants
+    const excludeIds = new Set([selectedCategory.id]);
+    const tree = buildCategoryTree(categories);
+
+    const addDescendants = (node) => {
+      if (node.children) {
+        node.children.forEach(child => {
+          excludeIds.add(child.id);
+          addDescendants(child);
+        });
+      }
+    };
+
+    const findAndExclude = (nodes) => {
+      nodes.forEach(node => {
+        if (node.id === selectedCategory.id) {
+          addDescendants(node);
+        }
+        if (node.children) {
+          findAndExclude(node.children);
+        }
+      });
+    };
+
+    findAndExclude(tree);
+
+    return categories.filter(cat => !excludeIds.has(cat.id));
+  };
+
   const handleAdd = () => {
-    setFormData({ name: '' });
+    setFormData({ name: '', parent_id: null });
     setFormError(null);
     setShowAddModal(true);
   };
 
   const handleEdit = (category) => {
     setSelectedCategory(category);
-    setFormData({ name: category.name });
+    setFormData({ name: category.name, parent_id: category.parent || null });
     setFormError(null);
     setShowEditModal(true);
   };
@@ -88,7 +157,10 @@ function DocumentCategories() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name: formData.name.trim() })
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          parent_id: formData.parent_id || null
+        })
       });
 
       const result = await response.json();
@@ -127,7 +199,8 @@ function DocumentCategories() {
         },
         body: JSON.stringify({
           id: selectedCategory.id,
-          name: formData.name.trim()
+          name: formData.name.trim(),
+          parent_id: formData.parent_id || null
         })
       });
 
@@ -182,7 +255,7 @@ function DocumentCategories() {
     setShowEditModal(false);
     setShowDeleteModal(false);
     setSelectedCategory(null);
-    setFormData({ name: '' });
+    setFormData({ name: '', parent_id: null });
     setFormError(null);
   };
 
@@ -231,13 +304,24 @@ function DocumentCategories() {
         </div>
       ) : (
         <div className="space-y-2">
-          {categories.map(category => (
+          {flattenTree(buildCategoryTree(categories)).map(category => (
             <div
               key={category.id}
               className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              style={{ marginLeft: `${category.level * 2}rem` }}
             >
-              <div className="flex-1">
+              <div className="flex-1 flex items-center gap-2">
+                {category.level > 0 && (
+                  <span className="text-gray-400">
+                    {'└─'}
+                  </span>
+                )}
                 <div className="font-medium text-gray-900">{category.name}</div>
+                {category.children && category.children.length > 0 && (
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                    {category.children.length} {category.children.length === 1 ? 'subcategory' : 'subcategories'}
+                  </span>
+                )}
               </div>
               <div className="flex gap-2">
                 <button
@@ -261,7 +345,7 @@ function DocumentCategories() {
       {/* Add Modal */}
       {showAddModal && createPortal(
         <div className="modal-backdrop">
-          <div className="modal-container">
+          <div className="modal-container max-w-lg">
             {/* Header */}
             <div className="modal-header">
               <h2 className="text-2xl font-bold text-gray-800">Add Category</h2>
@@ -284,18 +368,37 @@ function DocumentCategories() {
                 </div>
               )}
 
-              <div className="mb-6">
+              <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Category Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ name: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Consent Forms, Insurance Documents"
                   className="input-field"
                   autoFocus
                 />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Parent Category (Optional)
+                </label>
+                <select
+                  value={formData.parent_id || ''}
+                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                  className="input-field"
+                >
+                  <option value="">None (Top Level)</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select a parent to create a subcategory
+                </p>
               </div>
 
               {/* Action Buttons */}
@@ -325,7 +428,7 @@ function DocumentCategories() {
       {/* Edit Modal */}
       {showEditModal && createPortal(
         <div className="modal-backdrop">
-          <div className="modal-container">
+          <div className="modal-container max-w-lg">
             {/* Header */}
             <div className="modal-header">
               <h2 className="text-2xl font-bold text-gray-800">Edit Category</h2>
@@ -348,17 +451,36 @@ function DocumentCategories() {
                 </div>
               )}
 
-              <div className="mb-6">
+              <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Category Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ name: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="input-field"
                   autoFocus
                 />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Parent Category (Optional)
+                </label>
+                <select
+                  value={formData.parent_id || ''}
+                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                  className="input-field"
+                >
+                  <option value="">None (Top Level)</option>
+                  {getAvailableParents().map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select a parent to make this a subcategory
+                </p>
               </div>
 
               {/* Action Buttons */}
@@ -388,7 +510,7 @@ function DocumentCategories() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && createPortal(
         <div className="modal-backdrop">
-          <div className="modal-container">
+          <div className="modal-container max-w-lg">
             {/* Header */}
             <div className="modal-header">
               <h2 className="text-2xl font-bold text-gray-800">Delete Category</h2>
@@ -417,7 +539,7 @@ function DocumentCategories() {
                 </p>
 
                 <p className="text-sm text-gray-600">
-                  Note: You cannot delete a category that has documents assigned to it.
+                  Note: You cannot delete a category that has documents or subcategories.
                 </p>
               </div>
 

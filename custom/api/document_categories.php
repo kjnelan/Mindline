@@ -65,6 +65,7 @@ try {
         case 'POST':
             // Create new category
             $name = $input['name'] ?? null;
+            $parentId = $input['parent_id'] ?? null;
 
             if (!$name || trim($name) === '') {
                 http_response_code(400);
@@ -95,13 +96,11 @@ try {
 
             $categoryId = sqlInsert($insertSql, [
                 trim($name),
-                null,  // parent
+                $parentId,  // parent from request
                 $newLft,
                 $newRght,
                 'patients|docs'  // aco_spec for document access control
             ]);
-
-            error_log("Category created - ID: $categoryId, Name: $name");
 
             http_response_code(201);
             echo json_encode([
@@ -115,6 +114,7 @@ try {
             // Update category
             $categoryId = $input['id'] ?? null;
             $name = $input['name'] ?? null;
+            $parentId = $input['parent_id'] ?? null;
 
             if (!$categoryId || !$name || trim($name) === '') {
                 http_response_code(400);
@@ -132,11 +132,16 @@ try {
                 exit;
             }
 
-            // Update category
-            $updateSql = "UPDATE categories SET name = ? WHERE id = ?";
-            sqlStatement($updateSql, [trim($name), $categoryId]);
+            // Prevent circular parent reference
+            if ($parentId == $categoryId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'A category cannot be its own parent']);
+                exit;
+            }
 
-            error_log("Category updated - ID: $categoryId, New name: $name");
+            // Update category
+            $updateSql = "UPDATE categories SET name = ?, parent = ? WHERE id = ?";
+            sqlStatement($updateSql, [trim($name), $parentId, $categoryId]);
 
             http_response_code(200);
             echo json_encode([
@@ -152,6 +157,19 @@ try {
             if (!$categoryId) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Category ID is required']);
+                exit;
+            }
+
+            // Check if category has subcategories
+            $checkSubcatsSql = "SELECT COUNT(*) as subcat_count FROM categories WHERE parent = ?";
+            $subcatCheck = sqlQuery($checkSubcatsSql, [$categoryId]);
+
+            if ($subcatCheck && $subcatCheck['subcat_count'] > 0) {
+                http_response_code(409);
+                echo json_encode([
+                    'error' => 'Cannot delete category with subcategories',
+                    'subcategory_count' => $subcatCheck['subcat_count']
+                ]);
                 exit;
             }
 
@@ -173,8 +191,6 @@ try {
             // Delete category
             $deleteSql = "DELETE FROM categories WHERE id = ?";
             sqlStatement($deleteSql, [$categoryId]);
-
-            error_log("Category deleted - ID: $categoryId");
 
             http_response_code(200);
             echo json_encode([
