@@ -488,9 +488,9 @@ function UserManagement() {
               className="card-item"
             >
               {/* Card Header with Name and Status */}
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h4 className="text-lg font-bold text-gray-800">
+                  <h4 className="text-base font-bold text-gray-800 leading-tight">
                     {user.fname} {user.lname}
                   </h4>
                   {user.title && (
@@ -503,7 +503,7 @@ function UserManagement() {
               </div>
 
               {/* Card Body with User Details */}
-              <div className="space-y-1 text-sm text-gray-600 mb-4">
+              <div className="space-y-0.5 text-sm text-gray-600 mb-2">
                 {(user.phonecell || user.phone) && (
                   <div>
                     <span className="font-semibold">Phone:</span> {user.phonecell || user.phone}
@@ -516,7 +516,7 @@ function UserManagement() {
                 )}
                 {/* Role Badges - Only show if at least one is enabled */}
                 {(user.is_supervisor === '1' || user.authorized === '1' || user.calendar === '1') && (
-                  <div className="flex gap-2 mt-2">
+                  <div className="flex gap-2 mt-1.5">
                     {user.is_supervisor === '1' && (
                       <span className="badge-outline-warning text-xs">Supervisor</span>
                     )}
@@ -531,17 +531,17 @@ function UserManagement() {
               </div>
 
               {/* Card Footer with Action Buttons */}
-              <div className="flex gap-2 pt-3 border-t border-gray-200">
+              <div className="flex gap-2 pt-2 border-t border-gray-200">
                 <button
                   onClick={() => handleEdit(user)}
-                  className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="flex-1 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
                 >
                   Edit
                 </button>
                 {user.active === '1' && (
                   <button
                     onClick={() => handleDeactivate(user.id)}
-                    className="flex-1 px-3 py-2 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                    className="flex-1 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     Deactivate
                   </button>
