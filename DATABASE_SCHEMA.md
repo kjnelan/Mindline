@@ -63,14 +63,14 @@ From analysis of `/custom/api/*.php`:
 ### Schema Categories
 
 1. **User Management** (4 tables)
-2. **Client Management** (6 tables)
+2. **Client Management** (5 tables)
 3. **Scheduling** (4 tables)
 4. **Clinical Documentation** (5 tables)
 5. **Billing & Insurance** (5 tables)
 6. **System & Configuration** (6 tables)
 7. **Document Management** (3 tables)
 
-**Total: ~33 tables** (vs 30+ OpenEMR tables we're using)
+**Total: 32 tables** (vs 30+ OpenEMR tables we're using)
 
 ---
 
@@ -362,41 +362,9 @@ CREATE TABLE client_flags (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
-### Table: vitals
-```sql
-CREATE TABLE vitals (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    client_id BIGINT UNSIGNED NOT NULL,
-    encounter_id BIGINT UNSIGNED,
-
-    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    recorded_by BIGINT UNSIGNED,
-
-    -- Vital Signs
-    height_inches DECIMAL(5, 2),
-    weight_pounds DECIMAL(6, 2),
-    bmi DECIMAL(5, 2),
-
-    blood_pressure_systolic INT,
-    blood_pressure_diastolic INT,
-    heart_rate INT,
-    respiratory_rate INT,
-    temperature_f DECIMAL(5, 2),
-    oxygen_saturation INT,
-
-    pain_scale INT,  -- 0-10
-
-    notes TEXT,
-
-    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
-    FOREIGN KEY (encounter_id) REFERENCES encounters(id) ON DELETE SET NULL,
-    FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE SET NULL,
-
-    INDEX idx_client (client_id),
-    INDEX idx_encounter (encounter_id),
-    INDEX idx_recorded_at (recorded_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-```
+### Table: ~~vitals~~ **REMOVED**
+**Note**: Vitals table removed - not relevant for Mental Health EHR.
+If needed in future for integrated medical care, can add back selectively.
 
 ---
 
@@ -1163,11 +1131,11 @@ CREATE TABLE messages (
 
 ## Schema Statistics
 
-**Total Tables**: 33
+**Total Tables**: 32
 
 **By Category**:
 - User Management: 4 tables
-- Client Management: 6 tables
+- Client Management: 5 tables (vitals removed - not needed for mental health EHR)
 - Scheduling: 4 tables
 - Clinical Documentation: 5 tables
 - Billing & Insurance: 5 tables
