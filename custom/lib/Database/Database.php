@@ -374,8 +374,14 @@ class Database
      */
     public function tableExists(string $table): bool
     {
-        $sql = "SHOW TABLES LIKE ?";
-        return $this->getValue($sql, [$table]) !== false;
+        $sql = "SELECT COUNT(*) as count
+                FROM information_schema.tables
+                WHERE table_schema = ?
+                AND table_name = ?
+                LIMIT 1";
+
+        $result = $this->getValue($sql, [$this->config['database'], $table]);
+        return $result > 0;
     }
 
     /**
