@@ -89,13 +89,13 @@ try {
             'id' => $userDetails['id'],
             'username' => $userDetails['username'],
             'email' => $userDetails['email'],
-            'firstName' => $userDetails['first_name'],
-            'lastName' => $userDetails['last_name'],
+            'fname' => $userDetails['first_name'],
+            'lname' => $userDetails['last_name'],
             'fullName' => $userDetails['full_name'],
             'displayName' => $userDetails['display_name'],
             'userType' => $userDetails['user_type'],
             'isProvider' => (bool) $userDetails['is_provider'],
-            'isAdmin' => $userDetails['user_type'] === 'admin',
+            'admin' => $userDetails['user_type'] === 'admin',
             'npi' => $userDetails['npi'] ?? null
         ]
     ]);

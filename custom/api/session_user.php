@@ -90,16 +90,15 @@ try {
         'id' => $user['id'],
         'username' => $user['username'],
         'email' => $user['email'],
-        'firstName' => $user['first_name'],
-        'lastName' => $user['last_name'],
+        'fname' => $user['first_name'],
+        'lname' => $user['last_name'],
         'fullName' => $user['full_name'],
         'displayName' => $user['display_name'],
         'userType' => $user['user_type'],
         'isProvider' => (bool) $user['is_provider'],
-        'isAdmin' => $user['user_type'] === 'admin',
+        'admin' => $user['user_type'] === 'admin',
         'npi' => $user['npi'] ?? null,
-        'phone' => $user['phone'] ?? null,
-        'email' => $user['email'] ?? null
+        'phone' => $user['phone'] ?? null
     ]);
 
 } catch (\Exception $e) {
