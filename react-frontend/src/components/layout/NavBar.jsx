@@ -6,8 +6,8 @@ function NavBar({ activeNav, setActiveNav, user }) {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard' },
-    { id: 'clients', label: 'Clients' },
     { id: 'calendar', label: 'Calendar' },
+    { id: 'clients', label: 'Clients' },
     { id: 'messages', label: 'Messages' },
     { id: 'billing', label: 'Billing' },
     { id: 'reports', label: 'Reports' },
