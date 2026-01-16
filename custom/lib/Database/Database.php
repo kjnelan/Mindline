@@ -45,30 +45,53 @@ class Database
 
     /**
      * Load database configuration
+     *
+     * Priority order:
+     * 1. /config/database.php (MINDLINE config file)
+     * 2. Environment variables
+     * 3. /sqlconf.php (OpenEMR legacy fallback)
      */
     private function loadConfig(): void
     {
-        // Try to load from environment variables first
+        // Start with defaults
         $this->config = [
-            'host' => getenv('DB_HOST') ?: 'localhost',
-            'port' => getenv('DB_PORT') ?: '3306',
-            'database' => getenv('DB_NAME') ?: 'mindline',
-            'username' => getenv('DB_USER') ?: 'root',
-            'password' => getenv('DB_PASS') ?: '',
+            'host' => 'localhost',
+            'port' => '3306',
+            'database' => 'mindline',
+            'username' => 'root',
+            'password' => '',
             'charset' => 'utf8mb4'
         ];
 
-        // Fallback: try to load from OpenEMR's sqlconf.php if it exists
-        $sqlconfPath = dirname(__FILE__, 4) . '/sqlconf.php';
-        if (file_exists($sqlconfPath)) {
-            include $sqlconfPath;
+        // Priority 1: Load from MINDLINE config file
+        $mindlineConfigPath = dirname(__FILE__, 4) . '/config/database.php';
+        if (file_exists($mindlineConfigPath)) {
+            $configData = require $mindlineConfigPath;
+            if (is_array($configData)) {
+                $this->config = array_merge($this->config, $configData);
+            }
+        }
+        // Priority 2: Override with environment variables if set
+        elseif (getenv('DB_HOST') || getenv('DB_NAME')) {
+            $this->config['host'] = getenv('DB_HOST') ?: $this->config['host'];
+            $this->config['port'] = getenv('DB_PORT') ?: $this->config['port'];
+            $this->config['database'] = getenv('DB_NAME') ?: $this->config['database'];
+            $this->config['username'] = getenv('DB_USER') ?: $this->config['username'];
+            $this->config['password'] = getenv('DB_PASS') ?: $this->config['password'];
+        }
+        // Priority 3: Legacy fallback to OpenEMR's sqlconf.php
+        else {
+            $sqlconfPath = dirname(__FILE__, 4) . '/sqlconf.php';
+            if (file_exists($sqlconfPath)) {
+                include $sqlconfPath;
 
-            // OpenEMR uses $host, $port, $dbase, $login, $pass
-            if (isset($host)) $this->config['host'] = $host;
-            if (isset($port)) $this->config['port'] = $port;
-            if (isset($dbase)) $this->config['database'] = $dbase;
-            if (isset($login)) $this->config['username'] = $login;
-            if (isset($pass)) $this->config['password'] = $pass;
+                // OpenEMR uses $host, $port, $dbase, $login, $pass
+                if (isset($host)) $this->config['host'] = $host;
+                if (isset($port)) $this->config['port'] = $port;
+                if (isset($dbase)) $this->config['database'] = $dbase;
+                if (isset($login)) $this->config['username'] = $login;
+                if (isset($pass)) $this->config['password'] = $pass;
+            }
         }
     }
 

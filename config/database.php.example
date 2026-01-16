@@ -1,0 +1,25 @@
+<?php
+/**
+ * MINDLINE Database Configuration Template
+ *
+ * Copy this file to database.php and update with your settings.
+ *
+ * cp config/database.php.example config/database.php
+ */
+
+return [
+    'host' => 'localhost',
+    'port' => '3306',
+    'database' => 'mindline',
+    'username' => 'your_db_user',
+    'password' => 'your_db_password',
+    'charset' => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
+
+    // PDO options
+    'options' => [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]
+];
