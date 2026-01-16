@@ -91,11 +91,15 @@ export async function getUserDetails() {
 
       return {
         id: response.id || null,
-        fname: response.fname || '',
-        lname: response.lname || '',
+        firstName: response.firstName || '',
+        lastName: response.lastName || '',
         fullName: response.fullName,
-        admin: response.admin || false,
-        username: response.username || null
+        displayName: response.displayName,
+        userType: response.userType,
+        isAdmin: response.isAdmin || false,
+        isProvider: response.isProvider || false,
+        username: response.username || null,
+        email: response.email || null
       };
     }
   } catch (error) {
