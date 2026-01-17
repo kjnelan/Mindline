@@ -1,30 +1,13 @@
 <?php
 /**
- * User Management API
+ * User Management API (MIGRATED TO MINDLINE)
  * Full CRUD operations for system users/providers
- * Uses OpenEMR's existing users table schema
  */
 
-// Start output buffering
-ob_start();
+require_once(__DIR__ . '/../init.php');
 
-// TEMPORARY: Enable error display for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// IMPORTANT: Set these BEFORE loading globals.php
-$ignoreAuth = true;
-$ignoreAuth_onsite_portal = true;
-$ignoreAuth_onsite_portal_two = true;
-
-require_once(__DIR__ . '/../../interface/globals.php');
-
-// Clear any output
-ob_end_clean();
-
-// Enable error logging only
-error_log("Users API called - Session ID: " . session_id());
+use Custom\Lib\Database\Database;
+use Custom\Lib\Session\SessionManager;
 
 // Set JSON header
 header('Content-Type: application/json');
@@ -38,18 +21,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// Check authentication
-if (!isset($_SESSION['authUserID']) || empty($_SESSION['authUserID'])) {
-    error_log("Users API: Not authenticated");
-    http_response_code(401);
-    echo json_encode(['error' => 'Not authenticated']);
-    exit;
-}
-
-$method = $_SERVER['REQUEST_METHOD'];
-$input = json_decode(file_get_contents('php://input'), true);
-
 try {
+    // Initialize session and check authentication
+    $session = SessionManager::getInstance();
+    $session->start();
+
+    if (!$session->isAuthenticated()) {
+        error_log("Users API: Not authenticated");
+        http_response_code(401);
+        echo json_encode(['error' => 'Not authenticated']);
+        exit;
+    }
+
+    // Initialize database
+    $db = Database::getInstance();
+
+    $method = $_SERVER['REQUEST_METHOD'];
+    $input = json_decode(file_get_contents('php://input'), true);
+
     switch ($method) {
         case 'GET':
             $action = $_GET['action'] ?? 'list';
@@ -62,29 +51,29 @@ try {
                 $sql = "SELECT
                     u.id,
                     u.username,
-                    u.fname,
-                    u.mname,
-                    u.lname,
+                    u.first_name AS fname,
+                    u.middle_name AS mname,
+                    u.last_name AS lname,
                     u.suffix,
                     u.title,
                     u.npi,
-                    u.federaltaxid,
+                    u.federal_tax_id AS federaltaxid,
                     u.taxonomy,
                     u.state_license_number,
                     u.facility,
                     u.facility_id,
                     u.specialty,
-                    u.authorized,
-                    u.calendar,
+                    u.is_provider AS authorized,
+                    u.is_admin AS calendar,
                     u.portal_user,
-                    u.active,
+                    u.is_active AS active,
                     u.email,
                     u.phone,
-                    u.phonecell,
+                    u.phone_cell AS phonecell,
                     u.supervisor_id,
                     u.notes,
-                    sup.fname AS supervisor_fname,
-                    sup.lname AS supervisor_lname
+                    CONCAT(sup.first_name, ' ', sup.last_name) AS supervisor_fname,
+                    sup.last_name AS supervisor_lname
                 FROM users u
                 LEFT JOIN users sup ON u.supervisor_id = sup.id
                 WHERE 1=1";
@@ -93,7 +82,7 @@ try {
 
                 // Apply search filter
                 if ($search) {
-                    $sql .= " AND (u.fname LIKE ? OR u.lname LIKE ? OR u.username LIKE ? OR u.email LIKE ?)";
+                    $sql .= " AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ? OR u.email LIKE ?)";
                     $searchParam = "%$search%";
                     $params[] = $searchParam;
                     $params[] = $searchParam;
@@ -103,19 +92,14 @@ try {
 
                 // Apply status filter
                 if ($status === 'active') {
-                    $sql .= " AND u.active = 1";
+                    $sql .= " AND u.is_active = 1";
                 } elseif ($status === 'inactive') {
-                    $sql .= " AND u.active = 0";
+                    $sql .= " AND u.is_active = 0";
                 }
 
-                $sql .= " ORDER BY u.lname, u.fname";
+                $sql .= " ORDER BY u.last_name, u.first_name";
 
-                $result = sqlStatement($sql, $params);
-
-                $users = [];
-                while ($row = sqlFetchArray($result)) {
-                    $users[] = $row;
-                }
+                $users = $db->queryAll($sql, $params);
 
                 http_response_code(200);
                 echo json_encode(['users' => $users]);
@@ -124,57 +108,50 @@ try {
                 // Get single user details
                 $userId = $_GET['id'] ?? null;
 
-                error_log("Users API: Get user - ID: $userId");
-
                 if (!$userId) {
-                    error_log("Users API: No user ID provided");
                     http_response_code(400);
                     echo json_encode(['error' => 'User ID required']);
                     exit;
                 }
 
-                // Be explicit about columns instead of SELECT * to avoid binary/problematic data
                 $sql = "SELECT
                     u.id,
                     u.username,
-                    u.fname,
-                    u.mname,
-                    u.lname,
+                    u.first_name AS fname,
+                    u.middle_name AS mname,
+                    u.last_name AS lname,
                     u.suffix,
                     u.title,
                     u.email,
                     u.phone,
-                    u.phonecell,
+                    u.phone_cell AS phonecell,
                     u.npi,
-                    u.federaltaxid,
+                    u.federal_tax_id AS federaltaxid,
                     u.taxonomy,
                     u.state_license_number,
                     u.supervisor_id,
                     u.facility_id,
-                    u.authorized,
+                    u.is_provider AS authorized,
                     u.is_supervisor,
-                    u.active,
-                    u.calendar,
+                    u.is_active AS active,
+                    u.is_admin AS calendar,
                     u.portal_user,
                     u.see_auth,
                     u.notes,
-                    sup.fname AS supervisor_fname,
-                    sup.lname AS supervisor_lname
+                    CONCAT(sup.first_name, ' ', sup.last_name) AS supervisor_fname,
+                    sup.last_name AS supervisor_lname
                 FROM users u
                 LEFT JOIN users sup ON u.supervisor_id = sup.id
                 WHERE u.id = ?";
 
-                error_log("Users API: Executing query for user ID: $userId");
-                $user = sqlQuery($sql, [$userId]);
+                $user = $db->query($sql, [$userId]);
 
                 if (!$user) {
-                    error_log("Users API: User not found - ID: $userId");
                     http_response_code(404);
                     echo json_encode(['error' => 'User not found']);
                     exit;
                 }
 
-                error_log("Users API: User found - ID: $userId, Username: " . ($user['username'] ?? 'unknown'));
                 http_response_code(200);
                 echo json_encode(['user' => $user]);
 
@@ -192,27 +169,20 @@ try {
                         FROM user_supervisors
                         WHERE user_id = ?";
 
-                $result = sqlStatement($sql, [$userId]);
-                $supervisor_ids = [];
-                while ($row = sqlFetchArray($result)) {
-                    $supervisor_ids[] = $row['supervisor_id'];
-                }
+                $rows = $db->queryAll($sql, [$userId]);
+                $supervisor_ids = array_column($rows, 'supervisor_id');
 
                 http_response_code(200);
                 echo json_encode(['supervisor_ids' => $supervisor_ids]);
 
             } elseif ($action === 'supervisors') {
-                // Get list of potential supervisors (users marked as supervisors)
-                $sql = "SELECT id, fname, lname, title
+                // Get list of potential supervisors
+                $sql = "SELECT id, first_name AS fname, last_name AS lname, title
                         FROM users
-                        WHERE active = 1 AND is_supervisor = 1
-                        ORDER BY lname, fname";
+                        WHERE is_active = 1 AND is_supervisor = 1
+                        ORDER BY last_name, first_name";
 
-                $result = sqlStatement($sql);
-                $supervisors = [];
-                while ($row = sqlFetchArray($result)) {
-                    $supervisors[] = $row;
-                }
+                $supervisors = $db->queryAll($sql);
 
                 http_response_code(200);
                 echo json_encode(['supervisors' => $supervisors]);
@@ -223,11 +193,7 @@ try {
                         FROM facility
                         ORDER BY name";
 
-                $result = sqlStatement($sql);
-                $facilities = [];
-                while ($row = sqlFetchArray($result)) {
-                    $facilities[] = $row;
-                }
+                $facilities = $db->queryAll($sql);
 
                 http_response_code(200);
                 echo json_encode(['facilities' => $facilities]);
@@ -249,7 +215,7 @@ try {
 
             // Check if username exists
             $checkSql = "SELECT id FROM users WHERE username = ?";
-            $existing = sqlQuery($checkSql, [$username]);
+            $existing = $db->query($checkSql, [$username]);
 
             if ($existing) {
                 http_response_code(409);
@@ -260,32 +226,34 @@ try {
             // Hash password
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            // Insert user - matching OpenEMR schema exactly
+            // Insert user
             $insertSql = "INSERT INTO users (
                 username,
                 password,
-                fname,
-                mname,
-                lname,
+                first_name,
+                middle_name,
+                last_name,
                 suffix,
                 title,
                 email,
                 phone,
-                phonecell,
+                phone_cell,
                 npi,
-                federaltaxid,
+                federal_tax_id,
                 taxonomy,
                 state_license_number,
                 supervisor_id,
                 facility_id,
-                authorized,
+                is_provider,
                 is_supervisor,
-                active,
-                calendar,
+                is_active,
+                is_admin,
                 portal_user,
                 see_auth,
-                notes
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                notes,
+                created_at,
+                updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
             $params = [
                 $username,
@@ -294,33 +262,33 @@ try {
                 $input['mname'] ?? '',
                 $lname,
                 $input['suffix'] ?? '',
-                $input['title'] ?? '', // Professional credentials
+                $input['title'] ?? '',
                 $input['email'] ?? '',
                 $input['phone'] ?? '',
                 $input['phonecell'] ?? '',
                 $input['npi'] ?? '',
                 $input['federaltaxid'] ?? '',
-                $input['taxonomy'] ?? '207Q00000X', // Default taxonomy
+                $input['taxonomy'] ?? '207Q00000X',
                 $input['state_license_number'] ?? '',
-                $input['supervisor_id'] ?? 0,
-                $input['facility_id'] ?? 0,
-                $input['authorized'] ?? 0, // Is provider
-                $input['is_supervisor'] ?? 0, // Is supervisor
+                $input['supervisor_id'] ?? null,
+                $input['facility_id'] ?? null,
+                $input['authorized'] ?? 0,
+                $input['is_supervisor'] ?? 0,
                 $input['active'] ?? 1,
-                $input['calendar'] ?? 0, // Is admin
+                $input['calendar'] ?? 0,
                 $input['portal_user'] ?? 0,
                 $input['see_auth'] ?? 1,
                 $input['notes'] ?? ''
             ];
 
-            $userId = sqlInsert($insertSql, $params);
+            $userId = $db->insert($insertSql, $params);
 
-            // Handle supervisor assignments (multi-supervisor support)
+            // Handle supervisor assignments
             if (isset($input['supervisor_ids']) && is_array($input['supervisor_ids'])) {
                 foreach ($input['supervisor_ids'] as $supervisorId) {
                     if ($supervisorId > 0) {
                         $supSql = "INSERT INTO user_supervisors (user_id, supervisor_id) VALUES (?, ?)";
-                        sqlStatement($supSql, [$userId, $supervisorId]);
+                        $db->execute($supSql, [$userId, $supervisorId]);
                     }
                 }
             }
@@ -347,7 +315,7 @@ try {
 
             // Check if user exists
             $checkSql = "SELECT id FROM users WHERE id = ?";
-            $existing = sqlQuery($checkSql, [$userId]);
+            $existing = $db->query($checkSql, [$userId]);
 
             if (!$existing) {
                 http_response_code(404);
@@ -355,29 +323,30 @@ try {
                 exit;
             }
 
-            // Build update query - matching OpenEMR schema
+            // Build update query
             $updateSql = "UPDATE users SET
-                fname = ?,
-                mname = ?,
-                lname = ?,
+                first_name = ?,
+                middle_name = ?,
+                last_name = ?,
                 suffix = ?,
                 title = ?,
                 email = ?,
                 phone = ?,
-                phonecell = ?,
+                phone_cell = ?,
                 npi = ?,
-                federaltaxid = ?,
+                federal_tax_id = ?,
                 taxonomy = ?,
                 state_license_number = ?,
                 supervisor_id = ?,
                 facility_id = ?,
-                authorized = ?,
+                is_provider = ?,
                 is_supervisor = ?,
-                active = ?,
-                calendar = ?,
+                is_active = ?,
+                is_admin = ?,
                 portal_user = ?,
                 see_auth = ?,
-                notes = ?
+                notes = ?,
+                updated_at = NOW()
             WHERE id = ?";
 
             $params = [
@@ -393,8 +362,8 @@ try {
                 $input['federaltaxid'] ?? '',
                 $input['taxonomy'] ?? '207Q00000X',
                 $input['state_license_number'] ?? '',
-                $input['supervisor_id'] ?? 0,
-                $input['facility_id'] ?? 0,
+                $input['supervisor_id'] ?? null,
+                $input['facility_id'] ?? null,
                 $input['authorized'] ?? 0,
                 $input['is_supervisor'] ?? 0,
                 $input['active'] ?? 1,
@@ -405,26 +374,26 @@ try {
                 $userId
             ];
 
-            sqlStatement($updateSql, $params);
+            $db->execute($updateSql, $params);
 
             // Update password if provided
             if (!empty($input['password'])) {
                 $hashedPassword = password_hash($input['password'], PASSWORD_DEFAULT);
                 $pwdSql = "UPDATE users SET password = ? WHERE id = ?";
-                sqlStatement($pwdSql, [$hashedPassword, $userId]);
+                $db->execute($pwdSql, [$hashedPassword, $userId]);
             }
 
-            // Update supervisor assignments (multi-supervisor support)
+            // Update supervisor assignments
             if (isset($input['supervisor_ids']) && is_array($input['supervisor_ids'])) {
-                // Remove all existing supervisor relationships
+                // Remove existing
                 $deleteSql = "DELETE FROM user_supervisors WHERE user_id = ?";
-                sqlStatement($deleteSql, [$userId]);
+                $db->execute($deleteSql, [$userId]);
 
-                // Add new supervisor relationships
+                // Add new
                 foreach ($input['supervisor_ids'] as $supervisorId) {
                     if ($supervisorId > 0) {
                         $supSql = "INSERT INTO user_supervisors (user_id, supervisor_id) VALUES (?, ?)";
-                        sqlStatement($supSql, [$userId, $supervisorId]);
+                        $db->execute($supSql, [$userId, $supervisorId]);
                     }
                 }
             }
@@ -448,9 +417,8 @@ try {
                 exit;
             }
 
-            // Don't actually delete, just deactivate
-            $deactivateSql = "UPDATE users SET active = 0 WHERE id = ?";
-            sqlStatement($deactivateSql, [$userId]);
+            $deactivateSql = "UPDATE users SET is_active = 0 WHERE id = ?";
+            $db->execute($deactivateSql, [$userId]);
 
             error_log("User deactivated - ID: $userId");
 
