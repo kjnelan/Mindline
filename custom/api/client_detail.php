@@ -1,24 +1,13 @@
 <?php
 /**
- * Client Detail API - Session-based
- * Returns comprehensive client/patient details
+ * Mindline EMHR - Client Detail API
+ * Returns comprehensive client profile including demographics, insurance, appointments, diagnoses, notes
  */
 
-// Start output buffering to prevent any PHP warnings/notices from breaking JSON
-ob_start();
+require_once(__DIR__ . '/../init.php');
 
-// IMPORTANT: Set these BEFORE loading globals.php to prevent redirects
-$ignoreAuth = true;
-$ignoreAuth_onsite_portal = true;
-$ignoreAuth_onsite_portal_two = true;
-
-require_once(__DIR__ . '/../../interface/globals.php');
-
-// Clear any output that globals.php might have generated
-ob_end_clean();
-
-// Enable error logging
-error_log("Client detail API called - Session ID: " . session_id());
+use Custom\Lib\Database\Database;
+use Custom\Lib\Session\SessionManager;
 
 // Set JSON header
 header('Content-Type: application/json');
@@ -40,114 +29,108 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// Check if user is authenticated via session
-if (!isset($_SESSION['authUserID']) || empty($_SESSION['authUserID'])) {
-    error_log("Client detail: Not authenticated - authUserID not set");
-    http_response_code(401);
-    echo json_encode(['error' => 'Not authenticated']);
-    exit;
-}
-
-// Get client ID from query parameter
-$clientId = $_GET['id'] ?? null;
-
-if (!$clientId) {
-    error_log("Client detail: No client ID provided");
-    http_response_code(400);
-    echo json_encode(['error' => 'Client ID is required']);
-    exit;
-}
-
-error_log("Client detail: User authenticated - " . $_SESSION['authUserID'] . ", fetching client ID: " . $clientId);
-
 try {
-    // Fetch patient demographics - join users for provider names and list_options for coded values
+    // Initialize session and check authentication
+    $session = SessionManager::getInstance();
+    $session->start();
+
+    if (!$session->isAuthenticated()) {
+        error_log("Client detail: Not authenticated");
+        http_response_code(401);
+        echo json_encode(['error' => 'Not authenticated']);
+        exit;
+    }
+
+    // Initialize database
+    $db = Database::getInstance();
+
+    // Get client ID from query parameter
+    $clientId = $_GET['id'] ?? null;
+
+    if (!$clientId) {
+        error_log("Client detail: No client ID provided");
+        http_response_code(400);
+        echo json_encode(['error' => 'Client ID is required']);
+        exit;
+    }
+
+    error_log("Client detail: User authenticated - " . $session->getUserId() . ", fetching client ID: " . $clientId);
+
+    // Fetch patient demographics - mapped to Mindline schema
     $patientSql = "SELECT
-        pd.pid,
-        pd.fname,
-        pd.lname,
-        pd.mname,
-        pd.DOB,
-        pd.sex,
-        pd.financial,
-        pd.phone_cell,
-        pd.phone_home,
-        pd.phone_biz,
-        pd.phone_contact,
-        pd.email,
-        pd.email_direct,
-        pd.street,
-        pd.street_line_2,
-        pd.city,
-        pd.state,
-        pd.postal_code,
-        pd.county,
-        pd.contact_relationship,
-        pd.care_team_status,
-        pd.providerID,
-        pd.ref_providerID,
-        CONCAT(u_provider.fname, ' ', u_provider.lname) AS provider_name,
-        CONCAT(u_referring.fname, ' ', u_referring.lname) AS referring_provider_name,
-        pd.ss,
-        pd.status,
-        pd.sexual_orientation,
-        pd.gender_identity,
+        c.id AS pid,
+        c.first_name AS fname,
+        c.last_name AS lname,
+        c.middle_name AS mname,
+        c.date_of_birth AS DOB,
+        c.sex,
+        NULL AS financial,
+        c.phone_mobile AS phone_cell,
+        c.phone_home,
+        c.phone_work AS phone_biz,
+        c.preferred_contact_method AS phone_contact,
+        c.email,
+        NULL AS email_direct,
+        c.address_line1 AS street,
+        c.address_line2 AS street_line_2,
+        c.city,
+        c.state,
+        c.zip AS postal_code,
+        c.county,
+        c.emergency_contact_relation AS contact_relationship,
+        c.status AS care_team_status,
+        c.primary_provider_id AS providerID,
+        NULL AS ref_providerID,
+        CONCAT(u_provider.first_name, ' ', u_provider.last_name) AS provider_name,
+        NULL AS referring_provider_name,
+        c.ssn_encrypted AS ss,
+        NULL AS status,
+        c.sexual_orientation,
+        c.gender_identity,
         lo_gender.title AS gender_identity_text,
         lo_orientation.title AS sexual_orientation_text,
-        pd.birth_fname,
-        pd.birth_lname,
-        pd.birth_mname,
-        pd.name_history,
-        pd.preferred_name,
-        pd.regdate,
-        pd.hipaa_mail,
-        pd.hipaa_voice,
-        pd.hipaa_notice,
-        pd.hipaa_message,
-        pd.hipaa_allowsms,
-        pd.hipaa_allowemail,
-        pd.allow_patient_portal,
-        pd.cmsportal_login,
-        pd.publicity_code,
-        pd.publ_code_eff_date,
-        lo_publicity.title AS publicity_code_text,
-        pd.protect_indicator,
-        pd.prot_indi_effdate,
-        lo_protection.title AS protection_indicator_text,
-        pd.patient_groups,
-        pd.language,
-        pd.ethnicity,
-        pd.race,
-        pd.nationality_country,
-        pd.referral_source,
-        pd.religion,
-        pd.tribal_affiliations,
-        pd.guardiansname,
-        pd.guardianrelationship,
-        pd.guardianaddress,
-        pd.guardiancity,
-        pd.guardianstate,
-        pd.guardianpostalcode,
-        pd.guardianphone,
-        pd.guardianemail,
-        pd.homeless,
-        pd.financial_review,
-        pd.family_size,
-        pd.monthly_income,
-        pd.userlist1,
-        YEAR(CURDATE()) - YEAR(pd.DOB) - (DATE_FORMAT(CURDATE(), '%m%d') < DATE_FORMAT(pd.DOB, '%m%d')) AS age
-    FROM patient_data pd
-    LEFT JOIN users u_provider ON u_provider.id = pd.providerID
-    LEFT JOIN users u_referring ON u_referring.id = pd.ref_providerID
-    LEFT JOIN list_options lo_gender ON lo_gender.list_id = 'gender_identity' AND lo_gender.option_id = pd.gender_identity
-    LEFT JOIN list_options lo_orientation ON lo_orientation.list_id = 'sexual_orientation' AND lo_orientation.option_id = pd.sexual_orientation
-    LEFT JOIN list_options lo_publicity ON lo_publicity.list_id = 'publicity_code' AND lo_publicity.option_id = pd.publicity_code
-    LEFT JOIN list_options lo_protection ON lo_protection.list_id = 'pt_protect_indica' AND lo_protection.option_id = pd.protect_indicator
-    WHERE pd.pid = ?";
+        NULL AS birth_fname,
+        NULL AS birth_lname,
+        NULL AS birth_mname,
+        NULL AS name_history,
+        c.preferred_name,
+        c.race,
+        c.ethnicity,
+        c.primary_language AS language,
+        c.needs_interpreter AS interpreter_required,
+        NULL AS hipaa_notice,
+        NULL AS hipaa_allowsms,
+        NULL AS hipaa_voice,
+        NULL AS hipaa_mail,
+        NULL AS hipaa_allowemail,
+        c.portal_access AS allow_patient_portal,
+        c.portal_username AS cmsportal_login,
+        NULL AS publicity_code,
+        NULL AS publicity_code_text,
+        NULL AS protect_indicator,
+        NULL AS protect_indicator_text,
+        NULL AS deceased_date,
+        NULL AS deceased_reason,
+        NULL AS patient_groups,
+        NULL AS userlist1,
+        c.emergency_contact_name,
+        c.emergency_contact_relation AS emergency_contact_relationship,
+        c.emergency_contact_phone,
+        c.intake_date,
+        c.discharge_date,
+        c.created_at,
+        c.updated_at,
+        c.facility_id,
+        f.name AS facility_name,
+        YEAR(CURDATE()) - YEAR(c.date_of_birth) - (DATE_FORMAT(CURDATE(), '%m%d') < DATE_FORMAT(c.date_of_birth, '%m%d')) AS age
+    FROM clients c
+    LEFT JOIN users u_provider ON u_provider.id = c.primary_provider_id
+    LEFT JOIN facilities f ON f.id = c.facility_id
+    LEFT JOIN settings_lists lo_gender ON lo_gender.list_id = 'gender_identity' AND lo_gender.option_id = c.gender_identity
+    LEFT JOIN settings_lists lo_orientation ON lo_orientation.list_id = 'sexual_orientation' AND lo_orientation.option_id = c.sexual_orientation
+    WHERE c.id = ?";
 
-    error_log("Patient SQL: " . $patientSql);
-    $patientResult = sqlStatement($patientSql, [$clientId]);
-    $patient = sqlFetchArray($patientResult);
+    $patient = $db->query($patientSql, [$clientId]);
 
     if (!$patient) {
         error_log("Client detail: Client not found - " . $clientId);
@@ -156,342 +139,259 @@ try {
         exit;
     }
 
-    error_log("Client detail: Found patient - " . $patient['fname'] . " " . $patient['lname']);
+    error_log("Client detail: Found client " . $patient['fname'] . " " . $patient['lname']);
 
-    // Fetch employer data
+    // Fetch employer data - mapped to Mindline schema
     $employerSql = "SELECT
         id,
-        name,
-        street,
-        street_line_2,
-        city,
-        state,
-        postal_code,
-        country,
+        employer_name AS name,
+        occupation,
+        phone,
+        address,
+        NULL AS street,
+        NULL AS city,
+        NULL AS state,
+        NULL AS postal_code,
+        NULL AS country,
         start_date,
         end_date,
-        occupation,
-        industry
-    FROM employer_data
-    WHERE pid = ?
-    ORDER BY start_date DESC
+        is_current
+    FROM client_employers
+    WHERE client_id = ?
+    AND is_current = 1
     LIMIT 1";
 
-    error_log("Employer SQL: " . $employerSql);
-    $employerResult = sqlStatement($employerSql, [$clientId]);
-    $employer = sqlFetchArray($employerResult);
-    error_log("Found employer: " . ($employer ? $employer['name'] : 'none'));
-
-    // Fetch insurance data (primary, secondary, tertiary)
-    $insurances = [];
     try {
-        $insuranceSql = "SELECT
-            id.id,
-            id.type,
-            id.provider,
-            id.plan_name,
-            id.policy_number,
-            id.group_number,
-            id.subscriber_fname,
-            id.subscriber_mname,
-            id.subscriber_lname,
-            id.subscriber_relationship,
-            id.subscriber_ss,
-            id.subscriber_DOB,
-            id.subscriber_sex,
-            id.subscriber_street,
-            id.subscriber_city,
-            id.subscriber_state,
-            id.subscriber_postal_code,
-            id.subscriber_country,
-            id.subscriber_phone,
-            id.subscriber_employer,
-            id.subscriber_employer_street,
-            id.subscriber_employer_city,
-            id.subscriber_employer_state,
-            id.subscriber_employer_postal_code,
-            id.subscriber_employer_country,
-            id.copay,
-            id.date AS effective_date,
-            id.date_end AS effective_date_end,
-            id.accept_assignment,
-            id.policy_type,
-            ic.name AS insurance_company_name,
-            ic.attn,
-            ic.cms_id,
-            ic.ins_type_code,
-            ic.x12_receiver_id,
-            ic.x12_default_partner_id
-        FROM insurance_data id
-        LEFT JOIN insurance_companies ic ON id.provider = ic.id
-        WHERE id.pid = ?
-        ORDER BY id.type ASC, id.date DESC";
-
-        error_log("Insurance SQL: " . $insuranceSql);
-        $insuranceResult = sqlStatement($insuranceSql, [$clientId]);
-
-        // Separate active and historical insurance records
-        $activeInsurances = [];
-        $historicalInsurances = [];
-        $seenTypes = []; // Track which types we've seen for active insurance
-
-        while ($row = sqlFetchArray($insuranceResult)) {
-            $type = $row['type'];
-            $endDate = $row['date_end'];
-
-            // Check if insurance is active (no end date OR end date is in the future)
-            $isActive = empty($endDate) || strtotime($endDate) >= strtotime('today');
-
-            // For active insurance, only keep the most recent one of each type
-            if ($isActive && !isset($seenTypes[$type])) {
-                $activeInsurances[] = $row;
-                $seenTypes[$type] = true;
-            } else {
-                // Everything else goes to historical
-                $historicalInsurances[] = $row;
-            }
-        }
-
-        $insurances = $activeInsurances;
-        error_log("Found " . count($activeInsurances) . " active insurance records, " . count($historicalInsurances) . " historical records");
+        $employer = $db->query($employerSql, [$clientId]);
     } catch (Exception $e) {
-        error_log("Insurance query failed: " . $e->getMessage());
-        error_log("Insurance query error - continuing without insurance data");
+        error_log("Employer query failed: " . $e->getMessage());
+        $employer = null;
     }
 
-    // Fetch upcoming appointments
-    // NOTE: pc_catname requires JOIN with openemr_postcalendar_categories table
-    $upcomingSql = "SELECT
-        e.pc_eid,
-        e.pc_eventDate,
-        e.pc_startTime,
-        e.pc_endTime,
-        c.pc_catname,
-        e.pc_apptstatus
-    FROM openemr_postcalendar_events e
-    LEFT JOIN openemr_postcalendar_categories c ON e.pc_catid = c.pc_catid
-    WHERE e.pc_pid = ? AND e.pc_eventDate >= CURDATE()
-    ORDER BY e.pc_eventDate, e.pc_startTime
-    LIMIT 10";
+    // Fetch insurance data (primary, secondary, tertiary) - mapped to Mindline schema
+    $insuranceSql = "SELECT
+        ci.id,
+        ci.priority AS type,
+        ci.insurance_provider_id AS provider,
+        ip.name AS provider_name,
+        NULL AS plan_name,
+        ci.policy_number,
+        ci.group_number,
+        ci.subscriber_relationship,
+        ci.subscriber_name AS subscriber_fname,
+        NULL AS subscriber_mname,
+        NULL AS subscriber_lname,
+        ci.subscriber_dob AS subscriber_DOB,
+        ci.subscriber_sex,
+        NULL AS subscriber_street,
+        NULL AS subscriber_city,
+        NULL AS subscriber_state,
+        NULL AS subscriber_postal_code,
+        NULL AS subscriber_phone,
+        ci.subscriber_ssn_encrypted AS subscriber_ss,
+        NULL AS subscriber_employer,
+        ci.effective_date AS date,
+        ci.expiration_date AS date_end,
+        ci.copay_amount AS copay,
+        NULL AS accept_assignment,
+        NULL AS policy_type,
+        ci.is_active
+    FROM client_insurance ci
+    LEFT JOIN insurance_providers ip ON ci.insurance_provider_id = ip.id
+    WHERE ci.client_id = ?
+    AND ci.is_active = 1
+    ORDER BY FIELD(ci.priority, 'primary', 'secondary', 'tertiary')";
 
-    error_log("Upcoming appointments SQL: " . $upcomingSql);
-    $upcomingResult = sqlStatement($upcomingSql, [$clientId]);
-    $upcomingAppointments = [];
-    while ($row = sqlFetchArray($upcomingResult)) {
-        $upcomingAppointments[] = $row;
-    }
-    error_log("Found " . count($upcomingAppointments) . " upcoming appointments");
+    $insuranceData = $db->queryAll($insuranceSql, [$clientId]);
 
-    // Fetch recent appointments
-    $recentSql = "SELECT
-        e.pc_eid,
-        e.pc_eventDate,
-        e.pc_startTime,
-        e.pc_endTime,
-        c.pc_catname,
-        e.pc_apptstatus
-    FROM openemr_postcalendar_events e
-    LEFT JOIN openemr_postcalendar_categories c ON e.pc_catid = c.pc_catid
-    WHERE e.pc_pid = ? AND e.pc_eventDate < CURDATE()
-    ORDER BY e.pc_eventDate DESC, e.pc_startTime DESC
-    LIMIT 5";
-
-    error_log("Recent appointments SQL: " . $recentSql);
-    $recentResult = sqlStatement($recentSql, [$clientId]);
-    $recentAppointments = [];
-    while ($row = sqlFetchArray($recentResult)) {
-        $recentAppointments[] = $row;
-    }
-    error_log("Found " . count($recentAppointments) . " recent appointments");
-
-    // Fetch active problems/diagnoses
-    $problemsSql = "SELECT
-        id,
-        diagnosis,
-        title,
-        begdate,
-        enddate,
-        outcome
-    FROM lists
-    WHERE pid = ? AND type = 'medical_problem' AND activity = 1
-    ORDER BY begdate DESC
-    LIMIT 20";
-
-    error_log("Problems SQL: " . $problemsSql);
-    $problemsResult = sqlStatement($problemsSql, [$clientId]);
-    $problems = [];
-    while ($row = sqlFetchArray($problemsResult)) {
-        $problems[] = $row;
-    }
-    error_log("Found " . count($problems) . " active problems");
-
-    // Fetch current medications from most recent Intake note
-    // For mental health professionals who document but don't prescribe
-    $medications = [];
-
-    // Check if current_medications column exists before querying
-    $columnCheckSql = "SELECT COUNT(*) as col_exists
-                       FROM information_schema.COLUMNS
-                       WHERE TABLE_SCHEMA = DATABASE()
-                       AND TABLE_NAME = 'clinical_notes'
-                       AND COLUMN_NAME = 'current_medications'";
-
-    $columnCheck = sqlQuery($columnCheckSql);
-
-    if ($columnCheck && $columnCheck['col_exists'] > 0) {
-        // Column exists, safe to query
-        $medicationsSql = "SELECT
-            id,
-            current_medications
-        FROM clinical_notes
-        WHERE patient_id = ?
-          AND note_type = 'intake'
-          AND is_signed = 1
-          AND current_medications IS NOT NULL
-          AND current_medications != ''
-          AND current_medications != '[]'
-        ORDER BY date_of_service DESC
-        LIMIT 1";
-
-        error_log("Medications SQL (from intake): " . $medicationsSql);
-        $medicationsResult = sqlQuery($medicationsSql, [$clientId]);
-
-        if ($medicationsResult && !empty($medicationsResult['current_medications'])) {
-            // Parse the JSON medications list from intake
-            $medicationsJson = $medicationsResult['current_medications'];
-            $medications = json_decode($medicationsJson, true);
-            if (!is_array($medications)) {
-                $medications = [];
-            }
-        }
-        error_log("Found " . count($medications) . " medications from intake");
-    } else {
-        error_log("current_medications column does not exist yet - run SQL migration");
-        $medications = [];
-    }
-
-    // Fetch all encounters with provider and facility information
-    $encountersSql = "SELECT
-        fe.encounter,
-        fe.date,
-        fe.reason,
-        fe.provider_id,
-        fe.facility_id,
-        fe.encounter_type_code,
-        fe.encounter_type_description,
-        CONCAT(u.fname, ' ', u.lname) AS provider_name,
-        f.name AS facility_name
-    FROM form_encounter fe
-    LEFT JOIN users u ON u.id = fe.provider_id
-    LEFT JOIN facility f ON f.id = fe.facility_id
-    WHERE fe.pid = ?
-    ORDER BY fe.date DESC";
-
-    error_log("Encounters SQL: " . $encountersSql);
-    $encountersResult = sqlStatement($encountersSql, [$clientId]);
-    $encounters = [];
-    while ($row = sqlFetchArray($encountersResult)) {
-        $encounters[] = $row;
-    }
-    error_log("Found " . count($encounters) . " encounters");
-
-    // Build response - map all demographic fields
-    $response = [
-        'patient' => [
-            'pid' => $patient['pid'],
-            'fname' => $patient['fname'],
-            'lname' => $patient['lname'],
-            'mname' => $patient['mname'],
-            'DOB' => $patient['DOB'],
-            'age' => $patient['age'],
-            'sex' => $patient['sex'],
-            'birth_sex' => $patient['sex'],
-            'financial' => $patient['financial'],
-            'gender_identity' => $patient['gender_identity_text'] ?? $patient['gender_identity'],
-            'gender_identity_code' => $patient['gender_identity'],
-            'sexual_orientation' => $patient['sexual_orientation_text'] ?? $patient['sexual_orientation'],
-            'sexual_orientation_code' => $patient['sexual_orientation'],
-            'phone_cell' => $patient['phone_cell'],
-            'phone_home' => $patient['phone_home'],
-            'phone_biz' => $patient['phone_biz'],
-            'phone_contact' => $patient['phone_contact'],
-            'email' => $patient['email'],
-            'email_direct' => $patient['email_direct'],
-            'street' => $patient['street'],
-            'street_line_2' => $patient['street_line_2'],
-            'city' => $patient['city'],
-            'state' => $patient['state'],
-            'postal_code' => $patient['postal_code'],
-            'county' => $patient['county'],
-            'contact_relationship' => $patient['contact_relationship'],
-            'care_team_status' => $patient['care_team_status'],
-            'ss' => $patient['ss'],
-            'marital_status' => $patient['status'],
-            'birth_name' => trim(($patient['birth_fname'] ?? '') . ' ' . ($patient['birth_mname'] ?? '') . ' ' . ($patient['birth_lname'] ?? '')),
-            'preferred_name' => $patient['preferred_name'],
-            'previous_names' => $patient['name_history'],
-            'user_defined' => null,
-            'provider' => $patient['provider_name'] ?? 'Not assigned',
-            'provider_id' => $patient['providerID'],
-            'referring_provider' => $patient['referring_provider_name'] ?? 'Not assigned',
-            'referring_provider_id' => $patient['ref_providerID'],
-            'hipaa_notice' => $patient['hipaa_notice'],
-            'hipaa_message' => $patient['hipaa_message'],
-            'hipaa_allowsms' => $patient['hipaa_allowsms'],
-            'hipaa_voice' => $patient['hipaa_voice'],
-            'hipaa_mail' => $patient['hipaa_mail'],
-            'hipaa_email' => $patient['hipaa_allowemail'],
-            'allow_patient_portal' => $patient['allow_patient_portal'],
-            'cmsportal_login' => $patient['cmsportal_login'],
-            'publicity_code' => $patient['publicity_code_text'] ?? $patient['publicity_code'],
-            'publicity_code_date' => $patient['publ_code_eff_date'],
-            'protection_indicator' => $patient['protection_indicator_text'] ?? $patient['protect_indicator'],
-            'protection_indicator_code' => $patient['protect_indicator'],
-            'protection_indicator_date' => $patient['prot_indi_effdate'],
-            'patient_categories' => $patient['patient_groups'],
-            'client_since' => $patient['regdate'],
-            'language' => $patient['language'],
-            'ethnicity' => $patient['ethnicity'],
-            'race' => $patient['race'],
-            'nationality' => $patient['nationality_country'],
-            'referral_source' => $patient['referral_source'],
-            'religion' => $patient['religion'],
-            'tribal_affiliations' => $patient['tribal_affiliations'],
-            'guardian_name' => $patient['guardiansname'],
-            'guardian_relationship' => $patient['guardianrelationship'],
-            'guardian_address' => $patient['guardianaddress'],
-            'guardian_city' => $patient['guardiancity'],
-            'guardian_state' => $patient['guardianstate'],
-            'guardian_postal_code' => $patient['guardianpostalcode'],
-            'guardian_phone' => $patient['guardianphone'],
-            'guardian_email' => $patient['guardianemail'],
-            'homeless_status' => $patient['homeless'],
-            'financial_review_date' => $patient['financial_review'],
-            'family_size' => $patient['family_size'],
-            'monthly_income' => $patient['monthly_income'],
-            'payment_type' => $patient['userlist1'],
-            'employer' => $employer['name'] ?? '',
-            'employer_street' => $employer['street'] ?? '',
-            'employer_street_line_2' => $employer['street_line_2'] ?? '',
-            'employer_city' => $employer['city'] ?? '',
-            'employer_state' => $employer['state'] ?? '',
-            'employer_postal_code' => $employer['postal_code'] ?? '',
-            'employer_country' => $employer['country'] ?? '',
-            'employer_start_date' => $employer['start_date'] ?? '',
-            'employer_end_date' => $employer['end_date'] ?? '',
-            'employer_occupation' => $employer['occupation'] ?? '',
-            'employer_industry' => $employer['industry'] ?? ''
-        ],
-        'insurances' => $insurances,
-        'historical_insurances' => $historicalInsurances ?? [],
-        'upcomingAppointments' => $upcomingAppointments,
-        'recentAppointments' => $recentAppointments,
-        'problems' => $problems,
-        'medications' => $medications,
-        'encounters' => $encounters
+    // Organize insurance by type
+    $insurance = [
+        'primary' => null,
+        'secondary' => null,
+        'tertiary' => null
     ];
 
-    error_log("Client detail: Successfully built response for client " . $clientId);
+    foreach ($insuranceData as $ins) {
+        $type = $ins['type'] ?? 'primary';
+        if (isset($insurance[$type])) {
+            $insurance[$type] = $ins;
+        }
+    }
+
+    // Fetch upcoming appointments - mapped to Mindline schema
+    $appointmentsSql = "SELECT
+        a.id AS pc_eid,
+        DATE(a.start_datetime) AS pc_eventDate,
+        TIME(a.start_datetime) AS pc_startTime,
+        a.duration AS duration_minutes,
+        a.category_id AS pc_catid,
+        ac.name AS pc_catname,
+        ac.color AS pc_catcolor,
+        a.status AS pc_apptstatus_raw,
+        CASE a.status
+            WHEN 'scheduled' THEN '-'
+            WHEN 'confirmed' THEN '~'
+            WHEN 'arrived' THEN '@'
+            WHEN 'completed' THEN '^'
+            WHEN 'no_show' THEN '*'
+            WHEN 'cancelled' THEN '?'
+            ELSE '-'
+        END AS pc_apptstatus,
+        a.title AS pc_title,
+        a.notes AS pc_hometext,
+        a.provider_id AS pc_aid,
+        CONCAT(u.first_name, ' ', u.last_name) AS provider_name
+    FROM appointments a
+    LEFT JOIN appointment_categories ac ON a.category_id = ac.id
+    LEFT JOIN users u ON a.provider_id = u.id
+    WHERE a.client_id = ?
+    AND a.start_datetime >= NOW()
+    AND a.status NOT IN ('cancelled')
+    ORDER BY a.start_datetime ASC
+    LIMIT 5";
+
+    $upcomingAppointments = $db->queryAll($appointmentsSql, [$clientId]);
+
+    // Fetch recent appointments - mapped to Mindline schema
+    $recentApptsSql = "SELECT
+        a.id AS pc_eid,
+        DATE(a.start_datetime) AS pc_eventDate,
+        TIME(a.start_datetime) AS pc_startTime,
+        a.duration AS duration_minutes,
+        a.category_id AS pc_catid,
+        ac.name AS pc_catname,
+        ac.color AS pc_catcolor,
+        a.status AS pc_apptstatus_raw,
+        CASE a.status
+            WHEN 'scheduled' THEN '-'
+            WHEN 'confirmed' THEN '~'
+            WHEN 'arrived' THEN '@'
+            WHEN 'completed' THEN '^'
+            WHEN 'no_show' THEN '*'
+            WHEN 'cancelled' THEN '?'
+            ELSE '-'
+        END AS pc_apptstatus,
+        a.title AS pc_title,
+        a.notes AS pc_hometext,
+        a.provider_id AS pc_aid,
+        CONCAT(u.first_name, ' ', u.last_name) AS provider_name
+    FROM appointments a
+    LEFT JOIN appointment_categories ac ON a.category_id = ac.id
+    LEFT JOIN users u ON a.provider_id = u.id
+    WHERE a.client_id = ?
+    AND a.start_datetime < NOW()
+    ORDER BY a.start_datetime DESC
+    LIMIT 5";
+
+    $recentAppointments = $db->queryAll($recentApptsSql, [$clientId]);
+
+    // Fetch active diagnoses - mapped to Mindline schema
+    $diagnosesSql = "SELECT
+        d.id,
+        d.code AS diagnosis,
+        d.code_type,
+        d.description AS title,
+        d.diagnosis_date AS begdate,
+        d.resolution_date AS enddate,
+        NULL AS occurrence,
+        NULL AS outcome,
+        d.is_primary,
+        d.is_active AS activity,
+        d.diagnosed_by,
+        d.created_at AS date,
+        CONCAT(u.first_name, ' ', u.last_name) AS diagnosed_by_name
+    FROM diagnoses d
+    LEFT JOIN users u ON d.diagnosed_by = u.id
+    WHERE d.client_id = ?
+    AND (d.is_active = 1 OR d.resolution_date IS NULL OR d.resolution_date >= CURDATE())
+    ORDER BY d.diagnosis_date DESC";
+
+    $diagnoses = $db->queryAll($diagnosesSql, [$clientId]);
+
+    // Check if clinical_notes table exists
+    $notesSql = "SELECT COUNT(*) as count
+                 FROM information_schema.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE()
+                 AND TABLE_NAME = 'clinical_notes'";
+
+    $notesTableCheck = $db->query($notesSql);
+    $hasNotesTable = ($notesTableCheck && $notesTableCheck['count'] > 0);
+
+    // Fetch recent clinical notes if table exists - mapped to Mindline schema
+    $clinicalNotes = [];
+    if ($hasNotesTable) {
+        try {
+            $notesSql = "SELECT
+                n.id,
+                n.encounter_id,
+                n.note_type,
+                n.status,
+                n.created_at,
+                n.signed_at,
+                CONCAT(u.first_name, ' ', u.last_name) AS user_name,
+                CONCAT(u_signed.first_name, ' ', u_signed.last_name) AS signed_by_name
+            FROM clinical_notes n
+            LEFT JOIN users u ON n.provider_id = u.id
+            LEFT JOIN users u_signed ON n.signed_by = u_signed.id
+            WHERE n.client_id = ?
+            ORDER BY n.created_at DESC
+            LIMIT 10";
+
+            $clinicalNotes = $db->queryAll($notesSql, [$clientId]);
+        } catch (Exception $e) {
+            error_log("Clinical notes query failed: " . $e->getMessage());
+            $clinicalNotes = [];
+        }
+    }
+
+    // Fetch recent encounters - mapped to Mindline schema
+    try {
+        $encountersSql = "SELECT
+            e.id,
+            e.encounter_date,
+            e.encounter_datetime,
+            e.encounter_type,
+            e.chief_complaint,
+            e.status,
+            e.signed_at,
+            CONCAT(u.first_name, ' ', u.last_name) AS provider_name,
+            CONCAT(u_signed.first_name, ' ', u_signed.last_name) AS signed_by_name,
+            f.name AS facility_name
+        FROM encounters e
+        LEFT JOIN users u ON e.provider_id = u.id
+        LEFT JOIN users u_signed ON e.signed_by = u_signed.id
+        LEFT JOIN facilities f ON e.facility_id = f.id
+        WHERE e.client_id = ?
+        ORDER BY e.encounter_datetime DESC
+        LIMIT 10";
+
+        $encounters = $db->queryAll($encountersSql, [$clientId]);
+    } catch (Exception $e) {
+        error_log("Encounters query failed: " . $e->getMessage());
+        $encounters = [];
+    }
+
+    // Build comprehensive response
+    $response = [
+        'patient' => $patient,
+        'employer' => $employer,
+        'insurance' => $insurance,
+        'upcoming_appointments' => $upcomingAppointments,
+        'recent_appointments' => $recentAppointments,
+        'diagnoses' => $diagnoses,
+        'clinical_notes' => $clinicalNotes,
+        'encounters' => $encounters,
+        'summary' => [
+            'total_diagnoses' => count($diagnoses),
+            'total_upcoming_appointments' => count($upcomingAppointments),
+            'total_recent_appointments' => count($recentAppointments),
+            'total_clinical_notes' => count($clinicalNotes),
+            'total_encounters' => count($encounters),
+            'has_insurance' => !empty($insurance['primary'])
+        ]
+    ];
+
+    error_log("Client detail: Successfully built comprehensive response for client " . $clientId);
     http_response_code(200);
     echo json_encode($response);
 
