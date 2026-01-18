@@ -1,52 +1,50 @@
 <?php
 /**
- * User Management API (MIGRATED TO MINDLINE)
- * Full CRUD operations for system users/providers
+ * Mindline EMHR - Users API (MIGRATED TO MINDLINE)
+ * Handles user management operations
+ *
+ * @package   Mindline
+ * @author    Kenneth J. Nelan / Sacred Wandering
+ * @copyright Copyright (c) 2026 Sacred Wandering
  */
 
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
 use Custom\Lib\Session\SessionManager;
+use Custom\Lib\Auth\CustomAuth;
 
-// Set JSON header
-header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Content-Type: application/json');
 
-// Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
-    exit;
+    exit();
 }
 
 try {
-    // Initialize session and check authentication
     $session = SessionManager::getInstance();
     $session->start();
 
     if (!$session->isAuthenticated()) {
-        error_log("Users API: Not authenticated");
         http_response_code(401);
-        echo json_encode(['error' => 'Not authenticated']);
+        echo json_encode(['error' => 'Unauthorized']);
         exit;
     }
 
-    // Initialize database
     $db = Database::getInstance();
-
     $method = $_SERVER['REQUEST_METHOD'];
     $input = json_decode(file_get_contents('php://input'), true);
+    $action = $_GET['action'] ?? null;
 
     switch ($method) {
         case 'GET':
-            $action = $_GET['action'] ?? 'list';
-
-            if ($action === 'list') {
-                // List all users
+            if (!$action || $action === 'list') {
+                // List all users with filters
                 $search = $_GET['search'] ?? '';
-                $status = $_GET['status'] ?? ''; // active, inactive, all
+                $status = $_GET['status'] ?? '';
 
                 $sql = "SELECT
                     u.id,
@@ -54,33 +52,21 @@ try {
                     u.first_name AS fname,
                     u.middle_name AS mname,
                     u.last_name AS lname,
-                    u.suffix,
-                    u.title,
-                    u.npi,
-                    u.federal_tax_id AS federaltaxid,
-                    u.taxonomy,
-                    u.state_license_number,
-                    u.facility,
-                    u.facility_id,
-                    u.specialty,
-                    u.is_provider AS authorized,
-                    u.is_admin AS calendar,
-                    u.portal_user,
-                    u.is_active AS active,
                     u.email,
+                    u.npi,
+                    u.license_number,
+                    u.license_state,
+                    u.is_provider AS authorized,
+                    u.is_active AS active,
+                    CASE WHEN u.user_type = 'admin' THEN 1 ELSE 0 END AS calendar,
                     u.phone,
-                    u.phone_cell AS phonecell,
-                    u.supervisor_id,
-                    u.notes,
-                    CONCAT(sup.first_name, ' ', sup.last_name) AS supervisor_fname,
-                    sup.last_name AS supervisor_lname
+                    u.mobile AS phonecell,
+                    u.user_type
                 FROM users u
-                LEFT JOIN users sup ON u.supervisor_id = sup.id
                 WHERE 1=1";
 
                 $params = [];
 
-                // Apply search filter
                 if ($search) {
                     $sql .= " AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ? OR u.email LIKE ?)";
                     $searchParam = "%$search%";
@@ -90,7 +76,6 @@ try {
                     $params[] = $searchParam;
                 }
 
-                // Apply status filter
                 if ($status === 'active') {
                     $sql .= " AND u.is_active = 1";
                 } elseif ($status === 'inactive') {
@@ -105,7 +90,7 @@ try {
                 echo json_encode(['users' => $users]);
 
             } elseif ($action === 'get') {
-                // Get single user details
+                // Get single user
                 $userId = $_GET['id'] ?? null;
 
                 if (!$userId) {
@@ -115,34 +100,24 @@ try {
                 }
 
                 $sql = "SELECT
-                    u.id,
-                    u.username,
-                    u.first_name AS fname,
-                    u.middle_name AS mname,
-                    u.last_name AS lname,
-                    u.suffix,
-                    u.title,
-                    u.email,
-                    u.phone,
-                    u.phone_cell AS phonecell,
-                    u.npi,
-                    u.federal_tax_id AS federaltaxid,
-                    u.taxonomy,
-                    u.state_license_number,
-                    u.supervisor_id,
-                    u.facility_id,
-                    u.is_provider AS authorized,
-                    u.is_supervisor,
-                    u.is_active AS active,
-                    u.is_admin AS calendar,
-                    u.portal_user,
-                    u.see_auth,
-                    u.notes,
-                    CONCAT(sup.first_name, ' ', sup.last_name) AS supervisor_fname,
-                    sup.last_name AS supervisor_lname
-                FROM users u
-                LEFT JOIN users sup ON u.supervisor_id = sup.id
-                WHERE u.id = ?";
+                    id,
+                    username,
+                    first_name AS fname,
+                    middle_name AS mname,
+                    last_name AS lname,
+                    email,
+                    phone,
+                    mobile AS phonecell,
+                    npi,
+                    license_number,
+                    license_state,
+                    dea_number,
+                    is_provider AS authorized,
+                    is_active AS active,
+                    CASE WHEN user_type = 'admin' THEN 1 ELSE 0 END AS calendar,
+                    user_type
+                FROM users
+                WHERE id = ?";
 
                 $user = $db->query($sql, [$userId]);
 
@@ -154,49 +129,6 @@ try {
 
                 http_response_code(200);
                 echo json_encode(['user' => $user]);
-
-            } elseif ($action === 'user_supervisors') {
-                // Get supervisors for a specific user from junction table
-                $userId = $_GET['id'] ?? null;
-
-                if (!$userId) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'User ID required']);
-                    exit;
-                }
-
-                $sql = "SELECT supervisor_id
-                        FROM user_supervisors
-                        WHERE user_id = ?";
-
-                $rows = $db->queryAll($sql, [$userId]);
-                $supervisor_ids = array_column($rows, 'supervisor_id');
-
-                http_response_code(200);
-                echo json_encode(['supervisor_ids' => $supervisor_ids]);
-
-            } elseif ($action === 'supervisors') {
-                // Get list of potential supervisors
-                $sql = "SELECT id, first_name AS fname, last_name AS lname, title
-                        FROM users
-                        WHERE is_active = 1 AND is_supervisor = 1
-                        ORDER BY last_name, first_name";
-
-                $supervisors = $db->queryAll($sql);
-
-                http_response_code(200);
-                echo json_encode(['supervisors' => $supervisors]);
-
-            } elseif ($action === 'facilities') {
-                // Get list of facilities
-                $sql = "SELECT id, name, street, city, state, postal_code
-                        FROM facility
-                        ORDER BY name";
-
-                $facilities = $db->queryAll($sql);
-
-                http_response_code(200);
-                echo json_encode(['facilities' => $facilities]);
             }
             break;
 
@@ -206,10 +138,11 @@ try {
             $password = $input['password'] ?? null;
             $fname = $input['fname'] ?? null;
             $lname = $input['lname'] ?? null;
+            $email = $input['email'] ?? null;
 
-            if (!$username || !$password || !$fname || !$lname) {
+            if (!$username || !$password || !$fname || !$lname || !$email) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Username, password, first name, and last name are required']);
+                echo json_encode(['error' => 'Missing required fields']);
                 exit;
             }
 
@@ -223,82 +156,35 @@ try {
                 exit;
             }
 
-            // Hash password
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            // Create user using CustomAuth
+            $auth = new CustomAuth($db);
+            $result = $auth->createUser([
+                'username' => $username,
+                'password' => $password,
+                'email' => $email,
+                'first_name' => $fname,
+                'last_name' => $lname,
+                'middle_name' => $input['mname'] ?? null,
+                'user_type' => $input['user_type'] ?? 'staff',
+                'is_provider' => ($input['authorized'] ?? 0) ? 1 : 0,
+                'is_active' => ($input['active'] ?? 1) ? 1 : 0,
+                'npi' => $input['npi'] ?? null,
+                'license_number' => $input['license_number'] ?? null,
+                'license_state' => $input['license_state'] ?? null,
+                'phone' => $input['phone'] ?? null,
+                'mobile' => $input['phonecell'] ?? null
+            ]);
 
-            // Insert user
-            $insertSql = "INSERT INTO users (
-                username,
-                password,
-                first_name,
-                middle_name,
-                last_name,
-                suffix,
-                title,
-                email,
-                phone,
-                phone_cell,
-                npi,
-                federal_tax_id,
-                taxonomy,
-                state_license_number,
-                supervisor_id,
-                facility_id,
-                is_provider,
-                is_supervisor,
-                is_active,
-                is_admin,
-                portal_user,
-                see_auth,
-                notes,
-                created_at,
-                updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-
-            $params = [
-                $username,
-                $hashedPassword,
-                $fname,
-                $input['mname'] ?? '',
-                $lname,
-                $input['suffix'] ?? '',
-                $input['title'] ?? '',
-                $input['email'] ?? '',
-                $input['phone'] ?? '',
-                $input['phonecell'] ?? '',
-                $input['npi'] ?? '',
-                $input['federaltaxid'] ?? '',
-                $input['taxonomy'] ?? '207Q00000X',
-                $input['state_license_number'] ?? '',
-                $input['supervisor_id'] ?? null,
-                $input['facility_id'] ?? null,
-                $input['authorized'] ?? 0,
-                $input['is_supervisor'] ?? 0,
-                $input['active'] ?? 1,
-                $input['calendar'] ?? 0,
-                $input['portal_user'] ?? 0,
-                $input['see_auth'] ?? 1,
-                $input['notes'] ?? ''
-            ];
-
-            $userId = $db->insert($insertSql, $params);
-
-            // Handle supervisor assignments
-            if (isset($input['supervisor_ids']) && is_array($input['supervisor_ids'])) {
-                foreach ($input['supervisor_ids'] as $supervisorId) {
-                    if ($supervisorId > 0) {
-                        $supSql = "INSERT INTO user_supervisors (user_id, supervisor_id) VALUES (?, ?)";
-                        $db->execute($supSql, [$userId, $supervisorId]);
-                    }
-                }
+            if (!$result['success']) {
+                http_response_code(500);
+                echo json_encode(['error' => $result['message']]);
+                exit;
             }
-
-            error_log("User created - ID: $userId, Username: $username");
 
             http_response_code(201);
             echo json_encode([
                 'success' => true,
-                'user_id' => $userId,
+                'id' => $result['user_id'],
                 'message' => 'User created successfully'
             ]);
             break;
@@ -309,7 +195,7 @@ try {
 
             if (!$userId) {
                 http_response_code(400);
-                echo json_encode(['error' => 'User ID is required']);
+                echo json_encode(['error' => 'User ID required']);
                 exit;
             }
 
@@ -324,122 +210,83 @@ try {
             }
 
             // Build update query
-            $updateSql = "UPDATE users SET
-                first_name = ?,
-                middle_name = ?,
-                last_name = ?,
-                suffix = ?,
-                title = ?,
-                email = ?,
-                phone = ?,
-                phone_cell = ?,
-                npi = ?,
-                federal_tax_id = ?,
-                taxonomy = ?,
-                state_license_number = ?,
-                supervisor_id = ?,
-                facility_id = ?,
-                is_provider = ?,
-                is_supervisor = ?,
-                is_active = ?,
-                is_admin = ?,
-                portal_user = ?,
-                see_auth = ?,
-                notes = ?,
-                updated_at = NOW()
-            WHERE id = ?";
+            $updateFields = [];
+            $params = [];
 
-            $params = [
-                $input['fname'],
-                $input['mname'] ?? '',
-                $input['lname'],
-                $input['suffix'] ?? '',
-                $input['title'] ?? '',
-                $input['email'] ?? '',
-                $input['phone'] ?? '',
-                $input['phonecell'] ?? '',
-                $input['npi'] ?? '',
-                $input['federaltaxid'] ?? '',
-                $input['taxonomy'] ?? '207Q00000X',
-                $input['state_license_number'] ?? '',
-                $input['supervisor_id'] ?? null,
-                $input['facility_id'] ?? null,
-                $input['authorized'] ?? 0,
-                $input['is_supervisor'] ?? 0,
-                $input['active'] ?? 1,
-                $input['calendar'] ?? 0,
-                $input['portal_user'] ?? 0,
-                $input['see_auth'] ?? 1,
-                $input['notes'] ?? '',
-                $userId
+            $fieldMap = [
+                'fname' => 'first_name',
+                'mname' => 'middle_name',
+                'lname' => 'last_name',
+                'email' => 'email',
+                'phone' => 'phone',
+                'phonecell' => 'mobile',
+                'npi' => 'npi',
+                'license_number' => 'license_number',
+                'license_state' => 'license_state',
+                'dea_number' => 'dea_number'
             ];
 
-            $db->execute($updateSql, $params);
-
-            // Update password if provided
-            if (!empty($input['password'])) {
-                $hashedPassword = password_hash($input['password'], PASSWORD_DEFAULT);
-                $pwdSql = "UPDATE users SET password = ? WHERE id = ?";
-                $db->execute($pwdSql, [$hashedPassword, $userId]);
-            }
-
-            // Update supervisor assignments
-            if (isset($input['supervisor_ids']) && is_array($input['supervisor_ids'])) {
-                // Remove existing
-                $deleteSql = "DELETE FROM user_supervisors WHERE user_id = ?";
-                $db->execute($deleteSql, [$userId]);
-
-                // Add new
-                foreach ($input['supervisor_ids'] as $supervisorId) {
-                    if ($supervisorId > 0) {
-                        $supSql = "INSERT INTO user_supervisors (user_id, supervisor_id) VALUES (?, ?)";
-                        $db->execute($supSql, [$userId, $supervisorId]);
-                    }
+            foreach ($fieldMap as $inputKey => $dbField) {
+                if (isset($input[$inputKey])) {
+                    $updateFields[] = "$dbField = ?";
+                    $params[] = $input[$inputKey];
                 }
             }
 
-            error_log("User updated - ID: $userId");
+            if (isset($input['authorized'])) {
+                $updateFields[] = "is_provider = ?";
+                $params[] = $input['authorized'] ? 1 : 0;
+            }
 
-            http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => 'User updated successfully'
-            ]);
-            break;
+            if (isset($input['active'])) {
+                $updateFields[] = "is_active = ?";
+                $params[] = $input['active'] ? 1 : 0;
+            }
 
-        case 'DELETE':
-            // Deactivate user (soft delete)
-            $userId = $_GET['id'] ?? null;
+            if (isset($input['user_type'])) {
+                $updateFields[] = "user_type = ?";
+                $params[] = $input['user_type'];
+            }
 
-            if (!$userId) {
+            if (empty($updateFields)) {
                 http_response_code(400);
-                echo json_encode(['error' => 'User ID is required']);
+                echo json_encode(['error' => 'No fields to update']);
                 exit;
             }
 
-            $deactivateSql = "UPDATE users SET is_active = 0 WHERE id = ?";
-            $db->execute($deactivateSql, [$userId]);
-
-            error_log("User deactivated - ID: $userId");
+            $params[] = $userId;
+            $sql = "UPDATE users SET " . implode(', ', $updateFields) . " WHERE id = ?";
+            $db->execute($sql, $params);
 
             http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => 'User deactivated successfully'
-            ]);
+            echo json_encode(['success' => true, 'message' => 'User updated successfully']);
+            break;
+
+        case 'DELETE':
+            // Soft delete user
+            $userId = $_GET['id'] ?? $input['id'] ?? null;
+
+            if (!$userId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'User ID required']);
+                exit;
+            }
+
+            $sql = "UPDATE users SET deleted_at = NOW(), is_active = 0 WHERE id = ?";
+            $db->execute($sql, [$userId]);
+
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => 'User deleted successfully']);
             break;
 
         default:
             http_response_code(405);
             echo json_encode(['error' => 'Method not allowed']);
+            break;
     }
 
-} catch (Exception $e) {
-    error_log("Error in users API: " . $e->getMessage());
-    error_log("Stack trace: " . $e->getTraceAsString());
+} catch (\Exception $e) {
+    error_log("Users API error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode([
-        'error' => 'Server error',
-        'message' => $e->getMessage()
-    ]);
+    echo json_encode(['error' => 'Internal server error', 'message' => $e->getMessage()]);
 }
