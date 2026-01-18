@@ -159,13 +159,16 @@ try {
 
             // Handle mailing address - copy from physical if flag set
             $mailingStreet = $input['mail_street'] ?? null;
+            $mailingLine2 = $input['mailing_address_line2'] ?? null;
             $mailingCity = $input['mail_city'] ?? null;
             $mailingState = $input['mail_state'] ?? null;
             $mailingZip = $input['mail_zip'] ?? null;
-            $mailingSameAsPhysical = $input['mailing_same_as_physical'] ?? 1;
+            $mailingSameAsPhysical = isset($input['mailing_same_as_physical']) &&
+                                     ($input['mailing_same_as_physical'] === '1' || $input['mailing_same_as_physical'] === 1);
 
             if ($mailingSameAsPhysical) {
                 $mailingStreet = $input['street'] ?? null;
+                $mailingLine2 = $input['address_line2'] ?? null;
                 $mailingCity = $input['city'] ?? null;
                 $mailingState = $input['state'] ?? null;
                 $mailingZip = $input['postal_code'] ?? null;
@@ -173,13 +176,16 @@ try {
 
             // Handle billing address - copy from physical if flag set
             $billingStreet = $input['billing_street'] ?? null;
+            $billingLine2 = $input['billing_address_line2'] ?? null;
             $billingCity = $input['billing_city'] ?? null;
             $billingState = $input['billing_state'] ?? null;
             $billingZip = $input['billing_zip'] ?? null;
-            $billingSameAsPhysical = $input['billing_same_as_physical'] ?? 1;
+            $billingSameAsPhysical = isset($input['billing_same_as_physical']) &&
+                                     ($input['billing_same_as_physical'] === '1' || $input['billing_same_as_physical'] === 1);
 
             if ($billingSameAsPhysical) {
                 $billingStreet = $input['street'] ?? null;
+                $billingLine2 = $input['address_line2'] ?? null;
                 $billingCity = $input['city'] ?? null;
                 $billingState = $input['state'] ?? null;
                 $billingZip = $input['postal_code'] ?? null;
@@ -210,13 +216,13 @@ try {
                 $input['state'] ?? null,
                 $input['postal_code'] ?? null,
                 $mailingStreet,
-                $input['mailing_address_line2'] ?? null,
+                $mailingLine2,
                 $mailingCity,
                 $mailingState,
                 $mailingZip,
                 $mailingSameAsPhysical ? 1 : 0,
                 $billingStreet,
-                $input['billing_address_line2'] ?? null,
+                $billingLine2,
                 $billingCity,
                 $billingState,
                 $billingZip,
@@ -286,60 +292,88 @@ try {
                 'business_hours' => 'business_hours'
             ];
 
+            // Track which fields to skip in regular processing
+            $skipFields = [];
+
             // Handle mailing_same_as_physical flag
+            $mailingSameAsPhysical = isset($input['mailing_same_as_physical']) &&
+                                     ($input['mailing_same_as_physical'] === '1' || $input['mailing_same_as_physical'] === 1);
+
             if (isset($input['mailing_same_as_physical'])) {
                 $updateFields[] = "mailing_same_as_physical = ?";
-                $params[] = $input['mailing_same_as_physical'] ? 1 : 0;
+                $params[] = $mailingSameAsPhysical ? 1 : 0;
+            }
 
-                // If flag is true, copy physical address to mailing
-                if ($input['mailing_same_as_physical']) {
-                    if (isset($input['street'])) {
-                        $updateFields[] = "mailing_address_line1 = ?";
-                        $params[] = $input['street'];
-                    }
-                    if (isset($input['city'])) {
-                        $updateFields[] = "mailing_city = ?";
-                        $params[] = $input['city'];
-                    }
-                    if (isset($input['state'])) {
-                        $updateFields[] = "mailing_state = ?";
-                        $params[] = $input['state'];
-                    }
-                    if (isset($input['postal_code'])) {
-                        $updateFields[] = "mailing_zip = ?";
-                        $params[] = $input['postal_code'];
-                    }
+            // If flag is true, copy physical address to mailing and skip mailing fields in regular processing
+            if ($mailingSameAsPhysical) {
+                if (isset($input['street'])) {
+                    $updateFields[] = "mailing_address_line1 = ?";
+                    $params[] = $input['street'];
                 }
+                if (isset($input['address_line2'])) {
+                    $updateFields[] = "mailing_address_line2 = ?";
+                    $params[] = $input['address_line2'];
+                }
+                if (isset($input['city'])) {
+                    $updateFields[] = "mailing_city = ?";
+                    $params[] = $input['city'];
+                }
+                if (isset($input['state'])) {
+                    $updateFields[] = "mailing_state = ?";
+                    $params[] = $input['state'];
+                }
+                if (isset($input['postal_code'])) {
+                    $updateFields[] = "mailing_zip = ?";
+                    $params[] = $input['postal_code'];
+                }
+
+                // Skip these fields in regular processing
+                $skipFields = array_merge($skipFields, ['mail_street', 'mailing_address_line2', 'mail_city', 'mail_state', 'mail_zip']);
             }
 
             // Handle billing_same_as_physical flag
+            $billingSameAsPhysical = isset($input['billing_same_as_physical']) &&
+                                     ($input['billing_same_as_physical'] === '1' || $input['billing_same_as_physical'] === 1);
+
             if (isset($input['billing_same_as_physical'])) {
                 $updateFields[] = "billing_same_as_physical = ?";
-                $params[] = $input['billing_same_as_physical'] ? 1 : 0;
-
-                // If flag is true, copy physical address to billing
-                if ($input['billing_same_as_physical']) {
-                    if (isset($input['street'])) {
-                        $updateFields[] = "billing_address_line1 = ?";
-                        $params[] = $input['street'];
-                    }
-                    if (isset($input['city'])) {
-                        $updateFields[] = "billing_city = ?";
-                        $params[] = $input['city'];
-                    }
-                    if (isset($input['state'])) {
-                        $updateFields[] = "billing_state = ?";
-                        $params[] = $input['state'];
-                    }
-                    if (isset($input['postal_code'])) {
-                        $updateFields[] = "billing_zip = ?";
-                        $params[] = $input['postal_code'];
-                    }
-                }
+                $params[] = $billingSameAsPhysical ? 1 : 0;
             }
 
-            // Process regular fields
+            // If flag is true, copy physical address to billing and skip billing fields in regular processing
+            if ($billingSameAsPhysical) {
+                if (isset($input['street'])) {
+                    $updateFields[] = "billing_address_line1 = ?";
+                    $params[] = $input['street'];
+                }
+                if (isset($input['address_line2'])) {
+                    $updateFields[] = "billing_address_line2 = ?";
+                    $params[] = $input['address_line2'];
+                }
+                if (isset($input['city'])) {
+                    $updateFields[] = "billing_city = ?";
+                    $params[] = $input['city'];
+                }
+                if (isset($input['state'])) {
+                    $updateFields[] = "billing_state = ?";
+                    $params[] = $input['state'];
+                }
+                if (isset($input['postal_code'])) {
+                    $updateFields[] = "billing_zip = ?";
+                    $params[] = $input['postal_code'];
+                }
+
+                // Skip these fields in regular processing
+                $skipFields = array_merge($skipFields, ['billing_street', 'billing_address_line2', 'billing_city', 'billing_state', 'billing_zip']);
+            }
+
+            // Process regular fields (skip mailing/billing if "same as physical" is checked)
             foreach ($fieldMap as $inputKey => $dbField) {
+                // Skip fields that were already handled by "same as physical" logic
+                if (in_array($inputKey, $skipFields)) {
+                    continue;
+                }
+
                 if (array_key_exists($inputKey, $input)) {
                     $updateFields[] = "$dbField = ?";
                     $params[] = $input[$inputKey] ?: null;
