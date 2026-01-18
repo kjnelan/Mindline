@@ -2,10 +2,6 @@
 /**
  * Mindline EMHR - Facilities API (MIGRATED TO MINDLINE)
  * Handles CRUD operations for facilities
- *
- * @package   Mindline
- * @author    Kenneth J. Nelan
- * @copyright Copyright (c) 2026 Sacred Wandering
  */
 
 require_once(__DIR__ . '/../init.php');
@@ -13,20 +9,17 @@ require_once(__DIR__ . '/../init.php');
 use Custom\Lib\Database\Database;
 use Custom\Lib\Session\SessionManager;
 
-// Enable CORS
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
 
-// Handle OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
 try {
-    // Initialize session and check authentication
     $session = SessionManager::getInstance();
     $session->start();
 
@@ -36,12 +29,7 @@ try {
         exit;
     }
 
-    // Initialize database
     $db = Database::getInstance();
-
-    // TODO: Check if user has admin privileges for write operations
-    // For now, allowing all authenticated users
-
     $method = $_SERVER['REQUEST_METHOD'];
     $input = json_decode(file_get_contents('php://input'), true);
     $action = $_GET['action'] ?? null;
@@ -49,19 +37,18 @@ try {
     switch ($method) {
         case 'GET':
             if ($action === 'get' && isset($_GET['id'])) {
-                // Get single facility by ID
+                // Get single facility
                 $facilityId = filter_var($_GET['id'], FILTER_VALIDATE_INT);
                 if (!$facilityId) {
                     throw new Exception('Invalid facility ID');
                 }
 
                 $sql = "SELECT
-                    id, name, phone, fax, street, city, state, postal_code, country_code,
-                    federal_ein, facility_npi, facility_taxonomy,
-                    tax_id_type, color, primary_business_entity, billing_location,
-                    accepts_assignment, service_location, pos_code,
-                    attn, mail_street, mail_city, mail_state, mail_zip,
-                    info, inactive, website, email
+                    id, name, facility_type,
+                    phone, fax, email, website,
+                    address_line1, address_line2, city, state, zip,
+                    npi, tax_id, facility_npi, pos_code,
+                    is_active, is_primary, business_hours
                 FROM facilities
                 WHERE id = ?";
 
@@ -74,12 +61,15 @@ try {
                 http_response_code(200);
                 echo json_encode($result);
             } else {
-                // Get all facilities
+                // Get all active facilities
                 $sql = "SELECT
-                    id, name, phone, fax, street, city, state, postal_code,
-                    billing_location, service_location, inactive
+                    id, name, facility_type,
+                    phone, fax, email,
+                    address_line1, city, state, zip,
+                    is_active, is_primary
                 FROM facilities
-                ORDER BY name";
+                WHERE is_active = 1
+                ORDER BY is_primary DESC, name";
 
                 $facilities = $db->queryAll($sql);
 
@@ -97,42 +87,31 @@ try {
             }
 
             $sql = "INSERT INTO facilities (
-                name, phone, fax, street, city, state, postal_code, country_code,
-                federal_ein, facility_npi, facility_taxonomy,
-                tax_id_type, color, primary_business_entity, billing_location,
-                accepts_assignment, service_location, pos_code,
-                attn, mail_street, mail_city, mail_state, mail_zip,
-                info, inactive, website, email
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                name, facility_type,
+                phone, fax, email, website,
+                address_line1, address_line2, city, state, zip,
+                npi, tax_id, facility_npi, pos_code,
+                is_active, is_primary
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $params = [
                 $name,
-                $input['phone'] ?? '',
-                $input['fax'] ?? '',
-                $input['street'] ?? '',
-                $input['city'] ?? '',
-                $input['state'] ?? '',
-                $input['postal_code'] ?? '',
-                $input['country_code'] ?? 'US',
-                $input['federal_ein'] ?? '',
-                $input['facility_npi'] ?? '',
-                $input['facility_taxonomy'] ?? '',
-                $input['tax_id_type'] ?? 'EIN',
-                $input['color'] ?? '#99FFFF',
-                $input['primary_business_entity'] ?? 0,
-                $input['billing_location'] ?? 0,
-                $input['accepts_assignment'] ?? 0,
-                $input['service_location'] ?? 1,
-                $input['pos_code'] ?? '11',
-                $input['attn'] ?? '',
-                $input['mail_street'] ?? '',
-                $input['mail_city'] ?? '',
-                $input['mail_state'] ?? '',
-                $input['mail_zip'] ?? '',
-                $input['info'] ?? '',
-                $input['inactive'] ?? 0,
-                $input['website'] ?? '',
-                $input['email'] ?? ''
+                $input['facility_type'] ?? null,
+                $input['phone'] ?? null,
+                $input['fax'] ?? null,
+                $input['email'] ?? null,
+                $input['website'] ?? null,
+                $input['address_line1'] ?? null,
+                $input['address_line2'] ?? null,
+                $input['city'] ?? null,
+                $input['state'] ?? null,
+                $input['zip'] ?? null,
+                $input['npi'] ?? null,
+                $input['tax_id'] ?? null,
+                $input['facility_npi'] ?? null,
+                $input['pos_code'] ?? null,
+                $input['is_active'] ?? 1,
+                $input['is_primary'] ?? 0
             ];
 
             $newId = $db->insert($sql, $params);
@@ -143,55 +122,48 @@ try {
 
         case 'PUT':
             // Update facility
-            if (!isset($input['id'])) {
+            $facilityId = $input['id'] ?? null;
+
+            if (!$facilityId) {
                 throw new Exception('Facility ID is required');
             }
 
-            $facilityId = filter_var($input['id'], FILTER_VALIDATE_INT);
-            if (!$facilityId) {
-                throw new Exception('Invalid facility ID');
+            $updateFields = [];
+            $params = [];
+
+            $fieldMap = [
+                'name' => 'name',
+                'facility_type' => 'facility_type',
+                'phone' => 'phone',
+                'fax' => 'fax',
+                'email' => 'email',
+                'website' => 'website',
+                'address_line1' => 'address_line1',
+                'address_line2' => 'address_line2',
+                'city' => 'city',
+                'state' => 'state',
+                'zip' => 'zip',
+                'npi' => 'npi',
+                'tax_id' => 'tax_id',
+                'facility_npi' => 'facility_npi',
+                'pos_code' => 'pos_code',
+                'is_active' => 'is_active',
+                'is_primary' => 'is_primary'
+            ];
+
+            foreach ($fieldMap as $inputKey => $dbField) {
+                if (array_key_exists($inputKey, $input)) {
+                    $updateFields[] = "$dbField = ?";
+                    $params[] = $input[$inputKey];
+                }
             }
 
-            $sql = "UPDATE facilities SET
-                name = ?, phone = ?, fax = ?, street = ?, city = ?, state = ?,
-                postal_code = ?, country_code = ?, federal_ein = ?, facility_npi = ?,
-                facility_taxonomy = ?, tax_id_type = ?, color = ?,
-                primary_business_entity = ?, billing_location = ?, accepts_assignment = ?,
-                service_location = ?, pos_code = ?, attn = ?, mail_street = ?,
-                mail_city = ?, mail_state = ?, mail_zip = ?, info = ?,
-                inactive = ?, website = ?, email = ?
-            WHERE id = ?";
+            if (empty($updateFields)) {
+                throw new Exception('No fields to update');
+            }
 
-            $params = [
-                $input['name'] ?? '',
-                $input['phone'] ?? '',
-                $input['fax'] ?? '',
-                $input['street'] ?? '',
-                $input['city'] ?? '',
-                $input['state'] ?? '',
-                $input['postal_code'] ?? '',
-                $input['country_code'] ?? 'US',
-                $input['federal_ein'] ?? '',
-                $input['facility_npi'] ?? '',
-                $input['facility_taxonomy'] ?? '',
-                $input['tax_id_type'] ?? 'EIN',
-                $input['color'] ?? '#99FFFF',
-                $input['primary_business_entity'] ?? 0,
-                $input['billing_location'] ?? 0,
-                $input['accepts_assignment'] ?? 0,
-                $input['service_location'] ?? 1,
-                $input['pos_code'] ?? '11',
-                $input['attn'] ?? '',
-                $input['mail_street'] ?? '',
-                $input['mail_city'] ?? '',
-                $input['mail_state'] ?? '',
-                $input['mail_zip'] ?? '',
-                $input['info'] ?? '',
-                $input['inactive'] ?? 0,
-                $input['website'] ?? '',
-                $input['email'] ?? '',
-                $facilityId
-            ];
+            $params[] = $facilityId;
+            $sql = "UPDATE facilities SET " . implode(', ', $updateFields) . " WHERE id = ?";
 
             $db->execute($sql, $params);
 
@@ -200,18 +172,14 @@ try {
             break;
 
         case 'DELETE':
-            // Note: Generally we don't delete facilities, we mark them inactive
-            if (!isset($_GET['id'])) {
+            // Soft delete (set inactive)
+            $facilityId = $_GET['id'] ?? $input['id'] ?? null;
+
+            if (!$facilityId) {
                 throw new Exception('Facility ID is required');
             }
 
-            $facilityId = filter_var($_GET['id'], FILTER_VALIDATE_INT);
-            if (!$facilityId) {
-                throw new Exception('Invalid facility ID');
-            }
-
-            // Mark as inactive instead of deleting
-            $sql = "UPDATE facilities SET inactive = 1 WHERE id = ?";
+            $sql = "UPDATE facilities SET is_active = 0 WHERE id = ?";
             $db->execute($sql, [$facilityId]);
 
             http_response_code(200);
@@ -223,8 +191,9 @@ try {
             echo json_encode(['error' => 'Method not allowed']);
             break;
     }
-} catch (Exception $e) {
+
+} catch (\Exception $e) {
     error_log("Facilities API error: " . $e->getMessage());
-    http_response_code(400);
-    echo json_encode(['error' => $e->getMessage()]);
+    http_response_code(500);
+    echo json_encode(['error' => 'Internal server error', 'message' => $e->getMessage()]);
 }

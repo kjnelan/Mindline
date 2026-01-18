@@ -9,20 +9,17 @@ require_once(__DIR__ . '/../init.php');
 use Custom\Lib\Database\Database;
 use Custom\Lib\Session\SessionManager;
 
-// Set JSON header
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
 try {
-    // Initialize session and check authentication
     $session = SessionManager::getInstance();
     $session->start();
 
@@ -32,15 +29,9 @@ try {
         exit;
     }
 
-    // Initialize database
     $db = Database::getInstance();
-
-    // TODO: Check if user has admin privileges
-    // For now, allowing all authenticated users
-
     $method = $_SERVER['REQUEST_METHOD'];
 
-    // Parse JSON input for POST/PUT requests
     $input = null;
     if (in_array($method, ['POST', 'PUT'])) {
         $rawInput = file_get_contents('php://input');
@@ -56,23 +47,34 @@ try {
 
     switch ($method) {
         case 'GET':
-            // List all document categories
-            $categoriesSql = "SELECT id, name, parent, lft, rght, aco_spec
-                              FROM categories
-                              WHERE name != 'Categories'
-                              ORDER BY name";
-            $rows = $db->queryAll($categoriesSql);
+            // List all active document categories
+            $sql = "SELECT
+                id,
+                name,
+                parent_id,
+                description,
+                lft,
+                rght,
+                is_active,
+                sort_order
+            FROM document_categories
+            WHERE is_active = 1
+            ORDER BY sort_order, name";
+
+            $rows = $db->queryAll($sql);
 
             $categories = [];
             foreach ($rows as $row) {
-                // Ensure numeric fields are integers, convert parent=0 to null
                 $categories[] = [
                     'id' => (int)$row['id'],
                     'name' => $row['name'],
-                    'parent' => ($row['parent'] == 0) ? null : (int)$row['parent'],
+                    'parent' => $row['parent_id'] ? (int)$row['parent_id'] : null,
+                    'parent_id' => $row['parent_id'] ? (int)$row['parent_id'] : null,
+                    'description' => $row['description'],
                     'lft' => (int)$row['lft'],
                     'rght' => (int)$row['rght'],
-                    'aco_spec' => $row['aco_spec']
+                    'is_active' => (bool)$row['is_active'],
+                    'sort_order' => (int)$row['sort_order']
                 ];
             }
 
@@ -82,173 +84,97 @@ try {
 
         case 'POST':
             // Create new category
-            $name = $input['name'] ?? null;
-            $parentId = $input['parent_id'] ?? null;
-
-            // Convert parent_id to integer - use 0 for top-level (parent field is NOT NULL)
-            if ($parentId !== null && $parentId !== '') {
-                $parentId = intval($parentId);
-            } else {
-                $parentId = 0;  // Database requires 0 for top-level, not NULL
-            }
-
-            if (!$name || trim($name) === '') {
+            if (!$input || !isset($input['name'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Category name is required']);
                 exit;
             }
 
-            // Check if category already exists
-            $checkSql = "SELECT id FROM categories WHERE name = ?";
-            $existing = $db->query($checkSql, [trim($name)]);
+            $sql = "INSERT INTO document_categories (name, parent_id, description, lft, rght, sort_order, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)";
 
-            if ($existing) {
-                http_response_code(409);
-                echo json_encode(['error' => 'Category already exists']);
-                exit;
-            }
+            $params = [
+                $input['name'],
+                $input['parent_id'] ?? null,
+                $input['description'] ?? null,
+                $input['lft'] ?? 0,
+                $input['rght'] ?? 0,
+                $input['sort_order'] ?? 0
+            ];
 
-            // Get the highest rght value to append new category
-            $maxRghtSql = "SELECT MAX(rght) as max_rght FROM categories";
-            $maxRghtResult = $db->query($maxRghtSql);
-            $maxRght = intval($maxRghtResult['max_rght'] ?? 1);
-
-            // Insert new category
-            $insertSql = "INSERT INTO categories (name, parent, lft, rght, aco_spec)
-                          VALUES (?, ?, ?, ?, ?)";
-            $newLft = $maxRght + 1;
-            $newRght = $maxRght + 2;
-
-            $categoryId = $db->insert($insertSql, [
-                trim($name),
-                $parentId,
-                $newLft,
-                $newRght,
-                'patients|docs'
-            ]);
-
-            if (!$categoryId) {
-                throw new Exception('Failed to insert category');
-            }
+            $id = $db->insert($sql, $params);
 
             http_response_code(201);
-            echo json_encode([
-                'success' => true,
-                'category_id' => $categoryId,
-                'message' => 'Category created successfully'
-            ]);
+            echo json_encode(['success' => true, 'id' => $id]);
             break;
 
         case 'PUT':
             // Update category
-            $categoryId = $input['id'] ?? null;
-            $name = $input['name'] ?? null;
-            $parentId = $input['parent_id'] ?? null;
-
-            // Convert IDs to integers
-            if ($categoryId !== null) {
-                $categoryId = intval($categoryId);
-            }
-            // Convert parent_id to integer - use 0 for top-level (parent field is NOT NULL)
-            if ($parentId !== null && $parentId !== '') {
-                $parentId = intval($parentId);
-            } else {
-                $parentId = 0;  // Database requires 0 for top-level, not NULL
-            }
-
-            if (!$categoryId || !$name || trim($name) === '') {
-                http_response_code(400);
-                echo json_encode(['error' => 'Category ID and name are required']);
-                exit;
-            }
-
-            // Check if new name conflicts with existing category
-            $checkSql = "SELECT id FROM categories WHERE name = ? AND id != ?";
-            $existing = $db->query($checkSql, [trim($name), $categoryId]);
-
-            if ($existing) {
-                http_response_code(409);
-                echo json_encode(['error' => 'Category name already exists']);
-                exit;
-            }
-
-            // Prevent circular parent reference
-            if ($parentId == $categoryId) {
-                http_response_code(400);
-                echo json_encode(['error' => 'A category cannot be its own parent']);
-                exit;
-            }
-
-            // Update category
-            $updateSql = "UPDATE categories SET name = ?, parent = ? WHERE id = ?";
-            $db->execute($updateSql, [trim($name), $parentId, $categoryId]);
-
-            http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => 'Category updated successfully'
-            ]);
-            break;
-
-        case 'DELETE':
-            // Delete category
-            $categoryId = $_GET['id'] ?? null;
-
-            if (!$categoryId) {
+            if (!$input || !isset($input['id'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Category ID is required']);
                 exit;
             }
 
-            // Check if category has subcategories
-            $checkSubcatsSql = "SELECT COUNT(*) as subcat_count FROM categories WHERE parent = ?";
-            $subcatCheck = $db->query($checkSubcatsSql, [$categoryId]);
+            $updates = [];
+            $params = [];
 
-            if ($subcatCheck && $subcatCheck['subcat_count'] > 0) {
-                http_response_code(409);
-                echo json_encode([
-                    'error' => 'Cannot delete category with subcategories',
-                    'subcategory_count' => $subcatCheck['subcat_count']
-                ]);
+            if (isset($input['name'])) {
+                $updates[] = "name = ?";
+                $params[] = $input['name'];
+            }
+            if (isset($input['description'])) {
+                $updates[] = "description = ?";
+                $params[] = $input['description'];
+            }
+            if (isset($input['parent_id'])) {
+                $updates[] = "parent_id = ?";
+                $params[] = $input['parent_id'];
+            }
+            if (isset($input['sort_order'])) {
+                $updates[] = "sort_order = ?";
+                $params[] = $input['sort_order'];
+            }
+
+            if (empty($updates)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'No fields to update']);
                 exit;
             }
 
-            // Check if category has documents
-            $checkDocsSql = "SELECT COUNT(*) as doc_count
-                             FROM categories_to_documents
-                             WHERE category_id = ?";
-            $docCheck = $db->query($checkDocsSql, [$categoryId]);
-
-            if ($docCheck && $docCheck['doc_count'] > 0) {
-                http_response_code(409);
-                echo json_encode([
-                    'error' => 'Cannot delete category with documents',
-                    'document_count' => $docCheck['doc_count']
-                ]);
-                exit;
-            }
-
-            // Delete category
-            $deleteSql = "DELETE FROM categories WHERE id = ?";
-            $db->execute($deleteSql, [$categoryId]);
+            $params[] = $input['id'];
+            $sql = "UPDATE document_categories SET " . implode(', ', $updates) . " WHERE id = ?";
+            $db->execute($sql, $params);
 
             http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => 'Category deleted successfully'
-            ]);
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'DELETE':
+            // Soft delete (set inactive)
+            $id = $_GET['id'] ?? $input['id'] ?? null;
+
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Category ID is required']);
+                exit;
+            }
+
+            $sql = "UPDATE document_categories SET is_active = 0 WHERE id = ?";
+            $db->execute($sql, [$id]);
+
+            http_response_code(200);
+            echo json_encode(['success' => true]);
             break;
 
         default:
             http_response_code(405);
             echo json_encode(['error' => 'Method not allowed']);
+            break;
     }
 
-} catch (Exception $e) {
-    error_log("Document categories error: " . $e->getMessage());
+} catch (\Exception $e) {
+    error_log("Document categories API error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode([
-        'error' => 'Server error',
-        'message' => $e->getMessage()
-    ]);
+    echo json_encode(['error' => 'Internal server error', 'message' => $e->getMessage()]);
 }
