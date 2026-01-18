@@ -11,8 +11,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Load Composer autoloader (handles all Custom\Lib classes via PSR-4)
-require_once dirname(__FILE__, 3) . "/vendor/autoload.php";
+// Load init.php which handles all class loading
+require_once dirname(__FILE__, 2) . "/init.php";
 
 use Custom\Lib\Database\Database;
 use Custom\Lib\Auth\CustomAuth;
