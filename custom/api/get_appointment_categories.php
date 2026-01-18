@@ -54,11 +54,8 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Get optional category type filter from query parameter
-    // Type 0 = Patient/Client appointments
-    // Type 1 = Provider availability/blocking (vacation, meetings, etc.)
-    // Type 2 = Group therapy
-    // Type 3 = Clinic/Facility events
+    // Get optional category type filter from query parameter (not used in current schema)
+    // Kept for API compatibility but ignored since category_type column doesn't exist
     $categoryType = isset($_GET['type']) ? intval($_GET['type']) : null;
 
     // Fetch all active appointment categories
@@ -68,21 +65,15 @@ try {
         color,
         description,
         default_duration,
-        category_type
+        is_billable,
+        sort_order
     FROM appointment_categories
-    WHERE is_active = 1";
+    WHERE is_active = 1
+    ORDER BY sort_order, name";
 
-    // Add type filter if specified
-    if ($categoryType !== null) {
-        $sql .= " AND category_type = ?";
-        $params = [$categoryType];
-    } else {
-        $params = [];
-    }
+    $params = [];
 
-    $sql .= " ORDER BY name";
-
-    error_log("Get appointment categories SQL: " . $sql . " (type filter: " . ($categoryType !== null ? $categoryType : 'none') . ")");
+    error_log("Get appointment categories SQL: " . $sql);
     $rows = $db->queryAll($sql, $params);
 
     $categories = [];
@@ -93,7 +84,9 @@ try {
             'color' => $row['color'],
             'description' => $row['description'],
             'defaultDuration' => $row['default_duration'], // Duration in minutes
-            'type' => $row['category_type']
+            'isBillable' => $row['is_billable'],
+            'sortOrder' => $row['sort_order'],
+            'type' => 0 // Default to patient appointments since we don't have category_type column
         ];
     }
 
