@@ -34,3 +34,4 @@ tmp-phpstan/*
 openemr-archived-docs/
 composer.json.backup-*
 test_db_connection.php
+simple_login_test.php
