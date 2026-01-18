@@ -32,3 +32,10 @@ coverage/js-unit
 # phpstan
 tmp-phpstan/*
 openemr-archived-docs/
+
+# temporary test files
+simple_login_test.php
+test_db_connection.php
+
+# backup files
+*.backup-*
