@@ -52,8 +52,8 @@ try {
         mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
     );
 
-    // Hash password
-    $passwordHash = password_hash($userData['password'], PASSWORD_DEFAULT);
+    // Hash password using ARGON2ID (same as CustomAuth class)
+    $passwordHash = password_hash($userData['password'], PASSWORD_ARGON2ID);
 
     // Check if user already exists
     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
