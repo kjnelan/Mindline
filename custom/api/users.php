@@ -56,9 +56,9 @@ try {
                     u.npi,
                     u.license_number,
                     u.license_state,
-                    u.is_provider AS authorized,
-                    u.is_active AS active,
-                    CASE WHEN u.user_type = 'admin' THEN 1 ELSE 0 END AS calendar,
+                    CAST(u.is_provider AS CHAR) AS authorized,
+                    CAST(u.is_active AS CHAR) AS active,
+                    CAST(CASE WHEN u.user_type = 'admin' THEN 1 ELSE 0 END AS CHAR) AS calendar,
                     u.phone,
                     u.mobile AS phonecell,
                     u.user_type
@@ -109,13 +109,22 @@ try {
                     phone,
                     mobile AS phonecell,
                     npi,
-                    license_number,
+                    license_number AS state_license_number,
                     license_state,
                     dea_number,
                     is_provider AS authorized,
                     is_active AS active,
                     CASE WHEN user_type = 'admin' THEN 1 ELSE 0 END AS calendar,
-                    user_type
+                    user_type,
+                    NULL AS title,
+                    NULL AS suffix,
+                    NULL AS federaltaxid,
+                    NULL AS taxonomy,
+                    NULL AS supervisor_id,
+                    NULL AS facility_id,
+                    0 AS is_supervisor,
+                    0 AS portal_user,
+                    NULL AS notes
                 FROM users
                 WHERE id = ?";
 
@@ -129,6 +138,59 @@ try {
 
                 http_response_code(200);
                 echo json_encode(['user' => $user]);
+
+            } elseif ($action === 'supervisors') {
+                // Get list of potential supervisors (providers and admins)
+                $sql = "SELECT
+                    id,
+                    username,
+                    CONCAT(first_name, ' ', last_name) AS full_name,
+                    first_name AS fname,
+                    last_name AS lname,
+                    user_type,
+                    is_provider
+                FROM users
+                WHERE is_active = 1
+                AND (is_provider = 1 OR user_type = 'admin')
+                ORDER BY last_name, first_name";
+
+                $supervisors = $db->queryAll($sql);
+
+                http_response_code(200);
+                echo json_encode(['supervisors' => $supervisors]);
+
+            } elseif ($action === 'facilities') {
+                // Get list of facilities for dropdown
+                $sql = "SELECT
+                    id,
+                    name,
+                    facility_type,
+                    is_primary
+                FROM facilities
+                WHERE is_active = 1
+                ORDER BY is_primary DESC, name";
+
+                $facilities = $db->queryAll($sql);
+
+                http_response_code(200);
+                echo json_encode(['facilities' => $facilities]);
+
+            } elseif ($action === 'user_supervisors') {
+                // Get supervisors assigned to a specific user
+                // For now, return empty array as we don't have a junction table yet
+                // This can be extended later when supervisor relationships are needed
+                $userId = $_GET['id'] ?? null;
+
+                if (!$userId) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'User ID required']);
+                    exit;
+                }
+
+                // TODO: Implement user_supervisors junction table if needed
+                // For now, return empty to prevent errors
+                http_response_code(200);
+                echo json_encode(['supervisor_ids' => []]);
             }
             break;
 
