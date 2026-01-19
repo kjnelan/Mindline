@@ -128,8 +128,8 @@ function Dashboard() {
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-mental">
-      <div className="backdrop-blur-2xl bg-white/40 rounded-3xl shadow-2xl p-8 border border-white/50">
-      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
+      <div className="rounded-3xl p-8" style={{ backdropFilter: 'blur(60px) saturate(180%)', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.4) 100%)', boxShadow: '0 8px 32px rgba(107, 154, 196, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)', border: '1px solid rgba(255, 255, 255, 0.6)' }}>
+      <div className="animate-spin rounded-full h-16 w-16 mx-auto" style={{ border: '3px solid rgba(107, 154, 196, 0.3)', borderTopColor: 'rgba(107, 154, 196, 0.9)' }}></div>
       <p className="text-gray-700 font-semibold mt-4 text-center">Loading dashboard...</p>
       </div>
       </div>

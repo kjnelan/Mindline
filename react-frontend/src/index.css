@@ -4,6 +4,8 @@
   --mental-blue: #6B9AC4;
   --mental-sage: #A8C5A5;
   --mental-warm: #E8DCC4;
+  --mental-light: #F0F4F8;
+  --mental-sky: #D6E4F0;
 }
 
 @keyframes gradient {
@@ -12,16 +14,23 @@
 }
 
 .bg-gradient-mental {
-  background: linear-gradient(135deg, var(--mental-blue), var(--mental-sage), var(--mental-warm));
-  background-size: 200% 200%;
-  animation: gradient 15s ease infinite;
+  background: linear-gradient(135deg,
+    #E8F1F8 0%,
+    #D6E4F0 25%,
+    #E0EBE0 50%,
+    #F5F1E8 75%,
+    #EAF0F6 100%
+  );
+  background-size: 300% 300%;
+  animation: gradient 20s ease infinite;
 }
 
 .particle {
   position: absolute;
-  background: rgba(255, 255, 255, 0.1);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 70%, transparent 100%);
   border-radius: 50%;
   animation: float 20s infinite;
+  filter: blur(2px);
 }
 
 .particle-1 {
@@ -116,17 +125,23 @@
 
 /* Reusable glass card styling - used throughout the app */
 .glass-card {
-  backdrop-filter: blur(48px);
-  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(60px) saturate(180%);
+  background: rgba(255, 255, 255, 0.45);
   border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 8px 32px rgba(107, 154, 196, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .glass-card-sm {
-  backdrop-filter: blur(48px);
-  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(60px) saturate(180%);
+  background: rgba(255, 255, 255, 0.45);
   border-radius: 1rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 16px rgba(107, 154, 196, 0.1),
+    0 1px 4px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }

@@ -1,30 +1,40 @@
 /* Main card styling - used for all major containers */
 .card-main {
-  backdrop-filter: blur(40px);
-  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(60px) saturate(180%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.4) 100%);
   border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 8px 32px rgba(107, 154, 196, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(107, 154, 196, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   padding: 1.5rem;
 }
 
 /* Inner card styling - used for data items within main cards */
 .card-inner {
-  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(40px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.6) 100%);
   border-radius: 0.75rem;
   padding: 0.75rem;
-  border: 1px solid rgb(229, 231, 235);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 2px 8px rgba(107, 154, 196, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* Tab navigation container */
 .tab-nav {
-  backdrop-filter: blur(40px);
-  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(60px) saturate(180%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.35) 100%);
   border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 8px 32px rgba(107, 154, 196, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   padding: 0.5rem;
-   /* Add this */ 
   clip-path: polygon( 20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100% );
 }
 
@@ -40,25 +50,35 @@
 .nav-main-active {
   flex: 1;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   font-weight: 600;
   transition: all 300ms;
-  background: linear-gradient(to right, rgb(59, 130, 246), rgb(147, 51, 234));
-  color: white;
+  background: linear-gradient(135deg, rgba(107, 154, 196, 0.5) 0%, rgba(168, 197, 165, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  color: rgb(30, 58, 88);
+  box-shadow:
+    0 4px 12px rgba(107, 154, 196, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 /* Main navigation menu item - inactive state */
 .nav-main-inactive {
   flex: 1;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   font-weight: 600;
   transition: all 300ms;
   color: rgb(55, 65, 81);
 }
 
 .nav-main-inactive:hover {
-  background-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 2px 8px rgba(107, 154, 196, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 /* Tab navigation menu item - active state (tan to blue) */
@@ -67,9 +87,14 @@
   font-weight: 600;
   transition: all 300ms;
   white-space: nowrap;
-  border-radius: 0.5rem;
-  background: linear-gradient(to right, rgb(217, 179, 140), rgb(59, 130, 246));
-  color: white;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(232, 220, 196, 0.6) 0%, rgba(107, 154, 196, 0.5) 100%);
+  backdrop-filter: blur(20px);
+  color: rgb(30, 58, 88);
+  box-shadow:
+    0 4px 12px rgba(107, 154, 196, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 /* Tab navigation menu item - inactive state */
@@ -78,13 +103,18 @@
   font-weight: 600;
   transition: all 300ms;
   white-space: nowrap;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   color: rgb(55, 65, 81);
 }
 
 .nav-tab-inactive:hover {
   color: rgb(17, 24, 39);
-  background-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 2px 8px rgba(107, 154, 196, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 /* Form field styling - for better readability in demographics and forms */
@@ -124,52 +154,81 @@
 .btn-action {
   width: 100%;
   padding: 0.75rem 1rem;
-  color: white;
   font-weight: 600;
   border-radius: 1rem;
   transition: all 300ms;
   transform: scale(1);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .btn-action:hover {
-  transform: scale(1.02);
+  transform: translateY(-1px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 /* Primary button - blue gradient */
 .btn-primary {
-  background: linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235));
+  background: linear-gradient(135deg, rgba(107, 154, 196, 0.7) 0%, rgba(107, 154, 196, 0.9) 100%);
+  color: rgb(255, 255, 255);
+  box-shadow:
+    0 4px 16px rgba(107, 154, 196, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(to right, rgb(37, 99, 235), rgb(29, 78, 216));
+  background: linear-gradient(135deg, rgba(107, 154, 196, 0.8) 0%, rgba(107, 154, 196, 1) 100%);
+  box-shadow:
+    0 6px 20px rgba(107, 154, 196, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* Success button - green gradient */
 .btn-success {
-  background: linear-gradient(to right, rgb(34, 197, 94), rgb(16, 185, 129));
+  background: linear-gradient(135deg, rgba(168, 197, 165, 0.7) 0%, rgba(168, 197, 165, 0.9) 100%);
+  color: rgb(30, 58, 88);
+  box-shadow:
+    0 4px 16px rgba(168, 197, 165, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-success:hover {
-  background: linear-gradient(to right, rgb(22, 163, 74), rgb(5, 150, 105));
+  background: linear-gradient(135deg, rgba(168, 197, 165, 0.8) 0%, rgba(168, 197, 165, 1) 100%);
+  box-shadow:
+    0 6px 20px rgba(168, 197, 165, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-/* Secondary button - purple gradient */
+/* Secondary button - warm gradient */
 .btn-secondary {
-  background: linear-gradient(to right, rgb(168, 85, 247), rgb(147, 51, 234));
+  background: linear-gradient(135deg, rgba(232, 220, 196, 0.7) 0%, rgba(232, 220, 196, 0.9) 100%);
+  color: rgb(30, 58, 88);
+  box-shadow:
+    0 4px 16px rgba(232, 220, 196, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-secondary:hover {
-  background: linear-gradient(to right, rgb(147, 51, 234), rgb(126, 34, 206));
+  background: linear-gradient(135deg, rgba(232, 220, 196, 0.8) 0%, rgba(232, 220, 196, 1) 100%);
+  box-shadow:
+    0 6px 20px rgba(232, 220, 196, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* Danger button - red gradient */
 .btn-danger {
-  background: linear-gradient(to right, rgb(239, 68, 68), rgb(220, 38, 38));
+  background: linear-gradient(135deg, rgba(220, 130, 130, 0.7) 0%, rgba(220, 130, 130, 0.9) 100%);
+  color: rgb(255, 255, 255);
+  box-shadow:
+    0 4px 16px rgba(220, 130, 130, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-danger:hover {
-  background: linear-gradient(to right, rgb(220, 38, 38), rgb(185, 28, 28));
+  background: linear-gradient(135deg, rgba(220, 130, 130, 0.8) 0%, rgba(220, 130, 130, 1) 100%);
+  box-shadow:
+    0 6px 20px rgba(220, 130, 130, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* Gray button for cancel actions */
@@ -245,7 +304,8 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, rgba(107, 154, 196, 0.3) 0%, rgba(168, 197, 165, 0.2) 100%);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -256,9 +316,14 @@
 
 /* Modal container */
 .modal-container {
-  background-color: white;
-  border-radius: 1rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+  backdrop-filter: blur(60px) saturate(180%);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 20px 60px rgba(107, 154, 196, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -315,19 +380,25 @@
 
 /* Client/item card - clickable card with hover effect */
 .client-card {
-  background-color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgb(229, 231, 235);
-  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.5) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 1rem;
   padding: 1rem;
   cursor: pointer;
-  transition: all 200ms;
-  backdrop-filter: blur(4px);
+  transition: all 300ms;
+  backdrop-filter: blur(40px) saturate(150%);
+  box-shadow:
+    0 2px 8px rgba(107, 154, 196, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .client-card:hover {
-  background-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  transform: scale(1.02);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.6) 100%);
+  box-shadow:
+    0 8px 24px rgba(107, 154, 196, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 /* ========================================
@@ -492,19 +563,25 @@
 
 /* Clickable item card with hover effects */
 .card-item {
-  background-color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgb(229, 231, 235);
-  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.5) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 1rem;
   padding: 1rem;
   cursor: pointer;
-  transition: all 200ms;
-  backdrop-filter: blur(4px);
+  transition: all 300ms;
+  backdrop-filter: blur(40px) saturate(150%);
+  box-shadow:
+    0 2px 8px rgba(107, 154, 196, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .card-item:hover {
-  background-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  transform: scale(1.02);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.6) 100%);
+  box-shadow:
+    0 8px 24px rgba(107, 154, 196, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 /* Statistics/summary box */
@@ -619,24 +696,29 @@
 .input-lg {
   width: 100%;
   padding: 0.75rem 1rem;
-  background-color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgb(209, 213, 219);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.7) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 0.75rem;
-  color: rgb(17, 24, 39);
+  color: rgb(30, 58, 88);
   outline: none;
   transition: all 300ms;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(40px);
   font-weight: 500;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 2px 8px rgba(107, 154, 196, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .input-lg::placeholder {
-  color: rgb(156, 163, 175);
+  color: rgb(107, 154, 196);
 }
 
 .input-lg:focus {
-  border-color: rgb(96, 165, 250);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: rgba(107, 154, 196, 0.6);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 4px 12px rgba(107, 154, 196, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 /* Medium input (standard) */
@@ -677,22 +759,28 @@
 /* Search button */
 .btn-search {
   padding: 0.75rem 1.5rem;
-  background-color: rgb(59, 130, 246);
+  background: linear-gradient(135deg, rgba(107, 154, 196, 0.7) 0%, rgba(107, 154, 196, 0.9) 100%);
+  backdrop-filter: blur(20px);
   color: white;
   font-weight: 600;
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   transition: all 300ms;
-  border: 1px solid rgb(37, 99, 235);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 16px rgba(107, 154, 196, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-search:hover {
-  background-color: rgb(37, 99, 235);
-  transform: scale(1.02);
+  background: linear-gradient(135deg, rgba(107, 154, 196, 0.8) 0%, rgba(107, 154, 196, 1) 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 20px rgba(107, 154, 196, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .btn-search:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }
 
 .btn-search:disabled {
