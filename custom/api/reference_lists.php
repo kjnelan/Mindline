@@ -9,10 +9,16 @@
  * Copyright © 2026 Sacred Wandering
  */
 
+// Prevent any output before JSON
+ob_start();
+
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
 use Custom\Lib\Session\SessionManager;
+
+// Clear any output that might have happened during init
+ob_clean();
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -263,3 +269,6 @@ try {
     http_response_code(500);
     echo json_encode(['error' => 'Internal server error: ' . $e->getMessage()]);
 }
+
+// Flush output buffer
+ob_end_flush();
