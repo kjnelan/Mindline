@@ -55,7 +55,7 @@ try {
         exit;
     }
 
-    // Build SQL query
+    // Build SQL query - using Phase 4 schema
     $sql = "SELECT
         n.id,
         n.note_uuid,
@@ -90,21 +90,21 @@ try {
         n.duration_of_symptoms,
         n.previous_diagnoses,
         n.status,
-        n.is_locked,
+        NULL AS is_locked,
         n.signed_at,
         n.signed_by,
-        n.signature_data,
+        NULL AS signature_data,
         n.supervisor_review_required,
-        n.supervisor_review_status,
-        n.supervisor_signed_at,
-        n.supervisor_signed_by,
+        NULL AS supervisor_review_status,
+        n.supervisor_reviewed_at AS supervisor_signed_at,
+        n.supervisor_reviewed_by AS supervisor_signed_by,
         n.supervisor_comments,
-        n.parent_note_id,
-        n.is_addendum,
-        n.addendum_reason,
+        NULL AS parent_note_id,
+        NULL AS is_addendum,
+        n.amendment_reason AS addendum_reason,
         n.created_at,
         n.updated_at,
-        n.locked_at,
+        NULL AS locked_at,
         n.last_autosave_at,
         CONCAT(p.first_name, ' ', p.last_name) AS provider_name,
         CONCAT(sb.first_name, ' ', sb.last_name) AS signed_by_name,
@@ -113,7 +113,7 @@ try {
     FROM clinical_notes n
     LEFT JOIN users p ON p.id = n.created_by
     LEFT JOIN users sb ON sb.id = n.signed_by
-    LEFT JOIN users ss ON ss.id = n.supervisor_signed_by
+    LEFT JOIN users ss ON ss.id = n.supervisor_reviewed_by
     LEFT JOIN clients pt ON pt.id = n.patient_id
     WHERE ";
 
@@ -142,26 +142,13 @@ try {
     $note['diagnosis_codes'] = $note['diagnosis_codes'] ? json_decode($note['diagnosis_codes'], true) : null;
 
     // Convert boolean fields
-    $note['risk_present'] = (bool)$note['risk_present'];
-    $note['is_locked'] = (bool)$note['is_locked'];
-    $note['supervisor_review_required'] = (bool)$note['supervisor_review_required'];
-    $note['is_addendum'] = (bool)$note['is_addendum'];
+    $note['risk_present'] = (bool)($note['risk_present'] ?? false);
+    $note['is_locked'] = (bool)($note['is_locked'] ?? false);
+    $note['supervisor_review_required'] = (bool)($note['supervisor_review_required'] ?? false);
+    $note['is_addendum'] = (bool)($note['is_addendum'] ?? false);
 
-    // If this note has addenda, fetch them
-    $addendaSql = "SELECT
-        n.id,
-        n.note_uuid,
-        n.addendum_reason,
-        n.created_at,
-        n.updated_at,
-        CONCAT(u.first_name, ' ', u.last_name) AS provider_name
-    FROM clinical_notes n
-    LEFT JOIN users u ON u.id = n.created_by
-    WHERE n.parent_note_id = ? AND n.is_addendum = 1
-    ORDER BY n.created_at DESC";
-
-    $addenda = $db->queryAll($addendaSql, [$note['id']]);
-    $note['addenda'] = $addenda;
+    // Addenda feature not yet implemented in Phase 4 schema
+    $note['addenda'] = [];
 
     $response = [
         'success' => true,

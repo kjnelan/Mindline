@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS treatment_goals (
     INDEX idx_created_at (created_at),
 
     -- Foreign keys
-    FOREIGN KEY (patient_id) REFERENCES patient_data(id) ON DELETE CASCADE,
+    FOREIGN KEY (patient_id) REFERENCES clients(id) ON DELETE CASCADE,
     FOREIGN KEY (provider_id) REFERENCES users(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
