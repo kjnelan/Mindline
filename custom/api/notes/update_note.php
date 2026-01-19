@@ -75,7 +75,7 @@ try {
     $updateFields = [];
     $params = [];
 
-    // Optional updatable fields
+    // Optional updatable fields (non-JSON, non-boolean)
     $updatableFields = [
         'noteType' => 'note_type',
         'templateType' => 'template_type',
@@ -86,10 +86,8 @@ try {
         'intervention' => 'intervention',
         'response' => 'response',
         'plan' => 'plan',
-        'riskAssessment' => 'risk_assessment',
         'presentingConcerns' => 'presenting_concerns',
         'clinicalObservations' => 'clinical_observations',
-        'mentalStatusExam' => 'mental_status_exam',
         // Diagnosis note fields (Phase 4B) - using snake_case to match frontend
         'symptoms_reported' => 'symptoms_reported',
         'symptoms_observed' => 'symptoms_observed',
@@ -105,6 +103,44 @@ try {
         if (array_key_exists($inputKey, $input)) {
             $updateFields[] = "$dbField = ?";
             $params[] = $input[$inputKey];
+        }
+    }
+
+    // Handle JSON field: riskAssessment
+    if (isset($input['riskAssessment'])) {
+        $updateFields[] = "risk_assessment = ?";
+        if ($input['riskAssessment'] === '' || $input['riskAssessment'] === null) {
+            $params[] = null;
+        } else if (is_array($input['riskAssessment']) || is_object($input['riskAssessment'])) {
+            $params[] = json_encode($input['riskAssessment']);
+        } else if (is_string($input['riskAssessment'])) {
+            $decoded = json_decode($input['riskAssessment']);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $params[] = $input['riskAssessment'];
+            } else {
+                $params[] = null;
+            }
+        } else {
+            $params[] = null;
+        }
+    }
+
+    // Handle JSON field: mentalStatusExam
+    if (isset($input['mentalStatusExam'])) {
+        $updateFields[] = "mental_status_exam = ?";
+        if ($input['mentalStatusExam'] === '' || $input['mentalStatusExam'] === null) {
+            $params[] = null;
+        } else if (is_array($input['mentalStatusExam']) || is_object($input['mentalStatusExam'])) {
+            $params[] = json_encode($input['mentalStatusExam']);
+        } else if (is_string($input['mentalStatusExam'])) {
+            $decoded = json_decode($input['mentalStatusExam']);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $params[] = $input['mentalStatusExam'];
+            } else {
+                $params[] = null;
+            }
+        } else {
+            $params[] = null;
         }
     }
 
@@ -127,29 +163,78 @@ try {
         $params[] = $supervisorReviewRequired;
     }
 
-    // JSON fields
+    // JSON fields - must be valid JSON or NULL
     if (isset($input['goalsAddressed'])) {
         $updateFields[] = "goals_addressed = ?";
-        $params[] = json_encode($input['goalsAddressed']);
+        if ($input['goalsAddressed'] === '' || $input['goalsAddressed'] === null) {
+            $params[] = null;
+        } else if (is_array($input['goalsAddressed']) || is_object($input['goalsAddressed'])) {
+            $params[] = json_encode($input['goalsAddressed']);
+        } else if (is_string($input['goalsAddressed'])) {
+            $decoded = json_decode($input['goalsAddressed']);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $params[] = $input['goalsAddressed'];
+            } else {
+                $params[] = null;
+            }
+        } else {
+            $params[] = null;
+        }
     }
 
     if (isset($input['interventionsSelected'])) {
         $updateFields[] = "interventions_selected = ?";
-        $params[] = json_encode($input['interventionsSelected']);
+        if ($input['interventionsSelected'] === '' || $input['interventionsSelected'] === null) {
+            $params[] = null;
+        } else if (is_array($input['interventionsSelected']) || is_object($input['interventionsSelected'])) {
+            $params[] = json_encode($input['interventionsSelected']);
+        } else if (is_string($input['interventionsSelected'])) {
+            $decoded = json_decode($input['interventionsSelected']);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $params[] = $input['interventionsSelected'];
+            } else {
+                $params[] = null;
+            }
+        } else {
+            $params[] = null;
+        }
     }
 
     if (isset($input['clientPresentation'])) {
         $updateFields[] = "client_presentation = ?";
-        $params[] = json_encode($input['clientPresentation']);
+        if ($input['clientPresentation'] === '' || $input['clientPresentation'] === null) {
+            $params[] = null;
+        } else if (is_array($input['clientPresentation']) || is_object($input['clientPresentation'])) {
+            $params[] = json_encode($input['clientPresentation']);
+        } else if (is_string($input['clientPresentation'])) {
+            $decoded = json_decode($input['clientPresentation']);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $params[] = $input['clientPresentation'];
+            } else {
+                $params[] = null;
+            }
+        } else {
+            $params[] = null;
+        }
     }
 
     // diagnosis_codes - may be string (from frontend) or array (from loaded note)
     if (isset($input['diagnosis_codes'])) {
         $updateFields[] = "diagnosis_codes = ?";
-        // If it's already a string, use as-is. If it's an array, encode it.
-        $params[] = is_string($input['diagnosis_codes'])
-            ? $input['diagnosis_codes']
-            : json_encode($input['diagnosis_codes']);
+        if ($input['diagnosis_codes'] === '' || $input['diagnosis_codes'] === null) {
+            $params[] = null;
+        } else if (is_array($input['diagnosis_codes']) || is_object($input['diagnosis_codes'])) {
+            $params[] = json_encode($input['diagnosis_codes']);
+        } else if (is_string($input['diagnosis_codes'])) {
+            $decoded = json_decode($input['diagnosis_codes']);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $params[] = $input['diagnosis_codes'];
+            } else {
+                $params[] = null;
+            }
+        } else {
+            $params[] = null;
+        }
     }
 
     // Status update
