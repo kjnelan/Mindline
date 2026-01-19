@@ -78,10 +78,10 @@ try {
     $userId = $session->getUserId();
     error_log("Reference Lists API: Got user ID - " . $userId);
 
-    $userSql = "SELECT is_admin FROM users WHERE id = ?";
+    $userSql = "SELECT user_type FROM users WHERE id = ?";
     $userResult = $db->query($userSql, [$userId]);
 
-    if (!$userResult || $userResult['is_admin'] != 1) {
+    if (!$userResult || $userResult['user_type'] !== 'admin') {
         error_log("Reference Lists API: No admin access - User ID: " . $userId);
         http_response_code(403);
         echo json_encode(['error' => 'Admin access required']);
