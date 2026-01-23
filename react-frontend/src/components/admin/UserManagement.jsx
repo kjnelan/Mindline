@@ -242,8 +242,37 @@ function UserManagement() {
 
   const handleSaveNew = async () => {
     // Validation
-    if (!formData.username || !formData.password || !formData.fname || !formData.lname) {
-      setFormError('Username, password, first name, and last name are required');
+    if (!formData.username || !formData.password || !formData.fname || !formData.lname || !formData.email) {
+      setFormError('Username, password, email, first name, and last name are required');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setFormError('Please enter a valid email address');
+      return;
+    }
+
+    // Validate password strength
+    if (formData.password.length < 8) {
+      setFormError('Password must be at least 8 characters long');
+      return;
+    }
+    if (!/[a-z]/.test(formData.password)) {
+      setFormError('Password must contain at least one lowercase letter');
+      return;
+    }
+    if (!/[A-Z]/.test(formData.password)) {
+      setFormError('Password must contain at least one uppercase letter');
+      return;
+    }
+    if (!/[0-9]/.test(formData.password)) {
+      setFormError('Password must contain at least one number');
+      return;
+    }
+    if (!/[^a-zA-Z0-9]/.test(formData.password)) {
+      setFormError('Password must contain at least one special character');
       return;
     }
 
@@ -284,6 +313,30 @@ function UserManagement() {
     if (!formData.fname || !formData.lname) {
       setFormError('First name and last name are required');
       return;
+    }
+
+    // If password is provided, validate it
+    if (formData.password && formData.password.trim() !== '') {
+      if (formData.password.length < 8) {
+        setFormError('Password must be at least 8 characters long');
+        return;
+      }
+      if (!/[a-z]/.test(formData.password)) {
+        setFormError('Password must contain at least one lowercase letter');
+        return;
+      }
+      if (!/[A-Z]/.test(formData.password)) {
+        setFormError('Password must contain at least one uppercase letter');
+        return;
+      }
+      if (!/[0-9]/.test(formData.password)) {
+        setFormError('Password must contain at least one number');
+        return;
+      }
+      if (!/[^a-zA-Z0-9]/.test(formData.password)) {
+        setFormError('Password must contain at least one special character');
+        return;
+      }
     }
 
     try {
@@ -737,7 +790,7 @@ function UserFormModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
