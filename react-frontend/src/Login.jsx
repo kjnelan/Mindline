@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR
  * Login screen with glassmorphism design
  *
  * Author: Kenneth J. Nelan
@@ -162,7 +162,7 @@ function Login() {
 
               <div className="mt-6 text-center border-t border-white/30 pt-4">
                 <p className="text-gray-600 text-xs">
-                  Mindline is Copyright © 2026 Sacred Wandering
+                  SanctumEMHR is Copyright © 2026 Sacred Wandering
                 </p>
                 <p className="text-gray-500 text-xs mt-1">
                   Proprietary and Confidential
