@@ -17,6 +17,7 @@ import DocumentCategories from '../components/settings/DocumentCategories';
 import ReferenceLists from '../components/admin/ReferenceLists';
 import UserManagement from '../components/admin/UserManagement';
 import Facilities from '../components/admin/Facilities';
+import SecuritySettings from '../components/admin/SecuritySettings';
 import About from '../components/admin/About';
 
 function Admin() {
@@ -37,9 +38,9 @@ function Admin() {
       label: 'System',
       icon: '⚙️',
       sections: [
+        { id: 'security', label: 'Security', available: true },
         { id: 'appearance', label: 'Appearance', available: false },
         { id: 'features', label: 'Features', available: false },
-        { id: 'security', label: 'Security', available: false },
       ]
     },
     {
@@ -180,6 +181,7 @@ function Admin() {
 
         {/* Main Settings Panel */}
         <div className="flex-1">
+          {activeSection === 'security' && <SecuritySettings />}
           {activeSection === 'calendar-settings' && <CalendarSettings />}
           {activeSection === 'calendar-categories' && <CalendarCategories />}
           {activeSection === 'reference-lists' && <ReferenceLists />}
@@ -189,7 +191,7 @@ function Admin() {
           {activeSection === 'about' && <About />}
 
           {/* Coming Soon for unavailable sections */}
-          {!['calendar-settings', 'calendar-categories', 'reference-lists', 'document-categories', 'facilities', 'users', 'about'].includes(activeSection) && (
+          {!['security', 'calendar-settings', 'calendar-categories', 'reference-lists', 'document-categories', 'facilities', 'users', 'about'].includes(activeSection) && (
             <div className="glass-card p-12 text-center">
               <div className="text-gray-700 text-lg font-semibold">
                 {sectionGroups.flatMap(g => g.sections).find(s => s.id === activeSection)?.label}
