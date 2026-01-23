@@ -95,7 +95,7 @@ class CustomAuth
      */
     public function hashPassword(string $password): string
     {
-        return password_hash($password, PASSWORD_ARGON2ID);
+        return password_hash($password, PASSWORD_BCRYPT);
     }
 
     /**
@@ -106,7 +106,7 @@ class CustomAuth
      */
     public function needsRehash(string $hash): bool
     {
-        return password_needs_rehash($hash, PASSWORD_ARGON2ID);
+        return password_needs_rehash($hash, PASSWORD_BCRYPT);
     }
 
     /**
