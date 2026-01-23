@@ -82,6 +82,12 @@ class CustomAuth
 
         error_log("Auth: Found user $username (ID: {$user['id']}, hash type: " . substr($user['password_hash'], 0, 10) . ")");
 
+        // Check and reset expired failed attempts
+        $this->checkAndResetExpiredAttempts($user);
+
+        // Reload user after potential reset
+        $user = $this->getUserById($user['id']);
+
         // Check if account is locked
         if ($this->isAccountLocked($user)) {
             error_log("Auth failed: account locked for username: $username");
@@ -240,6 +246,53 @@ class CustomAuth
     }
 
     /**
+     * Check and reset expired failed login attempts
+     *
+     * @param array $user User data
+     */
+    private function checkAndResetExpiredAttempts(array $user): void
+    {
+        // Skip if no failed attempts
+        if (!$user['failed_login_attempts'] || $user['failed_login_attempts'] == 0) {
+            return;
+        }
+
+        // Get expiration hours setting
+        $expirationHours = $this->settings->getInt('security.failed_attempts_expiration_hours', 24);
+
+        // If set to 0, failed attempts never expire
+        if ($expirationHours === 0) {
+            return;
+        }
+
+        // Check if last_failed_login_at column exists and has a value
+        if (!isset($user['last_failed_login_at']) || !$user['last_failed_login_at']) {
+            // Column doesn't exist or no timestamp - can't determine expiration
+            return;
+        }
+
+        $lastFailedAt = strtotime($user['last_failed_login_at']);
+        $expirationTime = strtotime("-$expirationHours hours");
+
+        // If last failed attempt is older than expiration time, reset
+        if ($lastFailedAt < $expirationTime) {
+            error_log("Resetting expired failed attempts for user ID {$user['id']} (last attempt: {$user['last_failed_login_at']})");
+            $this->resetFailedAttempts($user['id']);
+        }
+    }
+
+    /**
+     * Reset failed login attempts
+     *
+     * @param int $userId User ID
+     */
+    private function resetFailedAttempts(int $userId): void
+    {
+        $sql = "UPDATE users SET failed_login_attempts = 0, last_failed_login_at = NULL WHERE id = ?";
+        $this->db->execute($sql, [$userId]);
+    }
+
+    /**
      * Handle failed login attempt
      *
      * @param int $userId User ID
@@ -247,8 +300,11 @@ class CustomAuth
      */
     private function handleFailedLogin(int $userId, string $username): void
     {
-        // Increment failed attempts
-        $sql = "UPDATE users SET failed_login_attempts = failed_login_attempts + 1 WHERE id = ?";
+        // Increment failed attempts and set timestamp
+        $sql = "UPDATE users
+                SET failed_login_attempts = failed_login_attempts + 1,
+                    last_failed_login_at = NOW()
+                WHERE id = ?";
         $this->db->execute($sql, [$userId]);
 
         // Check if we need to lock the account
@@ -271,10 +327,11 @@ class CustomAuth
      */
     private function handleSuccessfulLogin(int $userId, string $username): void
     {
-        // Reset failed attempts and update last login
+        // Reset failed attempts, clear lock, and update last login
         $sql = "UPDATE users
                 SET failed_login_attempts = 0,
                     locked_until = NULL,
+                    last_failed_login_at = NULL,
                     last_login_at = NOW()
                 WHERE id = ?";
         $this->db->execute($sql, [$userId]);
@@ -305,7 +362,11 @@ class CustomAuth
      */
     private function unlockAccount(int $userId): void
     {
-        $sql = "UPDATE users SET locked_until = NULL, failed_login_attempts = 0 WHERE id = ?";
+        $sql = "UPDATE users
+                SET locked_until = NULL,
+                    failed_login_attempts = 0,
+                    last_failed_login_at = NULL
+                WHERE id = ?";
         $this->db->execute($sql, [$userId]);
     }
 
