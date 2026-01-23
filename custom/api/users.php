@@ -337,6 +337,18 @@ try {
                 $params[] = $input['user_type'];
             }
 
+            // Handle password change if provided
+            if (isset($input['password']) && !empty($input['password'])) {
+                $auth = new CustomAuth($db);
+                $passwordResult = $auth->changePassword($userId, $input['password']);
+
+                if (!$passwordResult['success']) {
+                    http_response_code(400);
+                    echo json_encode(['error' => $passwordResult['message']]);
+                    exit;
+                }
+            }
+
             if (empty($updateFields)) {
                 http_response_code(400);
                 echo json_encode(['error' => 'No fields to update']);
