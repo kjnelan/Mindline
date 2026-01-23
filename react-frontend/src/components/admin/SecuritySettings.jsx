@@ -9,8 +9,7 @@ function SecuritySettings() {
   const [settings, setSettings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState(null);
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
@@ -38,7 +37,7 @@ function SecuritySettings() {
 
     } catch (err) {
       console.error('Error fetching settings:', err);
-      setError('Failed to load security settings');
+      setMessage({ type: 'error', text: 'Failed to load security settings' });
     } finally {
       setLoading(false);
     }
@@ -54,8 +53,7 @@ function SecuritySettings() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      setError('');
-      setMessage('');
+      setMessage(null);
 
       const response = await fetch('/custom/api/settings.php', {
         method: 'PUT',
@@ -74,12 +72,12 @@ function SecuritySettings() {
         throw new Error(data.message || 'Failed to save settings');
       }
 
-      setMessage('Security settings updated successfully');
-      setTimeout(() => setMessage(''), 3000);
+      setMessage({ type: 'success', text: 'Settings saved successfully!' });
+      setTimeout(() => setMessage(null), 3000);
 
     } catch (err) {
       console.error('Error saving settings:', err);
-      setError(err.message || 'Failed to save settings');
+      setMessage({ type: 'error', text: err.message || 'Failed to save settings' });
     } finally {
       setSaving(false);
     }
@@ -91,13 +89,16 @@ function SecuritySettings() {
 
     if (setting.setting_type === 'boolean') {
       return (
-        <input
-          type="checkbox"
-          checked={value === '1' || value === true}
-          onChange={(e) => handleChange(key, e.target.checked ? '1' : '0')}
-          disabled={!setting.is_editable}
-          className="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-        />
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={value === '1' || value === true}
+            onChange={(e) => handleChange(key, e.target.checked ? '1' : '0')}
+            disabled={!setting.is_editable}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+        </label>
       );
     } else if (setting.setting_type === 'integer') {
       return (
@@ -106,7 +107,7 @@ function SecuritySettings() {
           value={value}
           onChange={(e) => handleChange(key, e.target.value)}
           disabled={!setting.is_editable}
-          className="input-base w-32"
+          className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 text-gray-900"
           min="0"
         />
       );
@@ -117,7 +118,7 @@ function SecuritySettings() {
           value={value}
           onChange={(e) => handleChange(key, e.target.value)}
           disabled={!setting.is_editable}
-          className="input-base"
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 text-gray-900"
         />
       );
     }
@@ -131,103 +132,101 @@ function SecuritySettings() {
 
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p className="mt-2 text-gray-600">Loading settings...</p>
+      <div className="glass-card p-12 text-center">
+        <div className="text-gray-700">Loading security settings...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800">Security Settings</h2>
+    <div className="glass-card p-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Security Settings</h2>
         <p className="text-gray-600 mt-1">Configure security and authentication parameters</p>
       </div>
 
+      {/* Success/Error Message */}
       {message && (
-        <div className="success-message">
-          {message}
+        <div className={`mb-6 px-4 py-3 rounded-lg border ${
+          message.type === 'success'
+            ? 'bg-green-100/60 border-green-300/50 text-green-700'
+            : 'bg-red-100/60 border-red-300/50 text-red-700'
+        }`}>
+          {message.text}
         </div>
       )}
 
-      {error && (
-        <div className="error-message">
-          {error}
+      <div className="space-y-6">
+        {/* Account Lockout Section */}
+        <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6 border border-white/40">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Account Lockout</h3>
+          <div className="space-y-5">
+            {settings.filter(s => s.setting_key.includes('login_attempts') || s.setting_key.includes('lockout')).map(setting => (
+              <div key={setting.setting_key} className="flex items-center justify-between py-2">
+                <div className="flex-1 pr-4">
+                  <label className="block font-medium text-gray-900 text-sm">
+                    {getSettingLabel(setting.setting_key)}
+                  </label>
+                  <p className="text-sm text-gray-600 mt-1">{setting.description}</p>
+                </div>
+                <div className="flex-shrink-0">
+                  {renderSettingInput(setting)}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
 
-      <div className="card">
-        <div className="card-header">
-          <h3 className="text-lg font-semibold text-gray-800">Account Lockout</h3>
-        </div>
-        <div className="card-body space-y-4">
-          {settings.filter(s => s.setting_key.includes('login_attempts') || s.setting_key.includes('lockout')).map(setting => (
-            <div key={setting.setting_key} className="flex items-center justify-between py-2">
-              <div className="flex-1">
-                <label className="block font-medium text-gray-700">
-                  {getSettingLabel(setting.setting_key)}
-                </label>
-                <p className="text-sm text-gray-500 mt-1">{setting.description}</p>
+        {/* Password Requirements Section */}
+        <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6 border border-white/40">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Password Requirements</h3>
+          <div className="space-y-5">
+            {settings.filter(s => s.setting_key.includes('password')).map(setting => (
+              <div key={setting.setting_key} className="flex items-center justify-between py-2">
+                <div className="flex-1 pr-4">
+                  <label className="block font-medium text-gray-900 text-sm">
+                    {getSettingLabel(setting.setting_key)}
+                  </label>
+                  <p className="text-sm text-gray-600 mt-1">{setting.description}</p>
+                </div>
+                <div className="flex-shrink-0">
+                  {renderSettingInput(setting)}
+                </div>
               </div>
-              <div className="ml-4">
-                {renderSettingInput(setting)}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="card">
-        <div className="card-header">
-          <h3 className="text-lg font-semibold text-gray-800">Password Requirements</h3>
-        </div>
-        <div className="card-body space-y-4">
-          {settings.filter(s => s.setting_key.includes('password')).map(setting => (
-            <div key={setting.setting_key} className="flex items-center justify-between py-2">
-              <div className="flex-1">
-                <label className="block font-medium text-gray-700">
-                  {getSettingLabel(setting.setting_key)}
-                </label>
-                <p className="text-sm text-gray-500 mt-1">{setting.description}</p>
+        {/* Session Management Section */}
+        <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6 border border-white/40">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Session Management</h3>
+          <div className="space-y-5">
+            {settings.filter(s => s.setting_key.includes('session')).map(setting => (
+              <div key={setting.setting_key} className="flex items-center justify-between py-2">
+                <div className="flex-1 pr-4">
+                  <label className="block font-medium text-gray-900 text-sm">
+                    {getSettingLabel(setting.setting_key)}
+                  </label>
+                  <p className="text-sm text-gray-600 mt-1">{setting.description}</p>
+                </div>
+                <div className="flex-shrink-0">
+                  {renderSettingInput(setting)}
+                </div>
               </div>
-              <div className="ml-4">
-                {renderSettingInput(setting)}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="card">
-        <div className="card-header">
-          <h3 className="text-lg font-semibold text-gray-800">Session Management</h3>
+        {/* Save Button */}
+        <div className="flex justify-end pt-4">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+          >
+            {saving ? 'Saving Changes...' : 'Save Changes'}
+          </button>
         </div>
-        <div className="card-body space-y-4">
-          {settings.filter(s => s.setting_key.includes('session')).map(setting => (
-            <div key={setting.setting_key} className="flex items-center justify-between py-2">
-              <div className="flex-1">
-                <label className="block font-medium text-gray-700">
-                  {getSettingLabel(setting.setting_key)}
-                </label>
-                <p className="text-sm text-gray-500 mt-1">{setting.description}</p>
-              </div>
-              <div className="ml-4">
-                {renderSettingInput(setting)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
       </div>
     </div>
   );
