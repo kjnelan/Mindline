@@ -390,6 +390,29 @@ function UserManagement() {
     }
   };
 
+  const handleUnlock = async (userId) => {
+    if (!confirm('Unlock this user account? This will reset failed login attempts and allow them to log in again.')) return;
+
+    try {
+      const response = await fetch(`/custom/api/users.php?action=unlock&id=${userId}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || 'Failed to unlock account');
+      }
+
+      await fetchUsers();
+      alert('Account unlocked successfully');
+
+    } catch (err) {
+      console.error('Error unlocking account:', err);
+      alert('Failed to unlock account: ' + err.message);
+    }
+  };
+
   const handleCloseModals = () => {
     setShowAddModal(false);
     setShowEditModal(false);
@@ -550,9 +573,16 @@ function UserManagement() {
                     <p className="text-xs text-gray-600">{user.title}</p>
                   )}
                 </div>
-                <span className={user.active === '1' ? 'badge-solid-success' : 'badge-solid-danger'}>
-                  {user.active === '1' ? 'ACTIVE' : 'INACTIVE'}
-                </span>
+                <div className="flex flex-col gap-1 items-end">
+                  <span className={user.active === '1' ? 'badge-solid-success' : 'badge-solid-danger'}>
+                    {user.active === '1' ? 'ACTIVE' : 'INACTIVE'}
+                  </span>
+                  {user.is_locked === '1' && (
+                    <span className="badge-solid-danger text-xs">
+                      LOCKED
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Card Body with User Details */}
@@ -591,6 +621,14 @@ function UserManagement() {
                 >
                   Edit
                 </button>
+                {user.is_locked === '1' && (
+                  <button
+                    onClick={() => handleUnlock(user.id)}
+                    className="flex-1 px-3 py-1.5 text-sm font-medium text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded-lg transition-colors"
+                  >
+                    Unlock
+                  </button>
+                )}
                 {user.active === '1' && (
                   <button
                     onClick={() => handleDeactivate(user.id)}
