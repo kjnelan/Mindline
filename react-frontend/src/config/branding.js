@@ -3,7 +3,7 @@ export const branding = {
   systemName: 'Electronic Mental Health Record',
   tagline: 'Where modern design meets clinical insight.',
   logoText: 'S', // Fallback if no logo image
-  logoUrl: '/app/SanctumLogo.',
+  logoUrl: '/app/SanctumLogo.png',
   colors: {
     primary: '#6B9AC4',
     secondary: '#A8C5A5',
