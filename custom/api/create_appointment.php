@@ -81,7 +81,7 @@ try {
 
     // Optional fields
     $title = $input['title'] ?? '';
-    $comments = $input['comments'] ?? '';
+    $notes = $input['notes'] ?? '';
     $apptstatus = $input['apptstatus'] ?? '-'; // Default status
     $room = $input['room'] ?? '';
     $facilityId = isset($input['facilityId']) ? intval($input['facilityId']) : 0;
@@ -319,7 +319,7 @@ try {
             start_datetime,
             end_datetime,
             duration,
-            comments,
+            notes,
             status,
             room,
             facility_id,
@@ -352,7 +352,7 @@ try {
             $occurrenceStartDT->format('Y-m-d H:i:s'),
             $occurrenceEndDT->format('Y-m-d H:i:s'),
             $duration,
-            $comments,
+            $notes,
             $sanctumEMHRStatus,
             $room,
             $facilityId,
@@ -387,7 +387,7 @@ try {
             a.category_id,
             a.status,
             a.title,
-            a.comments,
+            a.notes,
             a.client_id,
             a.provider_id,
             a.is_recurring,
@@ -425,7 +425,7 @@ try {
             'categoryColor' => $row['category_color'],
             'status' => $reverseStatusMap[$row['status']] ?? '-', // Map back to symbol
             'title' => $row['title'],
-            'comments' => $row['comments'],
+            'notes' => $row['notes'],
             'patientId' => $row['client_id'],
             'patientName' => trim(($row['patient_fname'] ?? '') . ' ' . ($row['patient_lname'] ?? '')),
             'providerId' => $row['provider_id'],
