@@ -318,7 +318,7 @@ try {
             title,
             start_datetime,
             end_datetime,
-            duration_minutes,
+            duration,
             comments,
             status,
             room,
@@ -383,7 +383,7 @@ try {
             a.id,
             a.start_datetime,
             a.end_datetime,
-            a.duration_minutes,
+            a.duration,
             a.category_id,
             a.status,
             a.title,
@@ -419,7 +419,7 @@ try {
             'eventDate' => $startDT->format('Y-m-d'),
             'startTime' => $startDT->format('H:i:s'),
             'endTime' => $endDT->format('H:i:s'),
-            'duration' => $row['duration_minutes'] * 60, // Convert minutes to seconds for frontend
+            'duration' => $row['duration'] * 60, // Convert minutes to seconds for frontend
             'categoryId' => $row['category_id'],
             'categoryName' => $row['category_name'],
             'categoryColor' => $row['category_color'],
