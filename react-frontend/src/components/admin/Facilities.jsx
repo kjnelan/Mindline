@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FormLabel } from '../FormLabel';
 import { TabButton } from '../TabButton';
+import { PrimaryButton } from '../PrimaryButton';
 
 function Facilities() {
   const [facilities, setFacilities] = useState([]);
@@ -307,12 +308,11 @@ function Facilities() {
       <div className="glass-card p-8">
         <div className="text-center text-red-600">Error: {error}</div>
         <div className="text-center mt-4">
-          <button
+          <PrimaryButton
             onClick={fetchFacilities}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Retry
-          </button>
+          </PrimaryButton>
         </div>
       </div>
     );

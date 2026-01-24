@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { PrimaryButton } from '../PrimaryButton';
 
 function CPTCodes() {
   const [cptCodes, setCptCodes] = useState([]);
@@ -233,12 +234,13 @@ function CPTCodes() {
           <h2 className="text-2xl font-bold text-gray-900">CPT Codes</h2>
           <p className="text-gray-600 mt-1">Manage billing codes for clinical services</p>
         </div>
-        <button
+
+        <PrimaryButton
           onClick={handleAdd}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
+          >
           + Add CPT Code
-        </button>
+        </PrimaryButton>
+
       </div>
 
       {error && (
@@ -479,13 +481,13 @@ function CPTCodes() {
               >
                 Cancel
               </button>
-              <button
+
+              <PrimaryButton
                 onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save CPT Code'}
-              </button>
+              </PrimaryButton>
+
             </div>
           </div>
         </div>,

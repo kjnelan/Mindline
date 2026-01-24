@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { PrimaryButton } from '../PrimaryButton';
 
 function CalendarCategories() {
   const [categories, setCategories] = useState([]);
@@ -255,12 +256,13 @@ function CalendarCategories() {
           <h2 className="text-2xl font-bold text-gray-900">Calendar Categories</h2>
           <p className="text-gray-600 mt-1">Manage appointment types and link them to billing codes</p>
         </div>
-        <button
+
+        <PrimaryButton
           onClick={handleAdd}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           + Add Category
-        </button>
+        </PrimaryButton>
+
       </div>
 
       {error && (
@@ -583,13 +585,13 @@ function CalendarCategories() {
               >
                 Cancel
               </button>
-              <button
+
+              <PrimaryButton
                 onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save Category'}
-              </button>
+              </PrimaryButton>
             </div>
           </div>
         </div>,
