@@ -363,7 +363,7 @@ Therapists should feel empowered by their tools, not burdened by them.
 
 ### Migration Path (v2.0+)
 When ready for full independence from OpenEMR:
-1. Fork database schema to `mindline_*` tables
+1. Fork database schema to `sanctum_*` tables
 2. Optimize for mental health workflows
 3. Remove medical-specific fields
 4. Add therapy-specific structures

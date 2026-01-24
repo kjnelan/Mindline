@@ -41,12 +41,12 @@ This migration adds the intervention library system to support clinical note doc
 
 ### Option 1: Via MySQL Command Line
 ```bash
-mysql -u root -p mindline < /home/user/SanctumEMHR/custom/migrations/add_intervention_library.sql
+mysql -u root -p sanctumEMHR < /home/user/SanctumEMHR/custom/migrations/add_intervention_library.sql
 ```
 
 ### Option 2: Via phpMyAdmin
 1. Log into phpMyAdmin
-2. Select the `mindline` database
+2. Select the `sanctumEMHR` database
 3. Click the "SQL" tab
 4. Copy and paste the contents of `add_intervention_library.sql`
 5. Click "Go"
@@ -54,7 +54,7 @@ mysql -u root -p mindline < /home/user/SanctumEMHR/custom/migrations/add_interve
 ### Option 3: Via MySQL Client
 ```bash
 mysql -u root -p
-USE mindline;
+USE sanctumEMHR;
 SOURCE /home/user/SanctumEMHR/custom/migrations/add_intervention_library.sql;
 ```
 

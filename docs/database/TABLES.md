@@ -1,6 +1,6 @@
 # SanctumEMHR EMHR - Database Tables Documentation
 
-**Database Name:** `mindline_emhr` (currently using OpenEMR schema)
+**Database Name:** `sanctum_emhr` (currently using OpenEMR schema)
 **Purpose:** Documentation for migration planning away from OpenEMR backend
 **Last Updated:** 2026-01-03
 

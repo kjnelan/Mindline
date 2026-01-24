@@ -20,8 +20,8 @@ SET time_zone = "+00:00";
 -- ============================================
 -- Create Database (optional - uncomment if needed)
 -- ============================================
--- CREATE DATABASE IF NOT EXISTS mindline CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
--- USE mindline;
+-- CREATE DATABASE IF NOT EXISTS sanctumEMHR CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- USE sanctumEMHR;
 
 -- ============================================
 -- 1. USER MANAGEMENT TABLES

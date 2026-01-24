@@ -18,13 +18,13 @@ Complete step-by-step guide to set up SanctumEMHR from scratch.
 ### 1.1 Create the Database
 
 ```bash
-mysql -u root -p -e "CREATE DATABASE mindline CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e "CREATE DATABASE sanctumEMHR CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
 ### 1.2 Import the Schema
 
 ```bash
-mysql -u root -p mindline < database/mindline.sql
+mysql -u root -p sanctumEMHR < database/sanctumEMHR.sql
 ```
 
 This will create 32 tables including:
@@ -39,7 +39,7 @@ This will create 32 tables including:
 ### 1.3 Verify Import
 
 ```bash
-mysql -u root -p mindline -e "SHOW TABLES;"
+mysql -u root -p sanctumEMHR -e "SHOW TABLES;"
 ```
 
 You should see 32 tables listed.
@@ -67,7 +67,7 @@ Update with your database credentials:
 return [
     'host' => 'localhost',
     'port' => '3306',
-    'database' => 'mindline',
+    'database' => 'sanctumEMHR',
     'username' => 'your_db_user',      // ← Change this
     'password' => 'your_db_password',  // ← Change this
     'charset' => 'utf8mb4',
@@ -100,7 +100,7 @@ php -r "echo password_hash('YourPassword123!', PASSWORD_ARGON2ID) . \"\n\";"
 2. Insert the user:
 
 ```bash
-mysql -u root -p mindline
+mysql -u root -p sanctumEMHR
 ```
 
 ```sql
@@ -109,7 +109,7 @@ INSERT INTO users (
     user_type, is_active, is_provider
 ) VALUES (
     'admin',
-    'admin@mindline.local',
+    'admin@sanctumEMHR.local',
     '$argon2id$v=19$m=65536,t=4,p=1$...',  -- Paste hash from step 1
     'Admin',
     'User',
@@ -129,7 +129,7 @@ Create a virtual host configuration:
 
 ```apache
 <VirtualHost *:80>
-    ServerName mindline.local
+    ServerName sanctumEMHR.local
     DocumentRoot /path/to/Mineline
 
     <Directory /path/to/Mineline>
@@ -143,8 +143,8 @@ Create a virtual host configuration:
     Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
     Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
 
-    ErrorLog ${APACHE_LOG_DIR}/mindline_error.log
-    CustomLog ${APACHE_LOG_DIR}/mindline_access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/sanctum_error.log
+    CustomLog ${APACHE_LOG_DIR}/sanctum_access.log combined
 </VirtualHost>
 ```
 
@@ -161,7 +161,7 @@ sudo systemctl restart apache2
 ```nginx
 server {
     listen 80;
-    server_name mindline.local;
+    server_name sanctumEMHR.local;
     root /path/to/Mineline;
     index index.php index.html;
 
@@ -214,7 +214,7 @@ Expected response:
   "user": {
     "id": 1,
     "username": "admin",
-    "email": "admin@mindline.local",
+    "email": "admin@sanctumEMHR.local",
     "firstName": "Admin",
     "lastName": "User",
     "fullName": "Admin User",
@@ -305,17 +305,17 @@ npm start
 **Solutions**:
 1. Verify database credentials in `/config/database.php`
 2. Check database exists: `mysql -u root -p -e "SHOW DATABASES;"`
-3. Check user permissions: `GRANT ALL ON mindline.* TO 'user'@'localhost';`
+3. Check user permissions: `GRANT ALL ON sanctumEMHR.* TO 'user'@'localhost';`
 4. Verify MySQL is running: `systemctl status mysql`
 
 ### "Table doesn't exist" Errors
 
-**Error**: "Table 'mindline.users' doesn't exist"
+**Error**: "Table 'sanctumEMHR.users' doesn't exist"
 
 **Solution**:
 ```bash
 # Re-import the schema
-mysql -u root -p mindline < database/mindline.sql
+mysql -u root -p sanctumEMHR < database/sanctumEMHR.sql
 ```
 
 ### Login Always Fails
@@ -424,7 +424,7 @@ See `AUTHENTICATION_SETUP.md` for migration patterns and next steps.
 ## Need Help?
 
 1. Check the logs:
-   - Apache: `/var/log/apache2/mindline_error.log`
+   - Apache: `/var/log/apache2/sanctum_error.log`
    - PHP: Check `error_log()` output in web server logs
    - Database: Check MySQL error log
 

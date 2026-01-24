@@ -237,7 +237,7 @@ For each API file being migrated:
 - [ ] Replace `globals.php` with `init.php`
 - [ ] Add `use` statements for Database and SessionManager
 - [ ] Replace all `sqlQuery()` / `sqlStatement()` calls
-- [ ] Update table names (openemr_* → mindline names)
+- [ ] Update table names (openemr_* → sanctumEMHR names)
 - [ ] Update column names (pc_* → descriptive names)
 - [ ] Update client references (patient_* → client_*)
 - [ ] Fix date/time field handling (separate → combined TIMESTAMP)
@@ -295,7 +295,7 @@ Check: `/react-frontend/src/components/Calendar/` for any hardcoded assumptions.
 
 Verify `config/database.php` points to **SanctumEMHR** database:
 ```php
-'database' => 'mindline',  // NOT 'openemr'
+'database' => 'sanctumEMHR',  // NOT 'openemr'
 ```
 
 Verify no code references `/sqlconf.php` (OpenEMR config).

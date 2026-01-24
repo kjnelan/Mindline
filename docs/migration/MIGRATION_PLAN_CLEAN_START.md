@@ -41,8 +41,8 @@ Create a **standalone SanctumEMHR EMHR system** with:
 return [
     'host' => getenv('DB_HOST') ?: 'localhost',
     'port' => getenv('DB_PORT') ?: '3306',
-    'database' => getenv('DB_NAME') ?: 'mindline',
-    'username' => getenv('DB_USER') ?: 'mindline_user',
+    'database' => getenv('DB_NAME') ?: 'sanctumEMHR',
+    'username' => getenv('DB_USER') ?: 'sanctum_user',
     'password' => getenv('DB_PASS') ?: '',
     'charset' => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
@@ -110,11 +110,11 @@ This replaces OpenEMR's `AuthUtils`, `SessionUtil`, `UserService`.
 
 ```bash
 # Create new database
-mysql -u root -p -e "CREATE DATABASE mindline CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e "CREATE DATABASE sanctumEMHR CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# Create mindline user
-mysql -u root -p -e "CREATE USER 'mindline_user'@'localhost' IDENTIFIED BY 'secure_password';"
-mysql -u root -p -e "GRANT ALL PRIVILEGES ON mindline.* TO 'mindline_user'@'localhost';"
+# Create sanctumEMHR user
+mysql -u root -p -e "CREATE USER 'sanctum_user'@'localhost' IDENTIFIED BY 'secure_password';"
+mysql -u root -p -e "GRANT ALL PRIVILEGES ON sanctumEMHR.* TO 'sanctum_user'@'localhost';"
 mysql -u root -p -e "FLUSH PRIVILEGES;"
 ```
 
@@ -124,15 +124,15 @@ We already have the schema design in `DATABASE_SCHEMA.md`. Key changes:
 
 | OpenEMR Table | New SanctumEMHR Table |
 |---------------|-------------------|
-| `users` | `mindline_users` |
-| `patient_data` | `mindline_clients` |
-| `openemr_postcalendar_events` | `mindline_appointments` |
-| `openemr_postcalendar_categories` | `mindline_appointment_categories` |
-| `facility` | `mindline_facilities` |
-| `form_encounter` | `mindline_encounters` |
-| `clinical_notes` | `mindline_clinical_notes` |
-| `insurance_data` | `mindline_client_insurance` |
-| `insurance_companies` | `mindline_insurance_providers` |
+| `users` | `sanctum_users` |
+| `patient_data` | `sanctum_clients` |
+| `openemr_postcalendar_events` | `sanctum_appointments` |
+| `openemr_postcalendar_categories` | `sanctum_appointment_categories` |
+| `facility` | `sanctum_facilities` |
+| `form_encounter` | `sanctum_encounters` |
+| `clinical_notes` | `sanctum_clinical_notes` |
+| `insurance_data` | `sanctum_client_insurance` |
+| `insurance_companies` | `sanctum_insurance_providers` |
 
 ### Step 2.3: Run Migration Scripts
 
@@ -167,7 +167,7 @@ use SanctumEMHR\Auth\Auth;
 
 // Query using SanctumEMHR Database class
 $db = Database::getInstance();
-$result = $db->queryOne("SELECT * FROM mindline_users WHERE id = ?", [$userId]);
+$result = $db->queryOne("SELECT * FROM sanctum_users WHERE id = ?", [$userId]);
 ```
 
 ### Step 3.2: Update React Frontend API Constants
@@ -342,7 +342,7 @@ Update README.md:
 ## Next Steps
 
 1. **Review this plan** - Approve the approach
-2. **Set up new database** - Create `mindline` database
+2. **Set up new database** - Create `sanctumEMHR` database
 3. **Create infrastructure files** - Database.php, Auth.php, bootstrap.php
 4. **Test infrastructure** - Verify new files work
 5. **Migrate schema** - Create new tables
@@ -358,7 +358,7 @@ Update README.md:
 
 ## Questions to Answer Before Starting
 
-1. **New database name?** Suggested: `mindline` (vs current OpenEMR database)
+1. **New database name?** Suggested: `sanctumEMHR` (vs current OpenEMR database)
 2. **Keep existing data?** Yes - migration script will copy all data
 3. **Parallel systems?** Run both systems side-by-side during migration?
 4. **Rollback plan?** Keep OpenEMR backup for X days after migration?

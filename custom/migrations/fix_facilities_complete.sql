@@ -1,7 +1,7 @@
 -- Complete Facilities Table Migration
 -- Adds all missing fields for proper facility management
 
-USE mindline;
+USE sanctumEMHR;
 
 -- Step 1: Create facility_types reference table
 CREATE TABLE IF NOT EXISTS facility_types (

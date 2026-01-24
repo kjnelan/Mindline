@@ -8,7 +8,7 @@
 return [
     'host' => 'localhost',
     'port' => '3306',
-    'database' => 'mindline',
+    'database' => 'sanctumEMHR',
     'username' => 'sacwansherpa',
     'password' => '621616SacWan2010!',
     'charset' => 'utf8mb4',

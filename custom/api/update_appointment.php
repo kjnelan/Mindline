@@ -96,7 +96,7 @@ try {
         '?' => 'cancelled',
         'x' => 'deleted'
     ];
-    $mindlineStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
+    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
 
     // Check for series update
     $seriesUpdate = isset($input['seriesUpdate']) ? $input['seriesUpdate'] : null;
@@ -164,7 +164,7 @@ try {
         $endDateTime->format('Y-m-d H:i:s'),
         $duration,
         $comments,
-        $mindlineStatus,
+        $sanctumEMHRStatus,
         $room
     ];
 

@@ -57,16 +57,16 @@ class Database
         $this->config = [
             'host' => 'localhost',
             'port' => '3306',
-            'database' => 'mindline',
+            'database' => 'sanctumEMHR',
             'username' => 'root',
             'password' => '',
             'charset' => 'utf8mb4'
         ];
 
         // Priority 1: Load from SanctumEMHR config file
-        $mindlineConfigPath = dirname(__FILE__, 4) . '/config/database.php';
-        if (file_exists($mindlineConfigPath)) {
-            $configData = require $mindlineConfigPath;
+        $sanctumEMHRConfigPath = dirname(__FILE__, 4) . '/config/database.php';
+        if (file_exists($sanctumEMHRConfigPath)) {
+            $configData = require $sanctumEMHRConfigPath;
             if (is_array($configData)) {
                 $this->config = array_merge($this->config, $configData);
             }

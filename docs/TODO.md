@@ -282,7 +282,7 @@ cd react-frontend && npm install
 npm run dev
 
 # Database setup
-mysql -u root -p < database/mindline.sql
+mysql -u root -p < database/sanctumEMHR.sql
 ```
 
 ### Environment Configuration

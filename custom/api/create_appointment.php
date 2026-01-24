@@ -97,7 +97,7 @@ try {
         '?' => 'cancelled',
         'x' => 'deleted'
     ];
-    $mindlineStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
+    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
 
     // Check if this is a recurring appointment
     $isRecurring = isset($input['recurrence']) && $input['recurrence']['enabled'] === true;
@@ -333,7 +333,7 @@ try {
             $occurrenceEndDT->format('Y-m-d H:i:s'),
             $duration,
             $comments,
-            $mindlineStatus,
+            $sanctumEMHRStatus,
             $room,
             $facilityId,
             $isRecurring ? 1 : 0,
