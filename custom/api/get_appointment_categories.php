@@ -55,7 +55,13 @@ try {
     $db = Database::getInstance();
 
     // Get optional category type filter from query parameter
+    // type can be: 'client', 'clinic', 'holiday', or null/0 for all
     $categoryType = isset($_GET['type']) ? $_GET['type'] : null;
+
+    // Normalize type=0 or empty string to null (show all)
+    if ($categoryType === '0' || $categoryType === 0 || $categoryType === '') {
+        $categoryType = null;
+    }
 
     // Fetch all active appointment categories with new billing fields
     $sql = "SELECT
@@ -74,8 +80,8 @@ try {
 
     $params = [];
 
-    // Add category type filter if provided
-    if ($categoryType !== null) {
+    // Add category type filter if provided and valid
+    if ($categoryType !== null && in_array($categoryType, ['client', 'clinic', 'holiday'])) {
         $sql .= " AND category_type = ?";
         $params[] = $categoryType;
     }
