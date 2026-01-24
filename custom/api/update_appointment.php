@@ -86,6 +86,11 @@ try {
     $apptstatus = $input['apptstatus'] ?? '-'; // Default status
     $room = $input['room'] ?? '';
 
+    // CPT/Billing fields
+    $cptCodeId = isset($input['cptCodeId']) && $input['cptCodeId'] ? intval($input['cptCodeId']) : null;
+    $billingFee = isset($input['billingFee']) && $input['billingFee'] ? floatval($input['billingFee']) : null;
+    $patientPaymentType = $input['patientPaymentType'] ?? null;
+
     // Map OpenEMR status symbols to SanctumEMHR status strings
     $statusMap = [
         '-' => 'pending',
@@ -140,6 +145,18 @@ try {
         }
     }
 
+    // Determine fee_type based on payment type and billing fee
+    $feeType = null;
+    if ($billingFee !== null) {
+        if ($patientPaymentType === 'insurance') {
+            $feeType = 'insurance';
+        } elseif ($patientPaymentType === 'self-pay') {
+            $feeType = 'custom';
+        } elseif ($patientPaymentType === 'pro-bono') {
+            $feeType = 'pro-bono';
+        }
+    }
+
     // Build UPDATE query
     $sql = "UPDATE appointments SET
         category_id = ?,
@@ -152,6 +169,9 @@ try {
         comments = ?,
         status = ?,
         room = ?,
+        cpt_code_id = ?,
+        billing_fee = ?,
+        fee_type = ?,
         updated_at = NOW()
         WHERE $whereClause";
 
@@ -165,7 +185,10 @@ try {
         $duration,
         $comments,
         $sanctumEMHRStatus,
-        $room
+        $room,
+        $cptCodeId,
+        $billingFee,
+        $feeType
     ];
 
     // Add where params

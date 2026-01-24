@@ -87,6 +87,11 @@ try {
     $facilityId = isset($input['facilityId']) ? intval($input['facilityId']) : 0;
     $overrideAvailability = isset($input['overrideAvailability']) ? boolval($input['overrideAvailability']) : false;
 
+    // CPT/Billing fields
+    $cptCodeId = isset($input['cptCodeId']) && $input['cptCodeId'] ? intval($input['cptCodeId']) : null;
+    $billingFee = isset($input['billingFee']) && $input['billingFee'] ? floatval($input['billingFee']) : null;
+    $patientPaymentType = $input['patientPaymentType'] ?? null;
+
     // Map OpenEMR status symbols to SanctumEMHR status strings
     $statusMap = [
         '-' => 'pending',
@@ -320,9 +325,24 @@ try {
             facility_id,
             is_recurring,
             recurrence_group_id,
+            cpt_code_id,
+            billing_fee,
+            fee_type,
             created_at,
             updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
+        // Determine fee_type based on payment type and billing fee
+        $feeType = null;
+        if ($billingFee !== null) {
+            if ($patientPaymentType === 'insurance') {
+                $feeType = 'insurance';
+            } elseif ($patientPaymentType === 'self-pay') {
+                $feeType = 'custom';
+            } elseif ($patientPaymentType === 'pro-bono') {
+                $feeType = 'pro-bono';
+            }
+        }
 
         $params = [
             $categoryId,
@@ -337,7 +357,10 @@ try {
             $room,
             $facilityId,
             $isRecurring ? 1 : 0,
-            $recurrenceGroupId
+            $recurrenceGroupId,
+            $cptCodeId,
+            $billingFee,
+            $feeType
         ];
 
         error_log("Create appointment SQL for date $occurrenceDate: " . $sql);

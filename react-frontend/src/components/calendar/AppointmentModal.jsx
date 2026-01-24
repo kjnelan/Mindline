@@ -44,6 +44,11 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const [comments, setComments] = useState('');
   const [room, setRoom] = useState('');
 
+  // Billing/CPT fields
+  const [cptCodeId, setCptCodeId] = useState('');
+  const [selectedCptCode, setSelectedCptCode] = useState(null);
+  const [patientPaymentType, setPatientPaymentType] = useState(null);
+
   // Recurrence fields
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurDays, setRecurDays] = useState({ mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false });
@@ -99,6 +104,22 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
       setTitle(appointment.title || '');
       setComments(appointment.comments || '');
       setRoom(appointment.roomId || appointment.room || ''); // Use roomId for editing, fallback to room
+      setCptCodeId(appointment.cptCodeId || '');
+
+      // Fetch patient payment type if we have a patient
+      if (appointment.patientId) {
+        fetch(`/custom/api/get_client.php?pid=${appointment.patientId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success && data.client) {
+              setPatientPaymentType(data.client.payment_type || 'insurance');
+            }
+          })
+          .catch(err => {
+            console.error('Failed to fetch patient payment type:', err);
+            setPatientPaymentType('insurance');
+          });
+      }
 
       // Check if this is part of a recurring series
       if (appointment.isRecurring && appointment.recurrenceId) {
@@ -115,14 +136,15 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const loadCategories = async () => {
     try {
       const response = await getAppointmentCategories();
+      console.log('Loaded categories:', response.categories);
       setCategories(response.categories || []);
 
       // Auto-select first category if available AND we're not editing an existing appointment
       if (response.categories && response.categories.length > 0 && !appointment) {
         setCategoryId(response.categories[0].id);
-        // Set default duration from category
+        // Set default duration from category (already in minutes from API)
         if (response.categories[0].defaultDuration > 0) {
-          setDuration(response.categories[0].defaultDuration / 60); // Convert seconds to minutes
+          setDuration(response.categories[0].defaultDuration);
         }
       }
     } catch (err) {
@@ -162,19 +184,52 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   };
 
   // Select patient from search results
-  const selectPatient = (patient) => {
+  const selectPatient = async (patient) => {
     setPatientId(patient.pid);
     setPatientName(`${patient.fname} ${patient.lname}`);
     setPatientSearchQuery(`${patient.fname} ${patient.lname}`);
     setShowPatientDropdown(false);
+
+    // Fetch patient's payment type for CPT requirement logic
+    try {
+      const response = await fetch(`/custom/api/get_client.php?pid=${patient.pid}`);
+      const data = await response.json();
+      if (data.success && data.client) {
+        setPatientPaymentType(data.client.payment_type || 'insurance');
+      }
+    } catch (err) {
+      console.error('Failed to fetch patient payment type:', err);
+      setPatientPaymentType('insurance'); // Default to insurance if fetch fails
+    }
   };
 
-  // Handle category change - update duration if category has default
+  // Handle category change - update duration and reset CPT selection
   const handleCategoryChange = (catId) => {
     setCategoryId(catId);
     const category = categories.find(c => c.id === parseInt(catId));
+
+    // Reset CPT selection when category changes
+    setCptCodeId('');
+    setSelectedCptCode(null);
+
+    // Set default duration from category (already in minutes from API)
     if (category && category.defaultDuration > 0) {
-      setDuration(category.defaultDuration / 60); // Convert seconds to minutes
+      setDuration(category.defaultDuration);
+    }
+  };
+
+  // Handle CPT code selection - auto-fill duration and fee
+  const handleCptCodeChange = (cptId) => {
+    setCptCodeId(cptId);
+    const category = categories.find(c => c.id === parseInt(categoryId));
+    if (category && category.linkedCptCodes) {
+      const cptCode = category.linkedCptCodes.find(c => c.id === parseInt(cptId));
+      setSelectedCptCode(cptCode);
+
+      // Auto-fill duration from CPT code if available
+      if (cptCode && cptCode.standardDuration > 0) {
+        setDuration(cptCode.standardDuration);
+      }
     }
   };
 
@@ -201,6 +256,14 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
 
     if (!categoryId) {
       setError('Please select an appointment type');
+      setLoading(false);
+      return;
+    }
+
+    // Validate CPT code if required (insurance patients with categories that require CPT)
+    const category = categories.find(c => c.id === parseInt(categoryId));
+    if (category && category.requiresCptSelection && patientPaymentType === 'insurance' && !cptCodeId) {
+      setError('CPT code is required for insurance patients with this appointment type');
       setLoading(false);
       return;
     }
@@ -240,7 +303,10 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
         comments: comments,
         room: room,
         apptstatus: appointment ? appointment.apptstatus : '-', // Preserve status when editing, default for new
-        overrideAvailability: overrideAvailability // Pass override flag
+        overrideAvailability: overrideAvailability, // Pass override flag
+        cptCodeId: cptCodeId ? parseInt(cptCodeId) : null,
+        billingFee: selectedCptCode?.standardFee || null,
+        patientPaymentType: patientPaymentType
       };
 
       // Add series management data if editing a recurring series
@@ -671,6 +737,43 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
               ))}
             </select>
           </div>
+
+          {/* CPT Code Selection - Show when category requires it or patient has insurance */}
+          {categoryId && (() => {
+            const category = categories.find(c => c.id === parseInt(categoryId));
+            const showCptDropdown = category && category.requiresCptSelection && category.linkedCptCodes && category.linkedCptCodes.length > 0;
+            const cptRequired = patientPaymentType === 'insurance';
+
+            if (showCptDropdown) {
+              return (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    CPT Code {cptRequired && <span className="text-red-500">*</span>}
+                    {!cptRequired && <span className="text-gray-500 text-xs ml-2">(Optional for {patientPaymentType})</span>}
+                  </label>
+                  <select
+                    value={cptCodeId}
+                    onChange={(e) => handleCptCodeChange(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required={cptRequired}
+                  >
+                    <option value="">Select CPT Code</option>
+                    {category.linkedCptCodes.map((cpt) => (
+                      <option key={cpt.id} value={cpt.id}>
+                        {cpt.code} - {cpt.description} ({cpt.standardDuration}min{cpt.standardFee ? `, $${cpt.standardFee}` : ''})
+                      </option>
+                    ))}
+                  </select>
+                  {selectedCptCode && (
+                    <div className="mt-2 text-sm text-blue-600">
+                      Standard fee: ${selectedCptCode.standardFee || 'Not set'} • Duration: {selectedCptCode.standardDuration} minutes
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {/* Date and Time - Side by side */}
           <div className="grid grid-cols-2 gap-4">
