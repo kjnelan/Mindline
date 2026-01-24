@@ -76,7 +76,7 @@ try {
                     }
 
                     // Check for duplicate code
-                    $existing = $db->queryOne("SELECT id FROM cpt_codes WHERE code = ?", [$input['code']]);
+                    $existing = $db->query("SELECT id FROM cpt_codes WHERE code = ?", [$input['code']]);
                     if ($existing) {
                         throw new Exception('CPT code already exists');
                     }
@@ -182,7 +182,7 @@ try {
                     }
 
                     // Check if CPT code is in use
-                    $inUse = $db->queryOne("SELECT COUNT(*) as count FROM appointments WHERE cpt_code_id = ?", [$input['id']]);
+                    $inUse = $db->query("SELECT COUNT(*) as count FROM appointments WHERE cpt_code_id = ?", [$input['id']]);
                     if ($inUse && $inUse['count'] > 0) {
                         throw new Exception('Cannot delete CPT code that is in use by appointments. Consider marking it as inactive instead.');
                     }

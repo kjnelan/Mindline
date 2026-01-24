@@ -71,7 +71,7 @@ try {
                     }
 
                     // Check for duplicate code
-                    $existing = $db->queryOne("SELECT id FROM billing_modifiers WHERE code = ?", [$input['code']]);
+                    $existing = $db->query("SELECT id FROM billing_modifiers WHERE code = ?", [$input['code']]);
                     if ($existing) {
                         throw new Exception('Modifier code already exists');
                     }
@@ -147,12 +147,12 @@ try {
                     }
 
                     // Check if modifier is in use by users or appointments
-                    $inUseByUsers = $db->queryOne("SELECT COUNT(*) as count FROM users WHERE default_modifier_id = ?", [$input['id']]);
+                    $inUseByUsers = $db->query("SELECT COUNT(*) as count FROM users WHERE default_modifier_id = ?", [$input['id']]);
                     if ($inUseByUsers && $inUseByUsers['count'] > 0) {
                         throw new Exception('Cannot delete modifier that is assigned as default to users. Consider marking it as inactive instead.');
                     }
 
-                    $inUseByAppointments = $db->queryOne("SELECT COUNT(*) as count FROM appointments WHERE modifier_id = ?", [$input['id']]);
+                    $inUseByAppointments = $db->query("SELECT COUNT(*) as count FROM appointments WHERE modifier_id = ?", [$input['id']]);
                     if ($inUseByAppointments && $inUseByAppointments['count'] > 0) {
                         throw new Exception('Cannot delete modifier that is in use by appointments. Consider marking it as inactive instead.');
                     }
