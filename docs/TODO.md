@@ -1,6 +1,6 @@
-# Mindline EMHR - TODO & Development Roadmap
+# SanctumEMHR EMHR - TODO & Development Roadmap
 
-**Project:** Mindline Electronic Mental Health Record
+**Project:** SanctumEMHR Electronic Mental Health Record
 **Last Updated:** 2026-01-18
 **Current Phase:** Post-Migration Stabilization & Enhancement
 
@@ -9,7 +9,7 @@
 ## 🎯 Current Priority: Post-Migration Tasks
 
 ### Database & Backend Stability
-- [ ] **Test all migrated endpoints** - Verify all APIs work with Mindline schema
+- [ ] **Test all migrated endpoints** - Verify all APIs work with SanctumEMHR schema
   - [x] Client detail (client_detail.php)
   - [x] Clinical notes (clinical_notes.php, get_patient_notes.php)
   - [x] Documents (client_documents.php)
@@ -31,7 +31,7 @@
   - [ ] Document any temporary dependencies
 
 ### Frontend React Application
-- [ ] **Audit React components** - Ensure all use Mindline APIs
+- [ ] **Audit React components** - Ensure all use SanctumEMHR APIs
   - [ ] Check for any remaining OpenEMR API calls
   - [ ] Verify session management works consistently
   - [ ] Test all user workflows end-to-end
@@ -50,7 +50,7 @@
   - Components: AppointmentModal.jsx, BlockTimeModal.jsx
 
 - [ ] **Admin access control** - Restrict Admin menu to calendar admins only
-  - Review Mindline's role/permission system
+  - Review SanctumEMHR's role/permission system
   - Implement proper ACL checks in SessionManager
   - Test with different user roles
 
@@ -282,7 +282,7 @@ cd react-frontend && npm install
 npm run dev
 
 # Database setup
-mysql -u root -p < database/mindline.sql
+mysql -u root -p < database/sanctumEMHR.sql
 ```
 
 ### Environment Configuration

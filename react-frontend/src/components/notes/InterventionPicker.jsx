@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * InterventionPicker - Multi-select intervention picker with 4-tier system
  * Tier 1: Core (always visible)
  * Tier 2: Modality-specific (collapsible)

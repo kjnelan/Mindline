@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * User Management Component
  * Admin interface for managing system users and providers
  *
@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { PrimaryButton } from '../PrimaryButton';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -464,12 +465,13 @@ function UserManagement() {
       <div className="glass-card p-8">
         <div className="text-center text-red-600">Error: {error}</div>
         <div className="text-center mt-4">
-          <button
+
+          <PrimaryButton
             onClick={fetchUsers}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Retry
-          </button>
+          </PrimaryButton>
+
         </div>
       </div>
     );
@@ -542,7 +544,7 @@ function UserManagement() {
       {/* User Count */}
       {filteredUsers.length > 0 && (
         <div className="mb-4">
-          <p className="text-gray-700 font-semibold">
+          <p className="text-label">
             {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
           </p>
         </div>

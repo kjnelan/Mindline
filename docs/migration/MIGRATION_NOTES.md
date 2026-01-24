@@ -28,12 +28,12 @@ This document tracks all references to OpenEMR-specific table names that need to
    - Lines 28, 38: References to `openemr_postcalendar_categories`
 
 #### Suggested Production Names
-- `openemr_postcalendar_events` → `mindline_appointments` or `appointments`
-- `openemr_postcalendar_categories` → `mindline_appointment_categories` or `appointment_categories`
+- `openemr_postcalendar_events` → `sanctum_appointments` or `appointments`
+- `openemr_postcalendar_categories` → `sanctum_appointment_categories` or `appointment_categories`
 
 ## Migration Strategy (Before Production)
 
-1. Create new tables with Mindline naming
+1. Create new tables with SanctumEMHR naming
 2. Copy data from OpenEMR tables
 3. Update all API references
 4. Test thoroughly

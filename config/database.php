@@ -1,14 +1,14 @@
 <?php
 /**
- * MINDLINE Database Configuration
+ * SanctumEMHR Database Configuration
  *
- * Update these credentials to match your Mindline database setup.
+ * Update these credentials to match your SanctumEMHR database setup.
  */
 
 return [
     'host' => 'localhost',
     'port' => '3306',
-    'database' => 'mindline',
+    'database' => 'sanctumEMHR',
     'username' => 'sacwansherpa',
     'password' => '621616SacWan2010!',
     'charset' => 'utf8mb4',

@@ -1,6 +1,6 @@
 <?php
 /**
- * MINDLINE Database Configuration Template
+ * SanctumEMHR Database Configuration Template
  *
  * Copy this file to database.php and update with your settings.
  *
@@ -10,7 +10,7 @@
 return [
     'host' => 'localhost',
     'port' => '3306',
-    'database' => 'mindline',
+    'database' => 'sanctumEMHR',
     'username' => 'your_db_user',
     'password' => 'your_db_password',
     'charset' => 'utf8mb4',

@@ -1,6 +1,6 @@
 <?php
 /**
- * Check what calendar tables and columns actually exist in the database (MIGRATED TO MINDLINE)
+ * Check what calendar tables and columns actually exist in the database (MIGRATED TO SanctumEMHR)
  */
 
 require_once(__DIR__ . '/../init.php');
@@ -11,7 +11,7 @@ header('Content-Type: text/plain');
 
 $db = Database::getInstance();
 
-echo "=== Checking Calendar Tables in Mindline Database ===\n\n";
+echo "=== Checking Calendar Tables in SanctumEMHR Database ===\n\n";
 
 // Check what tables exist with 'appointment' in the name
 echo "1. Tables with 'appointment' in name:\n";

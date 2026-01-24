@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * NoteMetadata - Auto-populated note header with patient/provider/service info
  * Displays all non-clinical metadata in a clean, professional format
  *

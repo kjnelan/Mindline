@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR - Facilities Management
+ * SanctumEMHR EMHR - Facilities Management
  * Manage practice facilities/locations
  *
  * Author: Kenneth J. Nelan
@@ -12,6 +12,9 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { FormLabel } from '../FormLabel';
+import { TabButton } from '../TabButton';
+import { PrimaryButton } from '../PrimaryButton';
 
 function Facilities() {
   const [facilities, setFacilities] = useState([]);
@@ -305,12 +308,11 @@ function Facilities() {
       <div className="glass-card p-8">
         <div className="text-center text-red-600">Error: {error}</div>
         <div className="text-center mt-4">
-          <button
+          <PrimaryButton
             onClick={fetchFacilities}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Retry
-          </button>
+          </PrimaryButton>
         </div>
       </div>
     );
@@ -383,7 +385,7 @@ function Facilities() {
       {/* Facility Count */}
       {filteredFacilities.length > 0 && (
         <div className="mb-4">
-          <p className="text-gray-700 font-semibold">
+          <p className="text-label">
             {filteredFacilities.length} {statusFilter !== 'all' ? statusFilter : ''} facilit{filteredFacilities.length !== 1 ? 'ies' : 'y'}
           </p>
         </div>
@@ -532,9 +534,9 @@ function FacilityFormModal({
 
           {/* Facility Name */}
           <div className="mb-4">
-            <label className="block text-gray-700 font-semibold mb-2">
+            <FormLabel>
               Facility Name <span className="text-red-600">*</span>
-            </label>
+            </FormLabel>
             <input
               type="text"
               value={formData.name || ''}
@@ -547,43 +549,32 @@ function FacilityFormModal({
           {/* Address Tabs */}
           <div className="mb-4">
             <div className="flex border-b border-gray-300 mb-4">
-              <button
-                onClick={() => setAddressTab('physical')}
-                className={`px-4 py-2 font-semibold ${
-                  addressTab === 'physical'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                Physical Address
-              </button>
-              <button
-                onClick={() => setAddressTab('mailing')}
-                className={`px-4 py-2 font-semibold ${
-                  addressTab === 'mailing'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                Mailing Address
-              </button>
-              <button
-                onClick={() => setAddressTab('billing')}
-                className={`px-4 py-2 font-semibold ${
-                  addressTab === 'billing'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                Billing Address
-              </button>
+                  <TabButton
+                    active={addressTab === 'physical'}
+                    onClick={() => setAddressTab('physical')}
+                  >
+                    Physical Address
+                  </TabButton>
+                  
+                  <TabButton
+                    active={addressTab === 'mailing'}
+                    onClick={() => setAddressTab('mailing')}
+                  >
+                    Mailing Address
+                  </TabButton>
+                  
+                  <TabButton
+                    active={addressTab === 'billing'}
+                    onClick={() => setAddressTab('billing')}
+                  >
+                    Billing Address
+                  </TabButton>
             </div>
-
             {/* Address Fields */}
             {addressTab === 'physical' ? (
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Street Address Line 1</label>
+                  <FormLabel>Street Address Line 1</FormLabel>
                   <input
                     type="text"
                     value={formData.street || ''}
@@ -593,7 +584,7 @@ function FacilityFormModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Street Address Line 2</label>
+                  <FormLabel>Street Address Line 2</FormLabel>
                   <input
                     type="text"
                     value={formData.address_line2 || ''}
@@ -604,7 +595,7 @@ function FacilityFormModal({
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">City</label>
+                    <FormLabel>City</FormLabel>
                     <input
                       type="text"
                       value={formData.city || ''}
@@ -614,7 +605,7 @@ function FacilityFormModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">State</label>
+                    <FormLabel>State</FormLabel>
                     <input
                       type="text"
                       value={formData.state || ''}
@@ -625,7 +616,7 @@ function FacilityFormModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Zip Code</label>
+                    <FormLabel>Zip Code</FormLabel>
                     <input
                       type="text"
                       value={formData.postal_code || ''}
@@ -658,10 +649,10 @@ function FacilityFormModal({
                     }}
                     className="w-5 h-5 rounded border-gray-300"
                   />
-                  <span className="text-gray-700 font-semibold">Same as Physical Address</span>
+                  <span className="text-label">Same as Physical Address</span>
                 </label>
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Mailing Address Line 1</label>
+                  <FormLabel>Mailing Address Line 1</FormLabel>
                   <input
                     type="text"
                     value={formData.mail_street || ''}
@@ -672,7 +663,7 @@ function FacilityFormModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Mailing Address Line 2</label>
+                  <FormLabel>Mailing Address Line 2</FormLabel>
                   <input
                     type="text"
                     value={formData.mailing_address_line2 || ''}
@@ -684,7 +675,7 @@ function FacilityFormModal({
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">City</label>
+                    <FormLabel>City</FormLabel>
                     <input
                       type="text"
                       value={formData.mail_city || ''}
@@ -695,7 +686,7 @@ function FacilityFormModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">State</label>
+                    <FormLabel>State</FormLabel>
                     <input
                       type="text"
                       value={formData.mail_state || ''}
@@ -707,7 +698,7 @@ function FacilityFormModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Zip Code</label>
+                    <FormLabel>Zip Code</FormLabel>
                     <input
                       type="text"
                       value={formData.mail_zip || ''}
@@ -741,10 +732,10 @@ function FacilityFormModal({
                     }}
                     className="w-5 h-5 rounded border-gray-300"
                   />
-                  <span className="text-gray-700 font-semibold">Same as Physical Address</span>
+                  <span className="text-label">Same as Physical Address</span>
                 </label>
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Billing Address Line 1</label>
+                  <FormLabel>Billing Address Line 1</FormLabel>
                   <input
                     type="text"
                     value={formData.billing_street || ''}
@@ -755,7 +746,7 @@ function FacilityFormModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Billing Address Line 2</label>
+                  <FormLabel>Billing Address Line 2</FormLabel>
                   <input
                     type="text"
                     value={formData.billing_address_line2 || ''}
@@ -767,7 +758,7 @@ function FacilityFormModal({
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">City</label>
+                    <FormLabel>City</FormLabel>
                     <input
                       type="text"
                       value={formData.billing_city || ''}
@@ -778,7 +769,7 @@ function FacilityFormModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">State</label>
+                    <FormLabel>State</FormLabel>
                     <input
                       type="text"
                       value={formData.billing_state || ''}
@@ -790,7 +781,7 @@ function FacilityFormModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Zip Code</label>
+                    <FormLabel>Zip Code</FormLabel>
                     <input
                       type="text"
                       value={formData.billing_zip || ''}
@@ -808,7 +799,7 @@ function FacilityFormModal({
           {/* Contact Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Phone</label>
+              <FormLabel>Phone</FormLabel>
               <input
                 type="tel"
                 value={formData.phone || ''}
@@ -818,7 +809,7 @@ function FacilityFormModal({
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Fax</label>
+              <FormLabel>Fax</FormLabel>
               <input
                 type="tel"
                 value={formData.fax || ''}
@@ -828,7 +819,7 @@ function FacilityFormModal({
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Website</label>
+              <FormLabel>Website</FormLabel>
               <input
                 type="url"
                 value={formData.website || ''}
@@ -838,7 +829,7 @@ function FacilityFormModal({
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Email</label>
+              <FormLabel>Email</FormLabel>
               <input
                 type="email"
                 value={formData.email || ''}
@@ -852,7 +843,7 @@ function FacilityFormModal({
           {/* Administrative Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Color</label>
+              <FormLabel>Color</FormLabel>
               <input
                 type="color"
                 value={formData.color || '#99FFFF'}
@@ -861,7 +852,7 @@ function FacilityFormModal({
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">POS Code</label>
+              <FormLabel>POS Code</FormLabel>
               <select
                 value={formData.pos_code || '11'}
                 onChange={(e) => onFormChange('pos_code', e.target.value)}
@@ -875,7 +866,7 @@ function FacilityFormModal({
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Facility NPI</label>
+              <FormLabel>Facility NPI</FormLabel>
               <input
                 type="text"
                 value={formData.facility_npi || ''}
@@ -885,7 +876,7 @@ function FacilityFormModal({
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Tax ID</label>
+              <FormLabel>Tax ID</FormLabel>
               <div className="flex gap-2 items-center">
                 <select
                   value={formData.tax_id_type || 'EIN'}
@@ -906,7 +897,7 @@ function FacilityFormModal({
               </div>
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Facility Taxonomy</label>
+              <FormLabel>Facility Taxonomy</FormLabel>
               <input
                 type="text"
                 value={formData.facility_taxonomy || ''}
@@ -916,7 +907,7 @@ function FacilityFormModal({
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">Attn</label>
+              <FormLabel>Attn</FormLabel>
               <input
                 type="text"
                 value={formData.attn || ''}
@@ -936,7 +927,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('billing_location')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Billing Location</span>
+              <span className="text-label">Billing Location</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -945,7 +936,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('accepts_assignment')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Accepts Assignment</span>
+              <span className="text-label">Accepts Assignment</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -954,7 +945,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('service_location')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Service Location</span>
+              <span className="text-label">Service Location</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -963,7 +954,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('primary_business_entity')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Primary Business Entity</span>
+              <span className="text-label">Primary Business Entity</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -972,13 +963,13 @@ function FacilityFormModal({
                 onChange={() => onToggle('inactive')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Facility Inactive</span>
+              <span className="text-label">Facility Inactive</span>
             </label>
           </div>
 
           {/* Info Textarea */}
           <div className="mb-4">
-            <label className="block text-gray-700 font-semibold mb-2">Info</label>
+            <FormLabel>Info</FormLabel>
             <textarea
               value={formData.info || ''}
               onChange={(e) => onFormChange('info', e.target.value)}

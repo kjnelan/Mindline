@@ -1,10 +1,10 @@
 <?php
 /**
- * Client List API - Session-based (MIGRATED TO MINDLINE)
+ * Client List API - Session-based (MIGRATED TO SanctumEMHR)
  * Returns list of all clients with optional status filtering
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
@@ -52,7 +52,7 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Build SQL query for MINDLINE schema
+    // Build SQL query for SanctumEMHR schema
     $sql = "SELECT
         c.id,
         c.first_name,

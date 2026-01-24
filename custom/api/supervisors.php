@@ -1,9 +1,9 @@
 <?php
 /**
- * Mindline EMHR - Supervisors API
+ * SanctumEMHR EMHR - Supervisors API
  * Returns list of users who can be supervisors
  *
- * @package   Mindline
+ * @package   SanctumEMHR
  * @author    Kenneth J. Nelan / Sacred Wandering
  */
 

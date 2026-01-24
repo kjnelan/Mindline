@@ -1,6 +1,6 @@
 <?php
 /**
- * Get calendar settings from Mindline system_settings (MIGRATED TO MINDLINE)
+ * Get calendar settings from SanctumEMHR system_settings (MIGRATED TO SanctumEMHR)
  * Session-based authentication
  */
 

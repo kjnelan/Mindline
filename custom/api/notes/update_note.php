@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Update Note API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Update Note API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Updates an existing clinical note
  *
  * Author: Kenneth J. Nelan

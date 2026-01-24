@@ -1,6 +1,6 @@
 <?php
 /**
- * Client Documents API (MIGRATED TO MINDLINE)
+ * Client Documents API (MIGRATED TO SanctumEMHR)
  * Fetches documents for a specific client organized by category
  */
 
@@ -66,7 +66,7 @@ try {
         // Use provided name or fall back to uploaded filename
         $documentTitle = $documentTitle ?: pathinfo($uploadedFileName, PATHINFO_FILENAME);
 
-        // Determine storage path - Mindline stores documents in storage/documents
+        // Determine storage path - SanctumEMHR stores documents in storage/documents
         $documentsPath = dirname(__DIR__, 2) . '/storage/documents';
 
         // Create patient-specific directory if it doesn't exist
@@ -91,7 +91,7 @@ try {
         // Store relative path for database
         $relativePath = 'documents/client_' . $clientId . '/' . $uniqueFileName;
 
-        // Insert into documents table - mapped to Mindline schema
+        // Insert into documents table - mapped to SanctumEMHR schema
         $insertSql = "INSERT INTO documents (
             client_id,
             category_id,
@@ -166,7 +166,7 @@ try {
 
     error_log("Client documents: Fetching documents for client ID: " . $clientId);
 
-    // Fetch documents with category information - mapped to Mindline schema
+    // Fetch documents with category information - mapped to SanctumEMHR schema
     $documentsSql = "SELECT
         d.id,
         'file_url' AS type,

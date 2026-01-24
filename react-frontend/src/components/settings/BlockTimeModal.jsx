@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Block Time Modal - Modal for creating provider availability blocks
  *
  * Author: Kenneth J. Nelan
@@ -680,7 +680,7 @@ function BlockTimeModal({ isOpen, onClose, onSave, initialDate, initialTime, cat
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-label rounded-xl transition-all hover:shadow-md"
                 disabled={loading}
               >
                 Cancel

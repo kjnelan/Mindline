@@ -1,10 +1,10 @@
 <?php
 /**
- * Create Client API - Session-based (MIGRATED TO MINDLINE)
+ * Create Client API - Session-based (MIGRATED TO SanctumEMHR)
  * Creates a new patient/client record with audit trail
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
@@ -83,7 +83,7 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Build insert query with MINDLINE schema field names
+    // Build insert query with SanctumEMHR schema field names
     $fields = ['first_name', 'last_name', 'date_of_birth', 'created_at'];
     $values = [$data['fname'], $data['lname'], $data['DOB'], date('Y-m-d H:i:s')];
     $placeholders = ['?', '?', '?', '?'];

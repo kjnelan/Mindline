@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Document Categories Management Component
  * Admin interface for managing document categories
  *
@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { PrimaryButton } from '../PrimaryButton';
 
 function DocumentCategories() {
   const [categories, setCategories] = useState([]);
@@ -276,12 +277,9 @@ function DocumentCategories() {
       <div className="glass-card p-8">
         <div className="text-center text-red-600">Error: {error}</div>
         <div className="text-center mt-4">
-          <button
-            onClick={fetchCategories}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Retry
-          </button>
+		<PrimaryButton onClick={fetchCategories}>
+			Retry
+		</PrimaryButton>
         </div>
       </div>
     );

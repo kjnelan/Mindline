@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Delete Appointment API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Delete Appointment API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Deletes an appointment or availability block from the calendar
  *
  * Author: Kenneth J. Nelan

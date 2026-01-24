@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * IntakeTemplate - Comprehensive intake assessment for first session
  * Collects presenting problem, history, current functioning, treatment goals
  *

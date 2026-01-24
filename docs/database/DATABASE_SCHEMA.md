@@ -1,4 +1,4 @@
-# Mindline Mental Health EHR - New Database Schema Design
+# SanctumEMHR Mental Health EHR - New Database Schema Design
 **Date**: 2026-01-16
 **Status**: Planning Phase - Database Redesign
 

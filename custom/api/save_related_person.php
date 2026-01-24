@@ -1,10 +1,10 @@
 <?php
 /**
- * Save Related Person API - Session-based (MIGRATED TO MINDLINE)
+ * Save Related Person API - Session-based (MIGRATED TO SanctumEMHR)
  * Creates or updates a related person (guardian, family) for a client
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;

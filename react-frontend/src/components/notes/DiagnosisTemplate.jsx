@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Diagnosis Note Template
  *
  * Comprehensive diagnosis assessment form that serves as the source of truth

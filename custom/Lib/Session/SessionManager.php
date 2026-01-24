@@ -6,7 +6,7 @@ use Custom\Lib\Database\Database;
 use SessionHandlerInterface;
 
 /**
- * Session Manager for MINDLINE
+ * Session Manager for SanctumEMHR
  *
  * Replaces OpenEMR\Common\Session\SessionUtil
  *
@@ -20,7 +20,7 @@ class SessionManager implements SessionHandlerInterface
 
     // Session configuration
     private const SESSION_LIFETIME = 28800; // 8 hours
-    private const SESSION_NAME = 'MINDLINE_SESSION';
+    private const SESSION_NAME = 'SanctumEMHR_SESSION';
     private const SESSION_COOKIE_LIFETIME = 0; // Browser session
 
     private function __construct()

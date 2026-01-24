@@ -1,4 +1,4 @@
-# Mindline EMHR - Mental Health EMR System
+# SanctumEMHR EMHR - Mental Health EMR System
 
 **Specialized Electronic Medical Health Record for Mental Health Clinicians**
 
@@ -11,7 +11,7 @@
 
 ## 🎯 Overview
 
-Mindline EMHR is a modern, beautiful, and intuitive electronic medical health record system specifically designed for therapists and mental health clinicians. Built with a React frontend and PHP backend (currently using OpenEMR infrastructure), it provides advanced scheduling, patient management, and clinical documentation.
+SanctumEMHR EMHR is a modern, beautiful, and intuitive electronic medical health record system specifically designed for therapists and mental health clinicians. Built with a React frontend and PHP backend (currently using OpenEMR infrastructure), it provides advanced scheduling, patient management, and clinical documentation.
 
 **Key Features:**
 - ✨ Beautiful glassmorphic UI design
@@ -235,4 +235,4 @@ For support, questions, or issues:
 
 **Built with ❤️ for mental health clinicians**
 
-*Mindline EMHR - Making mental health record keeping intuitive and beautiful*
+*SanctumEMHR EMHR - Making mental health record keeping intuitive and beautiful*

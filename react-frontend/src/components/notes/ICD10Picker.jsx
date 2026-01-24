@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * ICD-10 Code Picker Component
  *
  * Multi-select diagnosis code picker with:

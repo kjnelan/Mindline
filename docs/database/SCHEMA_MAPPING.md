@@ -1,4 +1,4 @@
-# OpenEMR to Mindline - Complete Table & Column Mapping
+# OpenEMR to SanctumEMHR - Complete Table & Column Mapping
 **For Migration of 49 API Files**
 **Date**: 2026-01-17
 
@@ -8,7 +8,7 @@
 
 ### Core Tables
 
-| OpenEMR Table | Mindline Table | Notes |
+| OpenEMR Table | SanctumEMHR Table | Notes |
 |---------------|----------------|-------|
 | `users` | `users` | **NO CHANGE** - Same table name |
 | `patient_data` | `clients` | ✅ Renamed - mental health terminology |
@@ -16,7 +16,7 @@
 
 ### Appointment Tables
 
-| OpenEMR Table | Mindline Table | Notes |
+| OpenEMR Table | SanctumEMHR Table | Notes |
 |---------------|----------------|-------|
 | `openemr_postcalendar_events` | `appointments` | ✅ Simplified |
 | `openemr_postcalendar_categories` | `appointment_categories` | ✅ Simplified |
@@ -24,14 +24,14 @@
 
 ### Insurance Tables
 
-| OpenEMR Table | Mindline Table | Notes |
+| OpenEMR Table | SanctumEMHR Table | Notes |
 |---------------|----------------|-------|
 | `insurance_companies` | `insurance_providers` | ✅ More accurate name |
 | `insurance_data` | `client_insurance` | ✅ More descriptive |
 
 ### Clinical Tables
 
-| OpenEMR Table | Mindline Table | Notes |
+| OpenEMR Table | SanctumEMHR Table | Notes |
 |---------------|----------------|-------|
 | `form_encounter` | `encounters` | ✅ Simplified |
 | `clinical_notes` | `clinical_notes` | **NO CHANGE** |
@@ -39,7 +39,7 @@
 
 ### Other Tables
 
-| OpenEMR Table | Mindline Table | Notes |
+| OpenEMR Table | SanctumEMHR Table | Notes |
 |---------------|----------------|-------|
 | `list_options` | `settings_lists` | ✅ Clearer purpose |
 | `icd10_dx_order_code` | `diagnostic_codes` | ✅ Generic (supports ICD-10, ICD-11, DSM-5) |
@@ -57,7 +57,7 @@
 ### 1. USERS Table
 **Table Name**: `users` → `users` (NO CHANGE)
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `id` | `id` | - | Same |
 | `username` | `username` | - | Same |
@@ -77,7 +77,7 @@
 ### 2. CLIENTS Table
 **Table Name**: `patient_data` → `clients`
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `pid` | `id` | - | Standard naming |
 | `uuid` | `uuid` | - | Same |
@@ -109,7 +109,7 @@
 ### 3. APPOINTMENTS Table
 **Table Name**: `openemr_postcalendar_events` → `appointments`
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `pc_eid` | `id` | - | Standard naming |
 | `pc_eventDate` | `start_datetime` | DATE→TIMESTAMP | Combined with time |
@@ -131,7 +131,7 @@
 | ❌ N/A | `cancelled_by` | - | NEW FK field |
 
 **Status Value Mapping**:
-- `-` (OpenEMR) → `scheduled` (Mindline)
+- `-` (OpenEMR) → `scheduled` (SanctumEMHR)
 - `*` → `confirmed`
 - `@` → `arrived`
 - `~` → `completed`
@@ -142,7 +142,7 @@
 ### 4. APPOINTMENT_CATEGORIES Table
 **Table Name**: `openemr_postcalendar_categories` → `appointment_categories`
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `pc_catid` | `id` | - | Standard naming |
 | `pc_catname` | `name` | - | Simplified |
@@ -160,7 +160,7 @@
 ### 5. FACILITIES Table
 **Table Name**: `facility` → `facilities`
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `id` | `id` | - | Same |
 | `name` | `name` | - | Same |
@@ -179,7 +179,7 @@
 ### 6. INSURANCE_PROVIDERS Table
 **Table Name**: `insurance_companies` → `insurance_providers`
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `id` | `id` | - | Same |
 | `name` | `name` | - | Same |
@@ -193,7 +193,7 @@
 ### 7. CLIENT_INSURANCE Table
 **Table Name**: `insurance_data` → `client_insurance`
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `id` | `id` | - | Same |
 | `pid` | `client_id` | - | Renamed |
@@ -213,7 +213,7 @@
 ### 8. ENCOUNTERS Table
 **Table Name**: `form_encounter` → `encounters`
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `encounter` | `id` | - | Standard naming |
 | `pid` | `client_id` | - | Renamed |
@@ -230,7 +230,7 @@
 ### 9. CLINICAL_NOTES Table
 **Table Name**: `clinical_notes` → `clinical_notes` (NO CHANGE)
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `id` | `id` | - | Same |
 | `pid` | `client_id` | - | Renamed |
@@ -248,7 +248,7 @@
 ### 10. SETTINGS_LISTS Table
 **Table Name**: `list_options` → `settings_lists`
 
-| OpenEMR Column | Mindline Column | Type Change | Notes |
+| OpenEMR Column | SanctumEMHR Column | Type Change | Notes |
 |----------------|-----------------|-------------|-------|
 | `list_id` | `list_id` | - | Same |
 | `option_id` | `option_id` | - | Same |
@@ -275,7 +275,7 @@ FROM patient_data pd
 WHERE pd.pid = ?
 ```
 
-**Mindline**:
+**SanctumEMHR**:
 ```sql
 SELECT
     c.id,
@@ -299,7 +299,7 @@ WHERE pc_eventDate >= ? AND pc_eventDate <= ?
 ORDER BY pc_eventDate, pc_startTime
 ```
 
-**Mindline**:
+**SanctumEMHR**:
 ```sql
 SELECT
     start_datetime,
@@ -316,7 +316,7 @@ ORDER BY start_datetime
 CONCAT(pd.fname, ' ', pd.lname) AS patient_name
 ```
 
-**Mindline**:
+**SanctumEMHR**:
 ```sql
 CONCAT(c.first_name, ' ', c.last_name) AS client_name
 ```
@@ -328,7 +328,7 @@ CONCAT(c.first_name, ' ', c.last_name) AS client_name
 WHERE pc_apptstatus IN ('-', '*', '@')  -- scheduled, confirmed, arrived
 ```
 
-**Mindline**:
+**SanctumEMHR**:
 ```sql
 WHERE status IN ('scheduled', 'confirmed', 'arrived')
 ```
@@ -339,7 +339,7 @@ WHERE status IN ('scheduled', 'confirmed', 'arrived')
 
 ### Query Functions
 
-| OpenEMR Function | Mindline Method | Notes |
+| OpenEMR Function | SanctumEMHR Method | Notes |
 |------------------|-----------------|-------|
 | `sqlQuery($sql, $params)` | `$db->query($sql, $params)` | Single row |
 | `sqlStatement($sql, $params)` | `$db->queryAll($sql, $params)` | All rows |
@@ -349,7 +349,7 @@ WHERE status IN ('scheduled', 'confirmed', 'arrived')
 
 ### Session Functions
 
-| OpenEMR Code | Mindline Code |
+| OpenEMR Code | SanctumEMHR Code |
 |--------------|---------------|
 | `$_SESSION['authUserID']` | `$session->getUserId()` |
 | `$_SESSION['authUser']` | `$session->get('username')` |
@@ -359,7 +359,7 @@ WHERE status IN ('scheduled', 'confirmed', 'arrived')
 
 ## REMOVED FIELDS/FEATURES
 
-These fields from OpenEMR are **NOT** in Mindline:
+These fields from OpenEMR are **NOT** in SanctumEMHR:
 
 1. **Appointment Rooms** (`pc_room`) - Removed for simplicity
 2. **Generic Fields** (`genericname1-9`, `genericval1-9`) - Use proper fields

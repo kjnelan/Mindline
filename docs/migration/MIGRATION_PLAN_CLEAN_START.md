@@ -1,10 +1,10 @@
-# Mindline Database Migration - Clean Start Plan
+# SanctumEMHR Database Migration - Clean Start Plan
 **Date**: 2026-01-17
 **Status**: PLANNING - Starting Fresh
 
 ## Executive Summary
 
-We are **completely decoupling from OpenEMR** and migrating to our own Mindline database and infrastructure.
+We are **completely decoupling from OpenEMR** and migrating to our own SanctumEMHR database and infrastructure.
 
 ### Current Issues Identified
 
@@ -15,7 +15,7 @@ We are **completely decoupling from OpenEMR** and migrating to our own Mindline 
 
 ### The Goal
 
-Create a **standalone Mindline EMHR system** with:
+Create a **standalone SanctumEMHR EMHR system** with:
 - ✅ Our own database layer (no OpenEMR database functions)
 - ✅ Our own bootstrap file (no `globals.php`)
 - ✅ Our own authentication (no OpenEMR auth classes)
@@ -24,7 +24,7 @@ Create a **standalone Mindline EMHR system** with:
 
 ---
 
-## Phase 1: Create Mindline Infrastructure (Week 1)
+## Phase 1: Create SanctumEMHR Infrastructure (Week 1)
 
 ### Step 1.1: Create New Database Configuration
 
@@ -33,7 +33,7 @@ Create a **standalone Mindline EMHR system** with:
 ```php
 <?php
 /**
- * Mindline EMHR - Database Configuration
+ * SanctumEMHR EMHR - Database Configuration
  *
  * This replaces OpenEMR's database configuration
  */
@@ -41,8 +41,8 @@ Create a **standalone Mindline EMHR system** with:
 return [
     'host' => getenv('DB_HOST') ?: 'localhost',
     'port' => getenv('DB_PORT') ?: '3306',
-    'database' => getenv('DB_NAME') ?: 'mindline',
-    'username' => getenv('DB_USER') ?: 'mindline_user',
+    'database' => getenv('DB_NAME') ?: 'sanctumEMHR',
+    'username' => getenv('DB_USER') ?: 'sanctum_user',
     'password' => getenv('DB_PASS') ?: '',
     'charset' => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
@@ -54,7 +54,7 @@ return [
 ];
 ```
 
-### Step 1.2: Create Mindline Database Class
+### Step 1.2: Create SanctumEMHR Database Class
 
 **File**: `/custom/lib/Database/Database.php`
 
@@ -70,7 +70,7 @@ This will replace OpenEMR's `sqlQuery()`, `sqlStatement()`, etc.
 - `lastInsertId()` - Get last insert ID
 - `beginTransaction()`, `commit()`, `rollback()` - Transactions
 
-### Step 1.3: Create Mindline Bootstrap File
+### Step 1.3: Create SanctumEMHR Bootstrap File
 
 **File**: `/custom/bootstrap.php`
 
@@ -81,13 +81,13 @@ This will replace `globals.php`.
 2. Load environment variables (.env file)
 3. Initialize database connection
 4. Start PHP session
-5. Load Mindline configuration
+5. Load SanctumEMHR configuration
 6. Set up error handling
 7. Define helper functions (if needed)
 8. **NOT** load OpenEMR classes
 9. **NOT** load OpenEMR globals
 
-### Step 1.4: Create Mindline Auth Class
+### Step 1.4: Create SanctumEMHR Auth Class
 
 **File**: `/custom/lib/Auth/Auth.php`
 
@@ -106,33 +106,33 @@ This replaces OpenEMR's `AuthUtils`, `SessionUtil`, `UserService`.
 
 ## Phase 2: Create New Database Schema (Week 1-2)
 
-### Step 2.1: Create New Mindline Database
+### Step 2.1: Create New SanctumEMHR Database
 
 ```bash
 # Create new database
-mysql -u root -p -e "CREATE DATABASE mindline CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e "CREATE DATABASE sanctumEMHR CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# Create mindline user
-mysql -u root -p -e "CREATE USER 'mindline_user'@'localhost' IDENTIFIED BY 'secure_password';"
-mysql -u root -p -e "GRANT ALL PRIVILEGES ON mindline.* TO 'mindline_user'@'localhost';"
+# Create sanctumEMHR user
+mysql -u root -p -e "CREATE USER 'sanctum_user'@'localhost' IDENTIFIED BY 'secure_password';"
+mysql -u root -p -e "GRANT ALL PRIVILEGES ON sanctumEMHR.* TO 'sanctum_user'@'localhost';"
 mysql -u root -p -e "FLUSH PRIVILEGES;"
 ```
 
-### Step 2.2: Rename Tables from OpenEMR to Mindline
+### Step 2.2: Rename Tables from OpenEMR to SanctumEMHR
 
 We already have the schema design in `DATABASE_SCHEMA.md`. Key changes:
 
-| OpenEMR Table | New Mindline Table |
+| OpenEMR Table | New SanctumEMHR Table |
 |---------------|-------------------|
-| `users` | `mindline_users` |
-| `patient_data` | `mindline_clients` |
-| `openemr_postcalendar_events` | `mindline_appointments` |
-| `openemr_postcalendar_categories` | `mindline_appointment_categories` |
-| `facility` | `mindline_facilities` |
-| `form_encounter` | `mindline_encounters` |
-| `clinical_notes` | `mindline_clinical_notes` |
-| `insurance_data` | `mindline_client_insurance` |
-| `insurance_companies` | `mindline_insurance_providers` |
+| `users` | `sanctum_users` |
+| `patient_data` | `sanctum_clients` |
+| `openemr_postcalendar_events` | `sanctum_appointments` |
+| `openemr_postcalendar_categories` | `sanctum_appointment_categories` |
+| `facility` | `sanctum_facilities` |
+| `form_encounter` | `sanctum_encounters` |
+| `clinical_notes` | `sanctum_clinical_notes` |
+| `insurance_data` | `sanctum_client_insurance` |
+| `insurance_companies` | `sanctum_insurance_providers` |
 
 ### Step 2.3: Run Migration Scripts
 
@@ -162,17 +162,17 @@ $result = sqlQuery("SELECT * FROM users WHERE id = ?", [$userId]);
 <?php
 require_once dirname(__FILE__, 2) . "/bootstrap.php";
 
-use Mindline\Database\Database;
-use Mindline\Auth\Auth;
+use SanctumEMHR\Database\Database;
+use SanctumEMHR\Auth\Auth;
 
-// Query using Mindline Database class
+// Query using SanctumEMHR Database class
 $db = Database::getInstance();
-$result = $db->queryOne("SELECT * FROM mindline_users WHERE id = ?", [$userId]);
+$result = $db->queryOne("SELECT * FROM sanctum_users WHERE id = ?", [$userId]);
 ```
 
 ### Step 3.2: Update React Frontend API Constants
 
-**File**: `/home/user/Mindline/react-frontend/src/utils/api.js`
+**File**: `/home/user/SanctumEMHR/react-frontend/src/utils/api.js`
 
 **REMOVE** (lines 14-15):
 ```javascript
@@ -186,7 +186,7 @@ const FHIR_BASE = '/fhir';         // DELETE THIS
 
 Replace OpenEMR function calls in all 49 API files:
 
-| Old (OpenEMR) | New (Mindline) |
+| Old (OpenEMR) | New (SanctumEMHR) |
 |---------------|----------------|
 | `sqlQuery($sql, $params)` | `$db->queryOne($sql, $params)` |
 | `sqlStatement($sql, $params)` | `$db->query($sql, $params)` |
@@ -261,7 +261,7 @@ Update README.md:
 ### Files to Create (New)
 
 - [ ] `/custom/config/database.php` - Database configuration
-- [ ] `/custom/bootstrap.php` - Mindline bootstrap (replaces globals.php)
+- [ ] `/custom/bootstrap.php` - SanctumEMHR bootstrap (replaces globals.php)
 - [ ] `/custom/lib/Database/Database.php` - Database abstraction layer
 - [ ] `/custom/lib/Auth/Auth.php` - Authentication class
 - [ ] `/custom/lib/Auth/SessionManager.php` - Session management
@@ -276,7 +276,7 @@ Update README.md:
 - [ ] `/react-frontend/src/utils/api.js` - Remove unused OpenEMR constants
 - [ ] All 49 files in `/custom/api/*.php` - Replace globals.php with bootstrap.php
 - [ ] All 49 files in `/custom/api/*.php` - Replace OpenEMR database functions
-- [ ] All 49 files in `/custom/api/*.php` - Update table names to Mindline tables
+- [ ] All 49 files in `/custom/api/*.php` - Update table names to SanctumEMHR tables
 - [ ] `/README.md` - Remove OpenEMR references
 - [ ] `/composer.json` - Remove OpenEMR dependencies
 - [ ] `/.gitignore` - Add .env file
@@ -305,7 +305,7 @@ Update README.md:
 
 3. **Missing Dependencies** - Risk of breaking functionality
    - **Mitigation**: Identify all OpenEMR functions we actually use
-   - **Mitigation**: Replicate those functions in Mindline classes
+   - **Mitigation**: Replicate those functions in SanctumEMHR classes
    - **Mitigation**: Comprehensive testing of all endpoints
 
 ### Medium Risk Items
@@ -342,11 +342,11 @@ Update README.md:
 ## Next Steps
 
 1. **Review this plan** - Approve the approach
-2. **Set up new database** - Create `mindline` database
+2. **Set up new database** - Create `sanctumEMHR` database
 3. **Create infrastructure files** - Database.php, Auth.php, bootstrap.php
 4. **Test infrastructure** - Verify new files work
 5. **Migrate schema** - Create new tables
-6. **Migrate data** - Copy OpenEMR data to Mindline tables
+6. **Migrate data** - Copy OpenEMR data to SanctumEMHR tables
 7. **Update API files** - Replace globals.php (one by one)
 8. **Test each API** - Verify functionality
 9. **Update React app** - Remove OpenEMR constants
@@ -358,7 +358,7 @@ Update README.md:
 
 ## Questions to Answer Before Starting
 
-1. **New database name?** Suggested: `mindline` (vs current OpenEMR database)
+1. **New database name?** Suggested: `sanctumEMHR` (vs current OpenEMR database)
 2. **Keep existing data?** Yes - migration script will copy all data
 3. **Parallel systems?** Run both systems side-by-side during migration?
 4. **Rollback plan?** Keep OpenEMR backup for X days after migration?

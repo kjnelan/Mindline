@@ -1,6 +1,6 @@
 <?php
 /**
- * Debug script to check diagnosis_codes values in database (MIGRATED TO MINDLINE)
+ * Debug script to check diagnosis_codes values in database (MIGRATED TO SanctumEMHR)
  */
 
 require_once(__DIR__ . '/../init.php');
@@ -9,11 +9,11 @@ use Custom\Lib\Database\Database;
 
 $db = Database::getInstance();
 
-// Get all diagnosis notes from MINDLINE schema
+// Get all diagnosis notes from SanctumEMHR schema
 $sql = "SELECT id, client_id, note_type FROM clinical_notes WHERE note_type = 'Diagnosis' ORDER BY id DESC LIMIT 10";
 $rows = $db->queryAll($sql);
 
-echo "=== Diagnosis Notes in Mindline Database ===\n\n";
+echo "=== Diagnosis Notes in SanctumEMHR Database ===\n\n";
 
 foreach ($rows as $row) {
     echo "Note ID: " . $row['id'] . "\n";

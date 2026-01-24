@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Patient Notes API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Patient Notes API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Returns all clinical notes for a patient
  *
  * Author: Kenneth J. Nelan

@@ -1,8 +1,8 @@
 <?php
 /**
- * Encounter Detail API - Session-based (MIGRATED TO MINDLINE)
+ * Encounter Detail API - Session-based (MIGRATED TO SanctumEMHR)
  * Returns detailed information for a specific encounter
- * Note: Mindline doesn't use the concept of "encounters" - notes are standalone
+ * Note: SanctumEMHR doesn't use the concept of "encounters" - notes are standalone
  * This API returns note detail for backward compatibility
  */
 
@@ -44,7 +44,7 @@ try {
     }
 
     // Get encounter ID from query parameter
-    // In Mindline, this maps to a note_id
+    // In SanctumEMHR, this maps to a note_id
     $encounterId = $_GET['encounter_id'] ?? null;
 
     if (!$encounterId) {
@@ -59,8 +59,8 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Fetch note details (acts as "encounter" in Mindline)
-    // Note: Mindline doesn't use traditional encounters - notes are standalone
+    // Fetch note details (acts as "encounter" in SanctumEMHR)
+    // Note: SanctumEMHR doesn't use traditional encounters - notes are standalone
     $noteSql = "SELECT
         n.id AS encounter,
         n.client_id AS pid,
@@ -145,7 +145,7 @@ try {
         // Continue without billing data
     }
 
-    // Fetch vitals (Mindline doesn't track vitals separately - they're in note content)
+    // Fetch vitals (SanctumEMHR doesn't track vitals separately - they're in note content)
     $vitals = [];
 
     // Fetch diagnoses added with this note
@@ -197,7 +197,7 @@ try {
         'forms' => $forms,
         'billing' => $billing,
         'total_charges' => $totalCharges,
-        'vitals' => $vitals, // Empty in Mindline
+        'vitals' => $vitals, // Empty in SanctumEMHR
         'diagnoses' => $diagnoses
     ];
 

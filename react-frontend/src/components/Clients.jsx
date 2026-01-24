@@ -86,7 +86,7 @@ function Clients() {
   };
 
   const handlePatientClick = (patientId) => {
-    // Navigate to custom Mindline client detail view
+    // Navigate to custom SanctumEMHR client detail view
     console.log('=== CLICKING CLIENT ===');
     console.log('Patient ID:', patientId);
     console.log('About to navigate to:', `/clients/${patientId}`);
@@ -242,7 +242,7 @@ function Clients() {
           {loading ? (
           <div className="text-center py-6">
             <div className="spinner spinner-md mx-auto"></div>
-            <p className="text-gray-700 font-semibold mt-3">Searching...</p>
+            <p className="text-label mt-3">Searching...</p>
           </div>
         ) : searchResults.length === 0 ? (
           <div className="text-center py-6">
@@ -255,7 +255,7 @@ function Clients() {
         ) : (
           <div className="space-y-3">
             <div className="mb-4">
-              <p className="text-gray-700 font-semibold">
+              <p className="text-label">
                 Found {searchResults.length} client{searchResults.length !== 1 ? 's' : ''}
               </p>
             </div>
@@ -359,7 +359,7 @@ function Clients() {
         {clientsLoading ? (
           <div className="text-center py-12">
             <div className="spinner spinner-lg mx-auto"></div>
-            <p className="text-gray-700 font-semibold mt-4">Loading clients...</p>
+            <p className="text-label mt-4">Loading clients...</p>
           </div>
         ) : clients.length === 0 ? (
           <div className="text-center py-12">
@@ -371,7 +371,7 @@ function Clients() {
         ) : (
           <div>
             <div className="mb-4">
-              <p className="text-gray-700 font-semibold">
+              <p className="text-label">
                 {clients.length} {statusFilter !== 'all' ? statusFilter : ''} client{clients.length !== 1 ? 's' : ''}
               </p>
             </div>

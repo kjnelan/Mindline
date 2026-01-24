@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Create Appointment API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Create Appointment API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Creates a new appointment in the calendar system
  *
  * Author: Kenneth J. Nelan
@@ -81,13 +81,18 @@ try {
 
     // Optional fields
     $title = $input['title'] ?? '';
-    $comments = $input['comments'] ?? '';
+    $notes = $input['notes'] ?? '';
     $apptstatus = $input['apptstatus'] ?? '-'; // Default status
     $room = $input['room'] ?? '';
     $facilityId = isset($input['facilityId']) ? intval($input['facilityId']) : 0;
     $overrideAvailability = isset($input['overrideAvailability']) ? boolval($input['overrideAvailability']) : false;
 
-    // Map OpenEMR status symbols to Mindline status strings
+    // CPT/Billing fields
+    $cptCodeId = isset($input['cptCodeId']) && $input['cptCodeId'] ? intval($input['cptCodeId']) : null;
+    $billingFee = isset($input['billingFee']) && $input['billingFee'] ? floatval($input['billingFee']) : null;
+    $patientPaymentType = $input['patientPaymentType'] ?? null;
+
+    // Map OpenEMR status symbols to SanctumEMHR status strings
     $statusMap = [
         '-' => 'pending',
         '~' => 'confirmed',
@@ -97,7 +102,7 @@ try {
         '?' => 'cancelled',
         'x' => 'deleted'
     ];
-    $mindlineStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
+    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
 
     // Check if this is a recurring appointment
     $isRecurring = isset($input['recurrence']) && $input['recurrence']['enabled'] === true;
@@ -313,16 +318,31 @@ try {
             title,
             start_datetime,
             end_datetime,
-            duration_minutes,
-            comments,
+            duration,
+            notes,
             status,
             room,
             facility_id,
             is_recurring,
             recurrence_group_id,
+            cpt_code_id,
+            billing_fee,
+            fee_type,
             created_at,
             updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
+        // Determine fee_type based on payment type and billing fee
+        $feeType = null;
+        if ($billingFee !== null) {
+            if ($patientPaymentType === 'insurance') {
+                $feeType = 'insurance';
+            } elseif ($patientPaymentType === 'self-pay') {
+                $feeType = 'custom';
+            } elseif ($patientPaymentType === 'pro-bono') {
+                $feeType = 'pro-bono';
+            }
+        }
 
         $params = [
             $categoryId,
@@ -332,12 +352,15 @@ try {
             $occurrenceStartDT->format('Y-m-d H:i:s'),
             $occurrenceEndDT->format('Y-m-d H:i:s'),
             $duration,
-            $comments,
-            $mindlineStatus,
+            $notes,
+            $sanctumEMHRStatus,
             $room,
             $facilityId,
             $isRecurring ? 1 : 0,
-            $recurrenceGroupId
+            $recurrenceGroupId,
+            $cptCodeId,
+            $billingFee,
+            $feeType
         ];
 
         error_log("Create appointment SQL for date $occurrenceDate: " . $sql);
@@ -360,11 +383,11 @@ try {
             a.id,
             a.start_datetime,
             a.end_datetime,
-            a.duration_minutes,
+            a.duration,
             a.category_id,
             a.status,
             a.title,
-            a.comments,
+            a.notes,
             a.client_id,
             a.provider_id,
             a.is_recurring,
@@ -383,7 +406,7 @@ try {
 
     $createdApptsResult = $db->queryAll($createdApptsQuery, $appointmentIds);
 
-    // Map Mindline status back to OpenEMR symbols for frontend compatibility
+    // Map SanctumEMHR status back to OpenEMR symbols for frontend compatibility
     $reverseStatusMap = array_flip($statusMap);
 
     foreach ($createdApptsResult as $row) {
@@ -396,13 +419,13 @@ try {
             'eventDate' => $startDT->format('Y-m-d'),
             'startTime' => $startDT->format('H:i:s'),
             'endTime' => $endDT->format('H:i:s'),
-            'duration' => $row['duration_minutes'] * 60, // Convert minutes to seconds for frontend
+            'duration' => $row['duration'] * 60, // Convert minutes to seconds for frontend
             'categoryId' => $row['category_id'],
             'categoryName' => $row['category_name'],
             'categoryColor' => $row['category_color'],
             'status' => $reverseStatusMap[$row['status']] ?? '-', // Map back to symbol
             'title' => $row['title'],
-            'comments' => $row['comments'],
+            'notes' => $row['notes'],
             'patientId' => $row['client_id'],
             'patientName' => trim(($row['patient_fname'] ?? '') . ' ' . ($row['patient_lname'] ?? '')),
             'providerId' => $row['provider_id'],

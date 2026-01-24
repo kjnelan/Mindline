@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * QuickNoteForm - Lightweight form for no-show and cancellation notes
  * Skips the full editor for simple documentation
  *

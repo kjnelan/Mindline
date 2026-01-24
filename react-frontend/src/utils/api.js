@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * API utility for making authenticated requests
  * Session-based authentication with automatic redirect on 401
  *
@@ -553,6 +553,14 @@ export async function getAppointmentCategories(type = 0) {
 export async function getRooms() {
   console.log('Fetching rooms list');
   return apiRequest('/custom/api/get_rooms.php');
+}
+
+/**
+ * Get supervisees for a given supervisor
+ */
+export async function getSupervisees(supervisorId) {
+  console.log('Fetching supervisees for supervisor:', supervisorId);
+  return apiRequest(`/custom/api/get_supervisees.php?supervisor_id=${supervisorId}`);
 }
 
 /**

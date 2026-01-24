@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Appointment Categories API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Appointment Categories API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Returns list of active appointment categories/types
  *
  * Author: Kenneth J. Nelan
@@ -54,11 +54,16 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Get optional category type filter from query parameter (not used in current schema)
-    // Kept for API compatibility but ignored since category_type column doesn't exist
-    $categoryType = isset($_GET['type']) ? intval($_GET['type']) : null;
+    // Get optional category type filter from query parameter
+    // type can be: 'client', 'clinic', 'holiday', or null/0 for all
+    $categoryType = isset($_GET['type']) ? $_GET['type'] : null;
 
-    // Fetch all active appointment categories
+    // Normalize type=0 or empty string to null (show all)
+    if ($categoryType === '0' || $categoryType === 0 || $categoryType === '') {
+        $categoryType = null;
+    }
+
+    // Fetch all active appointment categories with new billing fields
     $sql = "SELECT
         id,
         name,
@@ -66,27 +71,71 @@ try {
         description,
         default_duration,
         is_billable,
+        category_type,
+        requires_cpt_selection,
+        blocks_availability,
         sort_order
     FROM appointment_categories
-    WHERE is_active = 1
-    ORDER BY sort_order, name";
+    WHERE is_active = 1";
 
     $params = [];
+
+    // Add category type filter if provided and valid
+    if ($categoryType !== null && in_array($categoryType, ['client', 'clinic', 'holiday'])) {
+        $sql .= " AND category_type = ?";
+        $params[] = $categoryType;
+    }
+
+    $sql .= " ORDER BY sort_order, name";
 
     error_log("Get appointment categories SQL: " . $sql);
     $rows = $db->queryAll($sql, $params);
 
     $categories = [];
     foreach ($rows as $row) {
+        // Fetch linked CPT codes for this category
+        $linkedCptCodes = [];
+        if ($row['requires_cpt_selection'] == 1) {
+            $cptSql = "SELECT
+                c.id,
+                c.code,
+                c.description,
+                c.standard_duration_minutes,
+                c.standard_fee,
+                c.is_addon,
+                cc.is_default
+            FROM category_cpt_codes cc
+            INNER JOIN cpt_codes c ON cc.cpt_code_id = c.id
+            WHERE cc.category_id = ? AND c.is_active = 1
+            ORDER BY cc.is_default DESC, c.code";
+
+            $cptRows = $db->queryAll($cptSql, [$row['id']]);
+
+            foreach ($cptRows as $cptRow) {
+                $linkedCptCodes[] = [
+                    'id' => $cptRow['id'],
+                    'code' => $cptRow['code'],
+                    'description' => $cptRow['description'],
+                    'standardDuration' => $cptRow['standard_duration_minutes'],
+                    'standardFee' => $cptRow['standard_fee'],
+                    'isAddon' => (bool)$cptRow['is_addon'],
+                    'isDefault' => (bool)$cptRow['is_default']
+                ];
+            }
+        }
+
         $categories[] = [
             'id' => $row['id'],
             'name' => $row['name'],
             'color' => $row['color'],
             'description' => $row['description'],
-            'defaultDuration' => $row['default_duration'], // Duration in minutes
-            'isBillable' => $row['is_billable'],
+            'defaultDuration' => $row['default_duration'],
+            'isBillable' => (bool)$row['is_billable'],
+            'categoryType' => $row['category_type'],
+            'requiresCptSelection' => (bool)$row['requires_cpt_selection'],
+            'blocksAvailability' => (bool)$row['blocks_availability'],
             'sortOrder' => $row['sort_order'],
-            'type' => 0 // Default to patient appointments since we don't have category_type column
+            'linkedCptCodes' => $linkedCptCodes
         ];
     }
 

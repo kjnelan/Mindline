@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Interventions API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Interventions API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Returns intervention library with optional tier and modality filtering
  *
  * Author: Kenneth J. Nelan

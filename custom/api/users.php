@@ -1,9 +1,9 @@
 <?php
 /**
- * Mindline EMHR - Users API (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR - Users API (MIGRATED TO SanctumEMHR)
  * Handles user management operations
  *
- * @package   Mindline
+ * @package   SanctumEMHR
  * @author    Kenneth J. Nelan / Sacred Wandering
  * @copyright Copyright (c) 2026 Sacred Wandering
  */

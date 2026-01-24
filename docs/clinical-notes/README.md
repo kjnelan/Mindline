@@ -1,6 +1,6 @@
 # Clinical Notes System - Implementation Guide
 
-**Mindline EMHR - Phase 4**
+**SanctumEMHR EMHR - Phase 4**
 **Status**: 🟢 Phase 4B Complete (Diagnosis Note System Operational)
 **Last Updated**: 2026-01-05
 

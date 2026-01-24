@@ -1,6 +1,6 @@
 # System Architecture Overview
 
-**Mindline EMHR - Mental Health EMR System**
+**SanctumEMHR EMHR - Mental Health EMR System**
 
 ---
 
@@ -46,7 +46,7 @@
 │                         DATA TIER                            │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │        MySQL/MariaDB Database                          │ │
-│  │  Database: mindline_emhr                               │ │
+│  │  Database: sanctum_emhr                               │ │
 │  │  • 26 active tables from OpenEMR schema                │ │
 │  │  • Custom indexes and optimizations                    │ │
 │  └────────────────────────────────────────────────────────┘ │
@@ -153,7 +153,7 @@ custom/api/
 
 ### 3. Data Tier (MySQL Database)
 
-**Database:** `mindline_emhr`
+**Database:** `sanctum_emhr`
 **Technology:** MySQL 8+ or MariaDB 10+
 **Schema:** OpenEMR-based (planned migration to custom schema)
 

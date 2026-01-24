@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Update Appointment API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Update Appointment API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Updates an existing appointment in the calendar system
  *
  * Author: Kenneth J. Nelan
@@ -86,7 +86,12 @@ try {
     $apptstatus = $input['apptstatus'] ?? '-'; // Default status
     $room = $input['room'] ?? '';
 
-    // Map OpenEMR status symbols to Mindline status strings
+    // CPT/Billing fields
+    $cptCodeId = isset($input['cptCodeId']) && $input['cptCodeId'] ? intval($input['cptCodeId']) : null;
+    $billingFee = isset($input['billingFee']) && $input['billingFee'] ? floatval($input['billingFee']) : null;
+    $patientPaymentType = $input['patientPaymentType'] ?? null;
+
+    // Map OpenEMR status symbols to SanctumEMHR status strings
     $statusMap = [
         '-' => 'pending',
         '~' => 'confirmed',
@@ -96,7 +101,7 @@ try {
         '?' => 'cancelled',
         'x' => 'deleted'
     ];
-    $mindlineStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
+    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
 
     // Check for series update
     $seriesUpdate = isset($input['seriesUpdate']) ? $input['seriesUpdate'] : null;
@@ -140,6 +145,18 @@ try {
         }
     }
 
+    // Determine fee_type based on payment type and billing fee
+    $feeType = null;
+    if ($billingFee !== null) {
+        if ($patientPaymentType === 'insurance') {
+            $feeType = 'insurance';
+        } elseif ($patientPaymentType === 'self-pay') {
+            $feeType = 'custom';
+        } elseif ($patientPaymentType === 'pro-bono') {
+            $feeType = 'pro-bono';
+        }
+    }
+
     // Build UPDATE query
     $sql = "UPDATE appointments SET
         category_id = ?,
@@ -152,6 +169,9 @@ try {
         comments = ?,
         status = ?,
         room = ?,
+        cpt_code_id = ?,
+        billing_fee = ?,
+        fee_type = ?,
         updated_at = NOW()
         WHERE $whereClause";
 
@@ -164,8 +184,11 @@ try {
         $endDateTime->format('Y-m-d H:i:s'),
         $duration,
         $comments,
-        $mindlineStatus,
-        $room
+        $sanctumEMHRStatus,
+        $room,
+        $cptCodeId,
+        $billingFee,
+        $feeType
     ];
 
     // Add where params
@@ -210,7 +233,7 @@ try {
     $startDT = new DateTime($updatedAppt['start_datetime']);
     $endDT = new DateTime($updatedAppt['end_datetime']);
 
-    // Map Mindline status back to OpenEMR symbols for frontend compatibility
+    // Map SanctumEMHR status back to OpenEMR symbols for frontend compatibility
     $reverseStatusMap = array_flip($statusMap);
 
     http_response_code(200);

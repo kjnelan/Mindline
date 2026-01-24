@@ -34,7 +34,7 @@ function DemographicsTab({ data, onDataUpdate }) {
         sexual_orientation: referenceLists['sexual-orientation'] || [],
         gender_identity: referenceLists['gender-identity'] || [],
         marital_status: referenceLists['marital-status'] || [],
-        client_status: referenceLists['client-status'] || [],
+        status: referenceLists['client-status'] || [], // Use 'status' to match DB column
         pronouns: referenceLists['pronouns'] || [],
         ethnicity: referenceLists['ethnicity'] || [],
         insurance_type: referenceLists['insurance-type'] || [],
@@ -135,7 +135,7 @@ function DemographicsTab({ data, onDataUpdate }) {
       sexual_orientation: patient.sexual_orientation || '',
       marital_status: patient.marital_status || '',
       ethnicity: patient.ethnicity || '',
-      previous_names: patient.previous_names || '',
+      previous_names: patient.previous_names || '', // TODO: Add UI in Admin Notes section for editing
       patient_categories: patient.patient_categories || '',
       ss: patient.ss || '',
 
@@ -157,11 +157,12 @@ function DemographicsTab({ data, onDataUpdate }) {
       // Risk & Protection
       protect_indicator: patient.protection_indicator_code || '',
 
-      // Care Team Status
-      care_team_status: patient.care_team_status || '',
+      // Client Status
+      status: patient.status || 'active',
 
       // Payment Type
-      payment_type: patient.payment_type || '',
+      payment_type: patient.payment_type || 'insurance',
+      custom_session_fee: patient.custom_session_fee || '',
 
       // Clinician Information
       provider_id: patient.provider_id || '',
@@ -408,12 +409,12 @@ function DemographicsTab({ data, onDataUpdate }) {
                         ? [{ value: '', label: 'Select...' }, ...dropdownOptions.sex]
                         : [{ value: '', label: 'Select...' }, { value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }]
                     )}
-                    {renderField('Gender Identity *', formData.gender_identity, 'gender_identity', 'text',
+                    {renderField('Gender Identity', formData.gender_identity, 'gender_identity', 'text',
                       dropdownOptions.gender_identity && dropdownOptions.gender_identity.length > 0
                         ? [{ value: '', label: 'Select...' }, ...dropdownOptions.gender_identity]
                         : null
                     )}
-                    {renderField('Sexual Orientation *', formData.sexual_orientation, 'sexual_orientation', 'text',
+                    {renderField('Sexual Orientation', formData.sexual_orientation, 'sexual_orientation', 'text',
                       dropdownOptions.sexual_orientation && dropdownOptions.sexual_orientation.length > 0
                         ? [{ value: '', label: 'Select...' }, ...dropdownOptions.sexual_orientation]
                         : null
@@ -439,7 +440,6 @@ function DemographicsTab({ data, onDataUpdate }) {
                         className="input-md"
                       />
                     </div>
-                    {renderField('Previous Names', formData.previous_names, 'previous_names')}
                     <div className="col-span-2">
                       {renderField('Client Categories', formData.patient_categories, 'patient_categories', 'text',
                         dropdownOptions.patient_categories && dropdownOptions.patient_categories.length > 0
@@ -487,7 +487,6 @@ function DemographicsTab({ data, onDataUpdate }) {
                         ? [{ value: '', label: 'Select...' }, ...dropdownOptions.ethnicity]
                         : null
                     )}
-                    {renderField('Previous Names', patient.previous_names)}
                     <div className="col-span-2">
                       {renderField('Client Categories', patient.patient_categories, null, 'text',
                         dropdownOptions.patient_categories && dropdownOptions.patient_categories.length > 0
@@ -616,28 +615,44 @@ function DemographicsTab({ data, onDataUpdate }) {
             <div className="card-inner">
               {isEditing ? (
                 <div className="space-y-3">
-                  {renderField('Status', formData.care_team_status, 'care_team_status', 'text',
-                    dropdownOptions.care_team_status && dropdownOptions.care_team_status.length > 0
-                      ? [{ value: '', label: 'Select...' }, ...dropdownOptions.care_team_status]
+                  {renderField('Client Status', formData.status, 'status', 'text',
+                    dropdownOptions.status && dropdownOptions.status.length > 0
+                      ? [{ value: '', label: 'Select...' }, ...dropdownOptions.status]
                       : null
                   )}
                   {renderField('Payment Type', formData.payment_type, 'payment_type', 'text',
-                    dropdownOptions.payment_type && dropdownOptions.payment_type.length > 0
-                      ? [{ value: '', label: 'Select...' }, ...dropdownOptions.payment_type]
-                      : null
+                    [
+                      { value: 'insurance', label: 'Insurance' },
+                      { value: 'self-pay', label: 'Self-Pay' },
+                      { value: 'pro-bono', label: 'Pro Bono' }
+                    ]
+                  )}
+                  {(formData.payment_type === 'self-pay' || formData.payment_type === 'pro-bono') && (
+                    renderField('Custom Session Fee ($)', formData.custom_session_fee, 'custom_session_fee', 'number', null, {
+                      step: '0.01',
+                      placeholder: '120.00'
+                    })
                   )}
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {renderField('Status', patient.care_team_status, null, 'text',
-                    dropdownOptions.care_team_status && dropdownOptions.care_team_status.length > 0
-                      ? dropdownOptions.care_team_status
+                  {renderField('Client Status', patient.status, null, 'text',
+                    dropdownOptions.status && dropdownOptions.status.length > 0
+                      ? dropdownOptions.status
                       : null
                   )}
                   {renderField('Payment Type', patient.payment_type, null, 'text',
-                    dropdownOptions.payment_type && dropdownOptions.payment_type.length > 0
-                      ? dropdownOptions.payment_type
-                      : null
+                    [
+                      { value: 'insurance', label: 'Insurance' },
+                      { value: 'self-pay', label: 'Self-Pay' },
+                      { value: 'pro-bono', label: 'Pro Bono' }
+                    ]
+                  )}
+                  {(patient.payment_type === 'self-pay' || patient.payment_type === 'pro-bono') && patient.custom_session_fee && (
+                    <div className="form-field">
+                      <div className="form-field-label">Custom Session Fee</div>
+                      <div className="form-field-value">${parseFloat(patient.custom_session_fee).toFixed(2)}</div>
+                    </div>
                   )}
                 </div>
               )}

@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * NotesList - Display list of clinical notes for a patient
  * Supports filtering by type, status, date range
  *

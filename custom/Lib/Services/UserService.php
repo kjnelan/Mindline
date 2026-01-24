@@ -6,7 +6,7 @@ use Custom\Lib\Database\Database;
 use Custom\Lib\Auth\CustomAuth;
 
 /**
- * User Service for MINDLINE
+ * User Service for SanctumEMHR
  *
  * Replaces OpenEMR\Services\UserService
  *

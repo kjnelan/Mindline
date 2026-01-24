@@ -1,6 +1,6 @@
 <?php
 /**
- * Database diagnosis script (MIGRATED TO MINDLINE)
+ * Database diagnosis script (MIGRATED TO SanctumEMHR)
  */
 
 require_once(__DIR__ . '/../init.php');

@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Rooms API - Returns list of room/location options (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Rooms API - Returns list of room/location options (MIGRATED TO SanctumEMHR)
  * Fetches rooms from the settings_lists table
  *
  * Author: Kenneth J. Nelan
@@ -12,7 +12,7 @@
  * Proprietary and Confidential
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
@@ -56,7 +56,7 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Fetch all rooms from MINDLINE settings_lists table
+    // Fetch all rooms from SanctumEMHR settings_lists table
     $sql = "SELECT option_id, title, sort_order, is_default, notes
             FROM settings_lists
             WHERE list_id = 'rooms'

@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * DischargeTemplate - Discharge summary for treatment conclusion
  * Documents treatment course, progress, outcomes, and recommendations
  *

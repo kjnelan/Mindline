@@ -1,6 +1,6 @@
 <?php
 /**
- * Clinical Notes API - Session-based (MIGRATED TO MINDLINE)
+ * Clinical Notes API - Session-based (MIGRATED TO SanctumEMHR)
  * Returns all clinical notes for a client
  */
 

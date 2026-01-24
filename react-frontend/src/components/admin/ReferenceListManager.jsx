@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Reference List Manager - Generic CRUD component for managing lookup lists
  * Handles Sexual Orientation, Gender Identity, Marital Status, etc.
  *
@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { PrimaryButton } from '../PrimaryButton';
 
 function ReferenceListManager({ listType, title, description, apiEndpoint }) {
   const [items, setItems] = useState([]);
@@ -208,12 +209,13 @@ function ReferenceListManager({ listType, title, description, apiEndpoint }) {
       <div className="glass-card p-8">
         <div className="text-center text-red-600">Error: {error}</div>
         <div className="text-center mt-4">
-          <button
+
+          <PrimaryButton
             onClick={fetchItems}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Retry
-          </button>
+          </PrimaryButton>
+
         </div>
       </div>
     );

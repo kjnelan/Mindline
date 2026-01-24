@@ -8,7 +8,7 @@
 
 ## Overview
 
-This guide walks through the complete setup process for Mindline EMHR Clinical Notes system, including database schema, ICD-10 code loading, and system verification.
+This guide walks through the complete setup process for SanctumEMHR EMHR Clinical Notes system, including database schema, ICD-10 code loading, and system verification.
 
 ---
 
@@ -24,7 +24,7 @@ This guide walks through the complete setup process for Mindline EMHR Clinical N
 ### Access Requirements
 - ✅ Database admin credentials
 - ✅ Server shell/SSH access
-- ✅ Admin account in Mindline EMHR
+- ✅ Admin account in SanctumEMHR EMHR
 
 ---
 
@@ -71,7 +71,7 @@ You should see all 8 new columns listed.
 
 **CRITICAL REQUIREMENT**: Diagnosis notes require ICD-10 codes in the `codes` table.
 
-### Option A: Mindline EMHR Frontend (Recommended for New Installs)
+### Option A: SanctumEMHR EMHR Frontend (Recommended for New Installs)
 
 **Coming in Phase 4B.1** - Built-in ICD-10 importer
 
@@ -91,7 +91,7 @@ You should see all 8 new columns listed.
 
 If you have OpenEMR admin access:
 
-1. Log into OpenEMR (not Mindline frontend)
+1. Log into OpenEMR (not SanctumEMHR frontend)
 2. Navigate to: **Administration → Other → External Data Loads**
 3. Select **ICD-10** from the dropdown
 4. Click **Execute**
@@ -230,7 +230,7 @@ chown www-data:www-data /path/to/custom/api/search_codes.php
 
 ### 4.1 Test Diagnosis Note Creation
 
-1. Log into Mindline EMHR
+1. Log into SanctumEMHR EMHR
 2. Navigate to any patient
 3. Go to **Clinical Notes** tab
 4. Click **+ New Note**
@@ -460,4 +460,4 @@ ANALYZE TABLE codes;
 
 ---
 
-**Setup Complete!** Your Mindline EMHR Clinical Notes system is ready for diagnosis documentation.
+**Setup Complete!** Your SanctumEMHR EMHR Clinical Notes system is ready for diagnosis documentation.

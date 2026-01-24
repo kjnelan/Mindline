@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Calendar Availability - Provider availability/blocking management
  * Allows providers to block time on their calendar (vacation, meetings, etc.)
  *

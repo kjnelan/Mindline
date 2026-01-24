@@ -1,6 +1,6 @@
 # Known Issues & Limitations
 
-**Current bugs and limitations in Mindline EMHR**
+**Current bugs and limitations in SanctumEMHR EMHR**
 
 ---
 

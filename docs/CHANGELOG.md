@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Mindline EMHR will be documented in this file.
+All notable changes to SanctumEMHR EMHR will be documented in this file.
 
 ---
 

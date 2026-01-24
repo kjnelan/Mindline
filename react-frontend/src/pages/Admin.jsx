@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Admin/Settings page - System configuration and preferences
  *
  * Author: Kenneth J. Nelan
@@ -18,6 +18,8 @@ import ReferenceLists from '../components/admin/ReferenceLists';
 import UserManagement from '../components/admin/UserManagement';
 import Facilities from '../components/admin/Facilities';
 import SecuritySettings from '../components/admin/SecuritySettings';
+import CPTCodes from '../components/admin/CPTCodes';
+import BillingModifiers from '../components/admin/BillingModifiers';
 import About from '../components/admin/About';
 
 function Admin() {
@@ -45,7 +47,7 @@ function Admin() {
     },
     {
       id: 'clinical',
-      label: 'Clinical Data',
+      label: 'Documentation',
       icon: '🏥',
       sections: [
         { id: 'reference-lists', label: 'Reference Lists', available: true },
@@ -54,7 +56,7 @@ function Admin() {
     },
     {
       id: 'scheduling',
-      label: 'Scheduling',
+      label: 'Calendar',
       icon: '📅',
       sections: [
         { id: 'calendar-settings', label: 'Calendar Settings', available: true },
@@ -66,6 +68,8 @@ function Admin() {
       label: 'Billing',
       icon: '💰',
       sections: [
+        { id: 'cpt-codes', label: 'CPT Codes', available: true },
+        { id: 'billing-modifiers', label: 'Billing Modifiers', available: true },
         { id: 'billing-settings', label: 'Billing Settings', available: false },
         { id: 'payment-methods', label: 'Payment Methods', available: false },
       ]
@@ -117,7 +121,7 @@ function Admin() {
                   {/* Group Header */}
                   <button
                     onClick={() => toggleGroup(group.id)}
-                    className="w-full flex items-center justify-between px-3 py-2 text-gray-700 font-semibold text-sm hover:bg-gray-50 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2 text-label text-sm hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <span className="flex items-center gap-2">
                       <span>{group.icon}</span>
@@ -186,12 +190,14 @@ function Admin() {
           {activeSection === 'calendar-categories' && <CalendarCategories />}
           {activeSection === 'reference-lists' && <ReferenceLists />}
           {activeSection === 'document-categories' && <DocumentCategories />}
+          {activeSection === 'cpt-codes' && <CPTCodes />}
+          {activeSection === 'billing-modifiers' && <BillingModifiers />}
           {activeSection === 'facilities' && <Facilities />}
           {activeSection === 'users' && <UserManagement />}
           {activeSection === 'about' && <About />}
 
           {/* Coming Soon for unavailable sections */}
-          {!['security', 'calendar-settings', 'calendar-categories', 'reference-lists', 'document-categories', 'facilities', 'users', 'about'].includes(activeSection) && (
+          {!['security', 'calendar-settings', 'calendar-categories', 'reference-lists', 'document-categories', 'cpt-codes', 'billing-modifiers', 'facilities', 'users', 'about'].includes(activeSection) && (
             <div className="glass-card p-12 text-center">
               <div className="text-gray-700 text-lg font-semibold">
                 {sectionGroups.flatMap(g => g.sections).find(s => s.id === activeSection)?.label}

@@ -101,7 +101,7 @@ function ClientDetail() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-mental">
         <div className="backdrop-blur-2xl bg-white/90 rounded-3xl shadow-2xl p-8 border border-white/50">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="text-gray-700 font-semibold mt-4 text-center">Loading...</p>
+          <p className="text-label mt-4 text-center">Loading...</p>
         </div>
       </div>
     );

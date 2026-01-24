@@ -1,4 +1,4 @@
-# MINDLINE Authentication System - Setup Guide
+# SanctumEMHR Authentication System - Setup Guide
 
 **Date**: 2026-01-16
 **Status**: Phase 1 Complete - Authentication Foundation
@@ -64,7 +64,7 @@ The system tries to load database credentials in this order:
    ```bash
    export DB_HOST=localhost
    export DB_PORT=3306
-   export DB_NAME=mindline
+   export DB_NAME=sanctumEMHR
    export DB_USER=your_db_user
    export DB_PASS=your_db_password
    ```
@@ -79,9 +79,9 @@ The system tries to load database credentials in this order:
 
 ### Prerequisites
 
-1. **Database must be set up with mindline.sql**
+1. **Database must be set up with sanctumEMHR.sql**
    ```bash
-   mysql -u root -p < /path/to/database/mindline.sql
+   mysql -u root -p < /path/to/database/sanctumEMHR.sql
    ```
 
 2. **Create a test user** (run this SQL):
@@ -97,7 +97,7 @@ The system tries to load database credentials in this order:
        is_provider
    ) VALUES (
        'admin',
-       'admin@mindline.test',
+       'admin@sanctumEMHR.test',
        '$argon2id$v=19$m=65536,t=4,p=1$YOURSALTHERE',  -- Replace with actual hash
        'Admin',
        'User',
@@ -130,7 +130,7 @@ The system tries to load database credentials in this order:
      "user": {
        "id": 1,
        "username": "admin",
-       "email": "admin@mindline.test",
+       "email": "admin@sanctumEMHR.test",
        "firstName": "Admin",
        "lastName": "User",
        "fullName": "Admin User",
@@ -242,7 +242,7 @@ $userService = new UserService();
 $users = $userService->getAll();
 ```
 
-### After (MINDLINE):
+### After (SanctumEMHR):
 ```php
 <?php
 require_once dirname(__FILE__, 3) . "/vendor/autoload.php";
@@ -259,7 +259,7 @@ $users = $userService->getUsers();
 
 ### Common Replacements:
 
-| Old (OpenEMR) | New (MINDLINE) |
+| Old (OpenEMR) | New (SanctumEMHR) |
 |--------------|----------------|
 | `sqlQuery()` | `$db->query()` |
 | `sqlStatement()` | `$db->queryAll()` |
@@ -279,8 +279,8 @@ $users = $userService->getUsers();
 
 **Solutions**:
 1. Check database credentials in environment variables or sqlconf.php
-2. Verify database exists: `mysql -u root -p -e "SHOW DATABASES LIKE 'mindline';"`
-3. Check user permissions: `GRANT ALL ON mindline.* TO 'user'@'localhost';`
+2. Verify database exists: `mysql -u root -p -e "SHOW DATABASES LIKE 'sanctumEMHR';"`
+3. Check user permissions: `GRANT ALL ON sanctumEMHR.* TO 'user'@'localhost';`
 4. Verify MySQL is running: `systemctl status mysql`
 
 ### Session Issues
@@ -331,7 +331,7 @@ $users = $userService->getUsers();
 
 ## Database Schema Reference
 
-See `/database/mindline.sql` and `DATABASE_SCHEMA.md` for complete schema documentation.
+See `/database/sanctumEMHR.sql` and `DATABASE_SCHEMA.md` for complete schema documentation.
 
 Key tables for authentication:
 - `users` - User accounts

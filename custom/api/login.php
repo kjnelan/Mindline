@@ -1,10 +1,10 @@
 <?php
 /**
- * MINDLINE Login API
+ * SanctumEMHR Login API
  *
- * Handles user authentication using the new MINDLINE database and auth system.
+ * Handles user authentication using the new SanctumEMHR database and auth system.
  *
- * @package MINDLINE
+ * @package SanctumEMHR
  */
 
 // Enable error reporting for debugging

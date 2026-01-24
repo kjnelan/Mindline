@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Search Codes API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Search Codes API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Returns diagnosis codes (ICD-10) and procedure codes (CPT) from codes table
  *
  * Author: Kenneth J. Nelan

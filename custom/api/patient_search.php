@@ -1,10 +1,10 @@
 <?php
 /**
- * Patient Search API - Session-based (MIGRATED TO MINDLINE)
+ * Patient Search API - Session-based (MIGRATED TO SanctumEMHR)
  * Searches for patients using session authentication
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
@@ -58,7 +58,7 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Build the SQL query for MINDLINE schema
+    // Build the SQL query for SanctumEMHR schema
     $sql = "SELECT
         c.id,
         c.first_name,

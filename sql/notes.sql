@@ -1,5 +1,5 @@
 -- ========================================
--- Mindline EMHR - Clinical Notes Tables
+-- SanctumEMHR EMHR - Clinical Notes Tables
 -- Phase 4: Clinical Documentation
 -- ========================================
 --

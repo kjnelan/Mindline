@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * CrisisTemplate - Crisis/Emergency session documentation
  * For high-risk, emergency, or crisis intervention sessions
  *

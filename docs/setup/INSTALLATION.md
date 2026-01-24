@@ -1,6 +1,6 @@
 # Installation Guide
 
-**Mindline EMHR - Mental Health EMR System**
+**SanctumEMHR EMHR - Mental Health EMR System**
 
 ---
 
@@ -27,7 +27,7 @@
 
 ### 1. Install OpenEMR Base
 
-Since Mindline EMHR currently runs on OpenEMR infrastructure:
+Since SanctumEMHR EMHR currently runs on OpenEMR infrastructure:
 
 ```bash
 # Download OpenEMR
@@ -51,11 +51,11 @@ chown -R www-data:www-data sites/default/documents
 mysql -u root -p
 
 # Create database
-CREATE DATABASE mindline_emhr CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE sanctum_emhr CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 # Create user
 CREATE USER 'openemr'@'localhost' IDENTIFIED BY 'your_secure_password';
-GRANT ALL PRIVILEGES ON mindline_emhr.* TO 'openemr'@'localhost';
+GRANT ALL PRIVILEGES ON sanctum_emhr.* TO 'openemr'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
@@ -64,22 +64,22 @@ EXIT;
 
 1. Navigate to `http://localhost/openemr` in your browser
 2. Follow the installation wizard:
-   - Database: `mindline_emhr`
+   - Database: `sanctum_emhr`
    - User: `openemr`
    - Password: `your_secure_password`
    - Create initial admin user
 
 3. Complete installation
 
-### 4. Install Mindline Custom Files
+### 4. Install SanctumEMHR Custom Files
 
 ```bash
-# Clone Mindline EMHR repository
+# Clone SanctumEMHR EMHR repository
 cd /var/www/openemr
-git clone https://github.com/yourusername/sacwan-openemr-mh.git mindline
+git clone https://github.com/yourusername/sacwan-openemr-mh.git sanctumEMHR
 
 # Copy custom API files
-cp -r mindline/custom /var/www/openemr/
+cp -r sanctumEMHR/custom /var/www/openemr/
 
 # Set permissions
 chown -R www-data:www-data /var/www/openemr/custom
@@ -90,7 +90,7 @@ chmod -R 755 /var/www/openemr/custom
 
 ```bash
 # Navigate to React frontend
-cd /var/www/openemr/mindline/react-frontend
+cd /var/www/openemr/sanctumEMHR/react-frontend
 
 # Install dependencies
 npm install
@@ -105,7 +105,7 @@ nano .env
 **`.env` Configuration:**
 ```env
 VITE_API_BASE_URL=http://localhost/custom/api
-VITE_APP_NAME=Mindline EMHR
+VITE_APP_NAME=SanctumEMHR EMHR
 ```
 
 ### 6. Build Frontend (Production)
@@ -115,7 +115,7 @@ VITE_APP_NAME=Mindline EMHR
 npm run build
 
 # Copy build to web root
-cp -r dist/* /var/www/html/mindline/
+cp -r dist/* /var/www/html/sanctumEMHR/
 ```
 
 ### 7. Configure Apache
@@ -123,16 +123,16 @@ cp -r dist/* /var/www/html/mindline/
 Create virtual host:
 
 ```bash
-sudo nano /etc/apache2/sites-available/mindline.conf
+sudo nano /etc/apache2/sites-available/sanctumEMHR.conf
 ```
 
 ```apache
 <VirtualHost *:80>
     ServerName emr.local
-    DocumentRoot /var/www/html/mindline
+    DocumentRoot /var/www/html/sanctumEMHR
 
     # Frontend
-    <Directory /var/www/html/mindline>
+    <Directory /var/www/html/sanctumEMHR>
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
@@ -148,14 +148,14 @@ sudo nano /etc/apache2/sites-available/mindline.conf
     Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
     Header always set Access-Control-Allow-Headers "Content-Type"
 
-    ErrorLog ${APACHE_LOG_DIR}/mindline-error.log
-    CustomLog ${APACHE_LOG_DIR}/mindline-access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/sanctumEMHR-error.log
+    CustomLog ${APACHE_LOG_DIR}/sanctumEMHR-access.log combined
 </VirtualHost>
 ```
 
 Enable site:
 ```bash
-sudo a2ensite mindline.conf
+sudo a2ensite sanctumEMHR.conf
 sudo a2enmod proxy proxy_http headers
 sudo systemctl reload apache2
 ```
@@ -178,7 +178,7 @@ Add:
 ### Run Frontend in Development Mode
 
 ```bash
-cd /var/www/openemr/mindline/react-frontend
+cd /var/www/openemr/sanctumEMHR/react-frontend
 npm run dev
 ```
 
@@ -212,7 +212,7 @@ Backend API at `http://localhost/openemr/custom/api`
 
 ### 3. Configure Calendar Settings
 
-1. Login to Mindline EMHR React app
+1. Login to SanctumEMHR EMHR React app
 2. Navigate to **Settings > Calendar Settings**
 3. Configure:
    - Time interval: 15 minutes
@@ -328,7 +328,7 @@ sudo certbot --apache -d emr.yourdomain.com
 ### 2. Disable Directory Listing
 
 ```apache
-<Directory /var/www/html/mindline>
+<Directory /var/www/html/sanctumEMHR>
     Options -Indexes
 </Directory>
 ```
@@ -368,29 +368,29 @@ sudo ufw enable
 
 ```bash
 # Create backup script
-cat > /usr/local/bin/backup-mindline-db.sh << 'EOF'
+cat > /usr/local/bin/backup-sanctumEMHR-db.sh << 'EOF'
 #!/bin/bash
 DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/var/backups/mindline"
+BACKUP_DIR="/var/backups/sanctumEMHR"
 mkdir -p $BACKUP_DIR
 
-mysqldump -u openemr -p mindline_emhr | gzip > $BACKUP_DIR/mindline_db_$DATE.sql.gz
+mysqldump -u openemr -p sanctum_emhr | gzip > $BACKUP_DIR/sanctum_db_$DATE.sql.gz
 
 # Keep last 30 days
-find $BACKUP_DIR -name "mindline_db_*.sql.gz" -mtime +30 -delete
+find $BACKUP_DIR -name "sanctum_db_*.sql.gz" -mtime +30 -delete
 EOF
 
-chmod +x /usr/local/bin/backup-mindline-db.sh
+chmod +x /usr/local/bin/backup-sanctumEMHR-db.sh
 
 # Add to crontab (daily at 2 AM)
-(crontab -l ; echo "0 2 * * * /usr/local/bin/backup-mindline-db.sh") | crontab -
+(crontab -l ; echo "0 2 * * * /usr/local/bin/backup-sanctumEMHR-db.sh") | crontab -
 ```
 
 ### File Backup
 
 ```bash
 # Backup custom files
-tar -czf /var/backups/mindline/custom_$(date +%Y%m%d).tar.gz /var/www/openemr/custom
+tar -czf /var/backups/sanctumEMHR/custom_$(date +%Y%m%d).tar.gz /var/www/openemr/custom
 ```
 
 ---
@@ -400,17 +400,17 @@ tar -czf /var/backups/mindline/custom_$(date +%Y%m%d).tar.gz /var/www/openemr/cu
 ### Update Frontend
 
 ```bash
-cd /var/www/openemr/mindline/react-frontend
+cd /var/www/openemr/sanctumEMHR/react-frontend
 git pull
 npm install
 npm run build
-cp -r dist/* /var/www/html/mindline/
+cp -r dist/* /var/www/html/sanctumEMHR/
 ```
 
 ### Update API
 
 ```bash
-cd /var/www/openemr/mindline
+cd /var/www/openemr/sanctumEMHR
 git pull
 cp -r custom/* /var/www/openemr/custom/
 sudo systemctl reload apache2
@@ -420,19 +420,19 @@ sudo systemctl reload apache2
 
 ## Uninstallation
 
-### Remove Mindline Files
+### Remove SanctumEMHR Files
 
 ```bash
 rm -rf /var/www/openemr/custom
-rm -rf /var/www/html/mindline
-rm -rf /var/www/openemr/mindline
+rm -rf /var/www/html/sanctumEMHR
+rm -rf /var/www/openemr/sanctumEMHR
 ```
 
 ### Remove Database
 
 ```bash
 mysql -u root -p
-DROP DATABASE mindline_emhr;
+DROP DATABASE sanctum_emhr;
 DROP USER 'openemr'@'localhost';
 EXIT;
 ```
@@ -440,8 +440,8 @@ EXIT;
 ### Remove Apache Config
 
 ```bash
-sudo a2dissite mindline.conf
-sudo rm /etc/apache2/sites-available/mindline.conf
+sudo a2dissite sanctumEMHR.conf
+sudo rm /etc/apache2/sites-available/sanctumEMHR.conf
 sudo systemctl reload apache2
 ```
 
