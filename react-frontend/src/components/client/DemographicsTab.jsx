@@ -135,7 +135,6 @@ function DemographicsTab({ data, onDataUpdate }) {
       sexual_orientation: patient.sexual_orientation || '',
       marital_status: patient.marital_status || '',
       ethnicity: patient.ethnicity || '',
-      previous_names: patient.previous_names || '',
       patient_categories: patient.patient_categories || '',
       ss: patient.ss || '',
 
@@ -409,12 +408,12 @@ function DemographicsTab({ data, onDataUpdate }) {
                         ? [{ value: '', label: 'Select...' }, ...dropdownOptions.sex]
                         : [{ value: '', label: 'Select...' }, { value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }]
                     )}
-                    {renderField('Gender Identity *', formData.gender_identity, 'gender_identity', 'text',
+                    {renderField('Gender Identity', formData.gender_identity, 'gender_identity', 'text',
                       dropdownOptions.gender_identity && dropdownOptions.gender_identity.length > 0
                         ? [{ value: '', label: 'Select...' }, ...dropdownOptions.gender_identity]
                         : null
                     )}
-                    {renderField('Sexual Orientation *', formData.sexual_orientation, 'sexual_orientation', 'text',
+                    {renderField('Sexual Orientation', formData.sexual_orientation, 'sexual_orientation', 'text',
                       dropdownOptions.sexual_orientation && dropdownOptions.sexual_orientation.length > 0
                         ? [{ value: '', label: 'Select...' }, ...dropdownOptions.sexual_orientation]
                         : null
@@ -440,7 +439,6 @@ function DemographicsTab({ data, onDataUpdate }) {
                         className="input-md"
                       />
                     </div>
-                    {renderField('Previous Names', formData.previous_names, 'previous_names')}
                     <div className="col-span-2">
                       {renderField('Client Categories', formData.patient_categories, 'patient_categories', 'text',
                         dropdownOptions.patient_categories && dropdownOptions.patient_categories.length > 0
@@ -488,7 +486,6 @@ function DemographicsTab({ data, onDataUpdate }) {
                         ? [{ value: '', label: 'Select...' }, ...dropdownOptions.ethnicity]
                         : null
                     )}
-                    {renderField('Previous Names', patient.previous_names)}
                     <div className="col-span-2">
                       {renderField('Client Categories', patient.patient_categories, null, 'text',
                         dropdownOptions.patient_categories && dropdownOptions.patient_categories.length > 0
