@@ -1,6 +1,6 @@
 <?php
 /**
- * Mindline EMHR - Facilities API (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR - Facilities API (MIGRATED TO SanctumEMHR)
  * Handles CRUD operations for facilities
  */
 

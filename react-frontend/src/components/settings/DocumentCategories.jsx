@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Document Categories Management Component
  * Admin interface for managing document categories
  *

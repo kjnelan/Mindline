@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * User Management Component
  * Admin interface for managing system users and providers
  *

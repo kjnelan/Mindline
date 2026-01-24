@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Draft API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Draft API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Retrieves saved draft for a note
  *
  * Author: Kenneth J. Nelan

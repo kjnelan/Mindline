@@ -1,6 +1,6 @@
 <?php
 /**
- * Billing API - Session-based (MIGRATED TO MINDLINE)
+ * Billing API - Session-based (MIGRATED TO SanctumEMHR)
  * Returns all billing/charges and payments for a patient
  */
 
@@ -86,7 +86,7 @@ try {
     $charges = [];
     $totalCharges = 0;
     foreach ($rows as $row) {
-        // Map Mindline fields to old OpenEMR field names for compatibility
+        // Map SanctumEMHR fields to old OpenEMR field names for compatibility
         $charges[] = [
             'id' => $row['id'],
             'encounter' => $row['encounter_id'],
@@ -102,7 +102,7 @@ try {
             'activity' => $row['activity'],
             'payer_id' => $row['payer_id'],
             'bill_date' => $row['bill_date'],
-            'bill_process' => null, // Not in Mindline schema
+            'bill_process' => null, // Not in SanctumEMHR schema
             'process_date' => $row['process_date'],
             'provider_name' => $row['provider_name'],
             'provider_id' => $row['provider_id'],

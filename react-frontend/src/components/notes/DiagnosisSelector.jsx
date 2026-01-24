@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * DiagnosisSelector - Select diagnoses for progress notes
  * Fetches active diagnoses and allows selection for billing/clinical purposes
  *

@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * User Settings page - Personal preferences and calendar availability
  *
  * Author: Kenneth J. Nelan

@@ -1,4 +1,4 @@
-# Mindline EMHR: Project Documentation
+# SanctumEMHR EMHR: Project Documentation
 
 **Version:** 0.3.0-alpha  
 **Date:** December 31, 2024  
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-Mindline is a standalone Electronic Mental Health Records (EMHR) system designed specifically for outpatient mental health practices. What began as a UI modernization effort for OpenEMR has evolved into a purpose-built mental health EMR that prioritizes therapeutic workflows over traditional medical paradigms.
+SanctumEMHR is a standalone Electronic Mental Health Records (EMHR) system designed specifically for outpatient mental health practices. What began as a UI modernization effort for OpenEMR has evolved into a purpose-built mental health EMR that prioritizes therapeutic workflows over traditional medical paradigms.
 
 **Key Innovation:** We're introducing the term "EMHR" (Electronic Mental Health Records) to distinguish mental health documentation systems from general medical EMRs, reflecting the fundamental differences in clinical workflows, documentation needs, and patient relationships inherent to mental health practice.
 
@@ -21,7 +21,7 @@ Mindline is a standalone Electronic Mental Health Records (EMHR) system designed
 "Where modern design meets clinical insight."
 
 ### Core Philosophy
-Mental health practitioners deserve software built for how therapy actually works, not retrofitted medical EMRs. Mindline prioritizes:
+Mental health practitioners deserve software built for how therapy actually works, not retrofitted medical EMRs. SanctumEMHR prioritizes:
 
 - **Warm, human-centered design** over sterile medical interfaces
 - **Therapeutic workflows** over medical visit patterns  
@@ -40,9 +40,9 @@ Mental health practitioners deserve software built for how therapy actually work
 
 ## Architectural Decision
 
-### What Mindline Actually Is
+### What SanctumEMHR Actually Is
 
-After careful analysis, Mindline is **a standalone mental health EMHR** that currently uses OpenEMR's database schema as a foundation. We are NOT building a React frontend on OpenEMR's backend. We are building our own application.
+After careful analysis, SanctumEMHR is **a standalone mental health EMHR** that currently uses OpenEMR's database schema as a foundation. We are NOT building a React frontend on OpenEMR's backend. We are building our own application.
 
 **What we use from OpenEMR:**
 - Database schema (patient_data, encounters, forms, billing tables)
@@ -336,7 +336,7 @@ Therapists should feel empowered by their tools, not burdened by them.
 ## Success Metrics
 
 ### v1.0 Success Criteria
-1. Sacred Wandering can run entirely on Mindline
+1. Sacred Wandering can run entirely on SanctumEMHR
 2. All clinical documentation can be completed in-system
 3. Billing and claims submission works
 4. System is stable for daily use
@@ -419,7 +419,7 @@ When ready for full independence from OpenEMR:
 
 ## Conclusion
 
-Mindline represents a fundamental rethinking of how mental health records should work. We're not adapting medical EMRs for therapy. We're building therapy software from the ground up.
+SanctumEMHR represents a fundamental rethinking of how mental health records should work. We're not adapting medical EMRs for therapy. We're building therapy software from the ground up.
 
 The rapid development velocity (functional client management in one week) proves that purpose-built tools can be created quickly when unconstrained by legacy medical paradigms.
 

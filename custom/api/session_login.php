@@ -3,15 +3,15 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 /**
- * Session-based login endpoint for React frontend (MIGRATED TO MINDLINE)
+ * Session-based login endpoint for React frontend (MIGRATED TO SanctumEMHR)
  *
  * This endpoint authenticates users and creates a PHP session.
  *
- * @package   Mindline
+ * @package   SanctumEMHR
  * @license   Proprietary and Confidential
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once dirname(__FILE__, 2) . "/init.php";
 
 use Custom\Lib\Auth\CustomAuth;

@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * NoteTypeSelector - Lightweight selector asking "What kind of note are you writing?"
  * Trauma-informed, minimal cognitive load design
  *

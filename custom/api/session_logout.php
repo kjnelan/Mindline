@@ -1,17 +1,17 @@
 <?php
 /**
- * MINDLINE Logout API
+ * SanctumEMHR Logout API
  *
  * Destroys user session and logs them out.
  *
- * @package MINDLINE
+ * @package SanctumEMHR
  */
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once dirname(__FILE__, 2) . "/init.php";
 
 use Custom\Lib\Session\SessionManager;

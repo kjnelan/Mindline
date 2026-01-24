@@ -1,11 +1,11 @@
 <?php
 /**
- * MINDLINE Session User API
+ * SanctumEMHR Session User API
  *
  * Returns current authenticated user information from session.
  * Used by React frontend to check authentication status.
  *
- * @package MINDLINE
+ * @package SanctumEMHR
  */
 
 // Enable error reporting for debugging

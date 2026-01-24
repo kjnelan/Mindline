@@ -1,7 +1,7 @@
 # Reference Lists Feature - Database Setup
 
 ## Overview
-The Reference Lists feature provides a centralized, admin-manageable system for all clinical and demographic lookup lists used throughout Mindline EMHR.
+The Reference Lists feature provides a centralized, admin-manageable system for all clinical and demographic lookup lists used throughout SanctumEMHR EMHR.
 
 ## Installation
 

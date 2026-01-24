@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Reference List Manager - Generic CRUD component for managing lookup lists
  * Handles Sexual Orientation, Gender Identity, Marital Status, etc.
  *

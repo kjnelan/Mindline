@@ -1,5 +1,5 @@
 -- Migration: Add missing user fields for complete provider management
--- This adds fields expected by the frontend that were missing from the Mindline schema
+-- This adds fields expected by the frontend that were missing from the SanctumEMHR schema
 
 USE mindline;
 

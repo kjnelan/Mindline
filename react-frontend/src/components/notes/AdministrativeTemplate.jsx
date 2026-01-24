@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * AdministrativeTemplate - Non-clinical administrative documentation
  * For coordination, consultations, paperwork, etc.
  *

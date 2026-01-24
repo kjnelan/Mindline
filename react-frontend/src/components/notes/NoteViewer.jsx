@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * NoteViewer - Read-only display of clinical notes
  * Shows signed/locked notes with addenda
  *

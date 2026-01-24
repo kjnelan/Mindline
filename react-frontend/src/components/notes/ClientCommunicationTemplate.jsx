@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * ClientCommunicationTemplate - Document client phone calls, emails, texts
  * Quick documentation for client-initiated contact
  *

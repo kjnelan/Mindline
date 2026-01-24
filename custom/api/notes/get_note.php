@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Note API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Note API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Returns a specific clinical note by ID or UUID
  *
  * Author: Kenneth J. Nelan

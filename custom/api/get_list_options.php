@@ -1,10 +1,10 @@
 <?php
 /**
- * Get List Options API - Session-based (MIGRATED TO MINDLINE)
+ * Get List Options API - Session-based (MIGRATED TO SanctumEMHR)
  * Returns list options (dropdown values) for a specified list
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
@@ -58,7 +58,7 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Fetch list options from MINDLINE settings_lists table
+    // Fetch list options from SanctumEMHR settings_lists table
     $sql = "SELECT
         option_id,
         title,

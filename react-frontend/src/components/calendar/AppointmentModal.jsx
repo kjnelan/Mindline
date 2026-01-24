@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * AppointmentModal - Modal component for creating appointments
  * Features patient search, provider selection, date/time pickers
  *

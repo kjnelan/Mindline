@@ -1,5 +1,5 @@
 -- ========================================
--- Mindline EMHR - Add Intervention Library
+-- SanctumEMHR EMHR - Add Intervention Library
 -- Creates intervention library and related tables
 -- for clinical notes system
 -- ========================================

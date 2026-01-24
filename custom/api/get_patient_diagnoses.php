@@ -1,6 +1,6 @@
 <?php
 /**
- * Mindline EMHR - Get Patient Diagnoses API (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR - Get Patient Diagnoses API (MIGRATED TO SanctumEMHR)
  * Fetches active (and optionally retired) diagnoses for a patient
  * Supports filtering by date (active as of a specific date)
  *

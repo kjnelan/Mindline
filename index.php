@@ -1,6 +1,6 @@
 <?php
 /**
- * Mindline EMHR - Application Entry Point
+ * SanctumEMHR EMHR - Application Entry Point
  * Serves the React frontend application
  */
 
@@ -23,14 +23,14 @@ if (file_exists($appPath)) {
     echo "<!DOCTYPE html>
 <html>
 <head>
-    <title>Mindline EMHR - Build Required</title>
+    <title>SanctumEMHR EMHR - Build Required</title>
     <style>
         body { font-family: system-ui; max-width: 600px; margin: 100px auto; padding: 20px; }
         code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
     </style>
 </head>
 <body>
-    <h1>Mindline EMHR</h1>
+    <h1>SanctumEMHR EMHR</h1>
     <p>The React frontend has not been built yet.</p>
     <p>Please build the application:</p>
     <pre><code>cd react-frontend && npm run build</code></pre>

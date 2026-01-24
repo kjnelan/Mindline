@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Appointment Categories API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Appointment Categories API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Returns list of active appointment categories/types
  *
  * Author: Kenneth J. Nelan

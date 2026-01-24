@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Block Time Modal - Modal for creating provider availability blocks
  *
  * Author: Kenneth J. Nelan

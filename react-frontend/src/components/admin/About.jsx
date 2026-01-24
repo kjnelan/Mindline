@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * About page - System information, version, copyright
  *
  * Author: Kenneth J. Nelan
@@ -13,16 +13,16 @@
 function About() {
   return (
     <div className="glass-card p-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">About Mindline EMHR</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">About SanctumEMHR EMHR</h2>
 
       {/* Logo, Branding, and Author Info */}
       <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/30">
         <div className="flex items-center gap-6">
           <div className="w-48 h-48 backdrop-blur-xl bg-white/40 rounded-2xl flex items-center justify-center p-3 shadow-lg">
-            <img src="/app/mindlinelogo.png" alt="Mindline Logo" className="w-full h-full object-contain" />
+            <img src="/app/mindlinelogo.png" alt="SanctumEMHR Logo" className="w-full h-full object-contain" />
           </div>
           <div>
-            <h3 className="text-3xl font-bold text-gray-900">Mindline</h3>
+            <h3 className="text-3xl font-bold text-gray-900">SanctumEMHR</h3>
             <p className="text-lg text-gray-700 mt-1">Electronic Mental Health Records</p>
             <p className="text-sm text-gray-600 mt-2 italic">Where modern design meets clinical insight</p>
           </div>
@@ -62,9 +62,9 @@ function About() {
           {/* Product Description */}
           <div className="mb-4 pb-4 border-b border-blue-200/30">
             <p className="text-gray-700 leading-relaxed">
-              Mindline is a purpose-built Electronic Mental Health Records (EMHR) system designed specifically
+              SanctumEMHR is a purpose-built Electronic Mental Health Records (EMHR) system designed specifically
               for outpatient mental health practices. Combining modern design principles with specialized clinical
-              functionality, Mindline streamlines client management, appointment scheduling, clinical documentation,
+              functionality, SanctumEMHR streamlines client management, appointment scheduling, clinical documentation,
               and billing workflows—all within a beautiful, intuitive interface.
             </p>
           </div>
@@ -77,7 +77,7 @@ function About() {
             documentation requirements, and clinical needs of mental health and behavioral health practices.
           </p>
           <p className="text-gray-600 text-sm">
-            Mindline represents a new generation of EMHR systems designed from the ground up
+            SanctumEMHR represents a new generation of EMHR systems designed from the ground up
             for outpatient mental health providers, combining modern UX with specialized clinical functionality.
           </p>
         </div>
@@ -161,7 +161,7 @@ function About() {
           <div className="text-center space-y-3">
             <div>
               <p className="text-gray-900 font-semibold text-lg">
-                Mindline is Copyright © 2026 Sacred Wandering
+                SanctumEMHR is Copyright © 2026 Sacred Wandering
               </p>
               <p className="text-gray-700 font-medium mt-1">
                 Proprietary and Confidential

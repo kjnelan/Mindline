@@ -86,7 +86,7 @@ function Clients() {
   };
 
   const handlePatientClick = (patientId) => {
-    // Navigate to custom Mindline client detail view
+    // Navigate to custom SanctumEMHR client detail view
     console.log('=== CLICKING CLIENT ===');
     console.log('Patient ID:', patientId);
     console.log('About to navigate to:', `/clients/${patientId}`);

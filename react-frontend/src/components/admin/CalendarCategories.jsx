@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Calendar Categories Management
  * Admin interface for managing appointment categories/types
  *

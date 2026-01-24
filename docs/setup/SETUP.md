@@ -1,6 +1,6 @@
-# MINDLINE Setup Guide
+# SanctumEMHR Setup Guide
 
-Complete step-by-step guide to set up MINDLINE from scratch.
+Complete step-by-step guide to set up SanctumEMHR from scratch.
 
 ---
 
@@ -394,7 +394,7 @@ WHERE username='admin';
 
 After completing this setup, you have:
 
-✅ Clean MINDLINE database with 32 tables
+✅ Clean SanctumEMHR database with 32 tables
 ✅ Working authentication system
 ✅ Database abstraction layer
 ✅ Session management
@@ -444,11 +444,11 @@ See `AUTHENTICATION_SETUP.md` for migration patterns and next steps.
 
 ## Summary
 
-You now have a fully functional MINDLINE authentication system running on your own clean database, completely independent of OpenEMR!
+You now have a fully functional SanctumEMHR authentication system running on your own clean database, completely independent of OpenEMR!
 
 To log in:
 - **URL**: `http://your-server/custom/api/login.php`
 - **Username**: (the username you created)
 - **Password**: (the password you set)
 
-🎉 **Congratulations! MINDLINE is ready to use.**
+🎉 **Congratulations! SanctumEMHR is ready to use.**

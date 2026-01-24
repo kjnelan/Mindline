@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * NoteEditor - Main clinical note editor with auto-save
  * Supports BIRP, PIRP, and other note templates
  *

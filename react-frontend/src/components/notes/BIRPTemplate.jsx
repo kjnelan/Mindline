@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * BIRPTemplate - BIRP format clinical note template
  * B - Behavior (what you observed)
  * I - Intervention (what you did)

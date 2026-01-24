@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * AppointmentStatusTemplate - Quick note for appointment status
  * No show, late cancel, cancellation, late arrival
  *

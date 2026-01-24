@@ -1,10 +1,10 @@
 <?php
 /**
- * Delete Related Person API - Session-based (MIGRATED TO MINDLINE)
+ * Delete Related Person API - Session-based (MIGRATED TO SanctumEMHR)
  * Soft deletes a related person (guardian) relationship for a patient
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
@@ -69,8 +69,8 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Soft delete by setting updated_at in MINDLINE client_contacts table
-    // Note: Mindline doesn't have 'active' field, so we use hard delete or add deleted_at
+    // Soft delete by setting updated_at in SanctumEMHR client_contacts table
+    // Note: SanctumEMHR doesn't have 'active' field, so we use hard delete or add deleted_at
     $deleteSql = "DELETE FROM client_contacts WHERE id = ?";
 
     error_log("Delete related person: Deleting contact ID: $relationId");

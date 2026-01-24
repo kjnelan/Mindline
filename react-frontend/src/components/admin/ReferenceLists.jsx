@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Reference Lists - Tabbed interface for managing all clinical lookup lists
  *
  * Author: Kenneth J. Nelan

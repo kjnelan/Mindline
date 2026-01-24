@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Create Appointment API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Create Appointment API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Creates a new appointment in the calendar system
  *
  * Author: Kenneth J. Nelan
@@ -87,7 +87,7 @@ try {
     $facilityId = isset($input['facilityId']) ? intval($input['facilityId']) : 0;
     $overrideAvailability = isset($input['overrideAvailability']) ? boolval($input['overrideAvailability']) : false;
 
-    // Map OpenEMR status symbols to Mindline status strings
+    // Map OpenEMR status symbols to SanctumEMHR status strings
     $statusMap = [
         '-' => 'pending',
         '~' => 'confirmed',
@@ -383,7 +383,7 @@ try {
 
     $createdApptsResult = $db->queryAll($createdApptsQuery, $appointmentIds);
 
-    // Map Mindline status back to OpenEMR symbols for frontend compatibility
+    // Map SanctumEMHR status back to OpenEMR symbols for frontend compatibility
     $reverseStatusMap = array_flip($statusMap);
 
     foreach ($createdApptsResult as $row) {

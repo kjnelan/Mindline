@@ -1,6 +1,6 @@
 <?php
 /**
- * MINDLINE API Initialization
+ * SanctumEMHR API Initialization
  *
  * This file replaces OpenEMR's globals.php for all custom API endpoints.
  * It provides a lightweight initialization without loading the entire OpenEMR infrastructure.
@@ -14,7 +14,7 @@
  * - Database connection via Database::getInstance()
  * - Error reporting for development
  *
- * @package   Mindline
+ * @package   SanctumEMHR
  * @author    Kenneth J. Nelan / Sacred Wandering
  * @license   Proprietary and Confidential
  * @version   1.0.0

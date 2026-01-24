@@ -1,4 +1,4 @@
-# Mindline EMHR - Database Tables Documentation
+# SanctumEMHR EMHR - Database Tables Documentation
 
 **Database Name:** `mindline_emhr` (currently using OpenEMR schema)
 **Purpose:** Documentation for migration planning away from OpenEMR backend
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document catalogs all database tables currently used by the Mindline EMHR application. This inventory is essential for planning the migration from OpenEMR's backend to a custom database schema.
+This document catalogs all database tables currently used by the SanctumEMHR EMHR application. This inventory is essential for planning the migration from OpenEMR's backend to a custom database schema.
 
 **Total Tables in Use:** 26 core tables
 **Most Frequently Accessed:** `openemr_postcalendar_events`, `patient_data`, `users`, `list_options`

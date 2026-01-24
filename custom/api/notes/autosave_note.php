@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Auto-save Note API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Auto-save Note API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Saves note draft for auto-recovery
  *
  * Author: Kenneth J. Nelan

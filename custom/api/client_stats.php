@@ -1,6 +1,6 @@
 <?php
 /**
- * Client Statistics API - Session-based (MIGRATED TO MINDLINE)
+ * Client Statistics API - Session-based (MIGRATED TO SanctumEMHR)
  * Returns statistics about clients/patients
  */
 

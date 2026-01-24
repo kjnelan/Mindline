@@ -8,7 +8,7 @@
 
 ## Overview
 
-The **Diagnosis Note** is a specialized clinical assessment form that serves as the **single source of truth** for patient diagnoses in Mindline EMHR. Unlike progress notes where diagnoses are referenced, the Diagnosis Note is where you perform comprehensive diagnostic assessment and documentation.
+The **Diagnosis Note** is a specialized clinical assessment form that serves as the **single source of truth** for patient diagnoses in SanctumEMHR EMHR. Unlike progress notes where diagnoses are referenced, the Diagnosis Note is where you perform comprehensive diagnostic assessment and documentation.
 
 ### Key Principles
 

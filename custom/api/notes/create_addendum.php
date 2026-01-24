@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Create Addendum API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Create Addendum API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Creates an addendum to a locked clinical note
  *
  * Author: Kenneth J. Nelan

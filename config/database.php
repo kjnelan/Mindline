@@ -1,8 +1,8 @@
 <?php
 /**
- * MINDLINE Database Configuration
+ * SanctumEMHR Database Configuration
  *
- * Update these credentials to match your Mindline database setup.
+ * Update these credentials to match your SanctumEMHR database setup.
  */
 
 return [

@@ -1,4 +1,4 @@
-# Mindline Database Migration - Changes Summary
+# SanctumEMHR Database Migration - Changes Summary
 
 **Date**: 2026-01-17
 **Status**: IN PROGRESS
@@ -6,7 +6,7 @@
 
 ---
 
-## What Changed: OpenEMR → Mindline
+## What Changed: OpenEMR → SanctumEMHR
 
 ### 1. Initialization (Every File)
 
@@ -15,7 +15,7 @@
 require_once(__DIR__ . '/../../interface/globals.php');
 ```
 
-**NEW (Mindline)**:
+**NEW (SanctumEMHR)**:
 ```php
 require_once(__DIR__ . '/../init.php');
 
@@ -35,7 +35,7 @@ while ($row = sqlFetchArray($result)) {
 }
 ```
 
-**NEW (Mindline)**:
+**NEW (SanctumEMHR)**:
 ```php
 $db = Database::getInstance();
 $rows = $db->queryAll($sql, $params);
@@ -63,7 +63,7 @@ if (!isset($_SESSION['authUserID']) || empty($_SESSION['authUserID'])) {
 $userId = $_SESSION['authUserID'];
 ```
 
-**NEW (Mindline)**:
+**NEW (SanctumEMHR)**:
 ```php
 $session = SessionManager::getInstance();
 $session->start();
@@ -78,7 +78,7 @@ $userId = $session->getUserId();
 
 ### 4. Table Name Changes
 
-| OpenEMR Table | Mindline Table | Notes |
+| OpenEMR Table | SanctumEMHR Table | Notes |
 |---------------|----------------|-------|
 | `openemr_postcalendar_events` | `appointments` | Simplified name |
 | `openemr_postcalendar_categories` | `appointment_categories` | Simplified name |
@@ -94,7 +94,7 @@ $userId = $session->getUserId();
 
 ### 5. Column Name Changes (Appointments Example)
 
-| OpenEMR Column | Mindline Column | Type Change |
+| OpenEMR Column | SanctumEMHR Column | Type Change |
 |----------------|-----------------|-------------|
 | `pc_eid` | `id` | Same |
 | `pc_eventDate` | `start_datetime` | DATE → TIMESTAMP (combined with time) |
@@ -115,7 +115,7 @@ $userId = $session->getUserId();
 
 ### 6. Client (Patient) Table Changes
 
-| OpenEMR Column | Mindline Column | Notes |
+| OpenEMR Column | SanctumEMHR Column | Notes |
 |----------------|-----------------|-------|
 | `pid` | `id` | Standard naming |
 | `fname` | `first_name` | Full words |
@@ -137,7 +137,7 @@ WHERE e.pc_eventDate >= ? AND e.pc_eventDate <= ?
 ORDER BY e.pc_eventDate, e.pc_startTime
 ```
 
-**Mindline** uses combined TIMESTAMP:
+**SanctumEMHR** uses combined TIMESTAMP:
 ```sql
 WHERE DATE(a.start_datetime) >= ? AND DATE(a.start_datetime) <= ?
 ORDER BY a.start_datetime
@@ -162,7 +162,7 @@ $startTime = $startDT->format('H:i:s');
 - `x` = cancelled
 - `?` = no show
 
-**Mindline Appointment Statuses** (ENUM):
+**SanctumEMHR Appointment Statuses** (ENUM):
 - `scheduled`
 - `confirmed`
 - `arrived`
@@ -177,14 +177,14 @@ $startTime = $startDT->format('H:i:s');
 
 ### 9. Removed Features/Fields
 
-These OpenEMR features are **NOT** in Mindline schema:
+These OpenEMR features are **NOT** in SanctumEMHR schema:
 
 | Feature | Reason |
 |---------|--------|
 | Room selection in appointments | Removed for simplicity |
 | Multiple facility users tables | Consolidated to single `users` table |
 | `pc_cattype` (category type 0/1) | Now use `is_billable` boolean in categories |
-| Portal-specific tables | Portal not part of initial Mindline release |
+| Portal-specific tables | Portal not part of initial SanctumEMHR release |
 
 ---
 
@@ -210,7 +210,7 @@ WHERE e.pc_eventDate >= ? AND e.pc_eventDate <= ?
 ORDER BY e.pc_eventDate, e.pc_startTime
 ```
 
-**AFTER (Mindline)**:
+**AFTER (SanctumEMHR)**:
 ```sql
 SELECT
     a.id,
@@ -272,7 +272,7 @@ See full list in `/MIGRATION_PLAN_CLEAN_START.md`
 
 ## Key Lessons Learned
 
-1. **Mindline uses cleaner naming** - no prefixes like `pc_`, `openemr_`
+1. **SanctumEMHR uses cleaner naming** - no prefixes like `pc_`, `openemr_`
 2. **Timestamps instead of separate date/time** - more modern approach
 3. **ENUMs for status values** - type safety and clarity
 4. **"Client" terminology** - better for mental health context than "patient"
@@ -293,7 +293,7 @@ Check: `/react-frontend/src/components/Calendar/` for any hardcoded assumptions.
 
 ## Database Connection Check
 
-Verify `config/database.php` points to **Mindline** database:
+Verify `config/database.php` points to **SanctumEMHR** database:
 ```php
 'database' => 'mindline',  // NOT 'openemr'
 ```

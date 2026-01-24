@@ -33,7 +33,7 @@ This document tracks all references to OpenEMR-specific table names that need to
 
 ## Migration Strategy (Before Production)
 
-1. Create new tables with Mindline naming
+1. Create new tables with SanctumEMHR naming
 2. Copy data from OpenEMR tables
 3. Update all API references
 4. Test thoroughly

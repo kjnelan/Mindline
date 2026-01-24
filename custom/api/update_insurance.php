@@ -1,6 +1,6 @@
 <?php
 /**
- * Update Insurance API - Session-based (MIGRATED TO MINDLINE)
+ * Update Insurance API - Session-based (MIGRATED TO SanctumEMHR)
  * Updates insurance policy information with audit trail
  */
 
@@ -88,7 +88,7 @@ try {
     $updateFields = [];
     $params = [];
 
-    // Define allowed fields with their database column names (Mindline schema)
+    // Define allowed fields with their database column names (SanctumEMHR schema)
     $allowedFields = [
         // Insurance Details
         'provider' => 'provider_id',

@@ -1,6 +1,6 @@
 <?php
 /**
- * Quick debug script for clinical notes (MIGRATED TO MINDLINE)
+ * Quick debug script for clinical notes (MIGRATED TO SanctumEMHR)
  */
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

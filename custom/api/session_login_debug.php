@@ -1,6 +1,6 @@
 <?php
 /**
- * Session Login Debug - Shows session status (MIGRATED TO MINDLINE)
+ * Session Login Debug - Shows session status (MIGRATED TO SanctumEMHR)
  */
 
 error_reporting(E_ALL);
@@ -8,11 +8,11 @@ ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
 try {
-    echo json_encode(['step' => 1, 'message' => 'Starting Mindline debug']) . "\n";
+    echo json_encode(['step' => 1, 'message' => 'Starting SanctumEMHR debug']) . "\n";
 
-    // Load Mindline initialization
+    // Load SanctumEMHR initialization
     require_once dirname(__FILE__, 2) . "/init.php";
-    echo json_encode(['step' => 2, 'message' => 'Mindline init loaded']) . "\n";
+    echo json_encode(['step' => 2, 'message' => 'SanctumEMHR init loaded']) . "\n";
 
     use Custom\Lib\Session\SessionManager;
     echo json_encode(['step' => 3, 'message' => 'SessionManager loaded']) . "\n";
@@ -25,7 +25,7 @@ try {
 
     $info = [
         'step' => 6,
-        'message' => 'Success - Mindline session system working',
+        'message' => 'Success - SanctumEMHR session system working',
         'session_id' => session_id(),
         'is_authenticated' => $session->isAuthenticated(),
         'user_id' => $session->getUserId(),

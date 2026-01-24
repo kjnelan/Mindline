@@ -7,7 +7,7 @@ use Custom\Lib\Session\SessionManager;
 use Custom\Lib\Services\SettingsService;
 
 /**
- * Custom Authentication Class for MINDLINE
+ * Custom Authentication Class for SanctumEMHR
  *
  * Replaces OpenEMR\Common\Auth\AuthUtils
  *

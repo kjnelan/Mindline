@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Update Appointment API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Update Appointment API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Updates an existing appointment in the calendar system
  *
  * Author: Kenneth J. Nelan
@@ -86,7 +86,7 @@ try {
     $apptstatus = $input['apptstatus'] ?? '-'; // Default status
     $room = $input['room'] ?? '';
 
-    // Map OpenEMR status symbols to Mindline status strings
+    // Map OpenEMR status symbols to SanctumEMHR status strings
     $statusMap = [
         '-' => 'pending',
         '~' => 'confirmed',
@@ -210,7 +210,7 @@ try {
     $startDT = new DateTime($updatedAppt['start_datetime']);
     $endDT = new DateTime($updatedAppt['end_datetime']);
 
-    // Map Mindline status back to OpenEMR symbols for frontend compatibility
+    // Map SanctumEMHR status back to OpenEMR symbols for frontend compatibility
     $reverseStatusMap = array_flip($statusMap);
 
     http_response_code(200);

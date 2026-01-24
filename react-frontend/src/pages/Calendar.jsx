@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Calendar page - Day/Week/Month views with appointment management
  * Supports creating appointments by clicking time slots
  *

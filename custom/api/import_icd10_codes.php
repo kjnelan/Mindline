@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * ICD-10 Code Import API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * ICD-10 Code Import API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Handles bulk import of ICD-10-CM codes from CMS text file
  *
  * File Format: Tab-delimited text

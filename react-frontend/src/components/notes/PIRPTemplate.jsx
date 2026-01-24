@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * PIRPTemplate - PIRP format clinical note template
  * P - Problem (presenting issue/chief complaint)
  * I - Intervention (what you did)

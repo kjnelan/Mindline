@@ -1,6 +1,6 @@
 # System Architecture Overview
 
-**Mindline EMHR - Mental Health EMR System**
+**SanctumEMHR EMHR - Mental Health EMR System**
 
 ---
 

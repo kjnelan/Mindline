@@ -1,6 +1,6 @@
 <?php
 /**
- * Client Demographics API - Session-based (MIGRATED TO MINDLINE)
+ * Client Demographics API - Session-based (MIGRATED TO SanctumEMHR)
  * Returns demographic breakdowns for active clients
  */
 
@@ -83,7 +83,7 @@ try {
 
     // Get gender identity distribution
     try {
-        // Mindline stores gender_identity as list option codes, join with settings_lists
+        // SanctumEMHR stores gender_identity as list option codes, join with settings_lists
         $genderSql = "SELECT
                         COALESCE(sl.option_title, 'Not Specified') as gender,
                         COUNT(*) as count

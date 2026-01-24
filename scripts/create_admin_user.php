@@ -3,7 +3,7 @@
 /**
  * Create Admin User Script
  *
- * This script helps you create the first admin user for MINDLINE.
+ * This script helps you create the first admin user for SanctumEMHR.
  *
  * Usage: php scripts/create_admin_user.php
  */
@@ -19,7 +19,7 @@ use Custom\Lib\Session\SessionManager;
 use Custom\Lib\Auth\CustomAuth;
 
 echo "\n==============================================\n";
-echo "MINDLINE - Create Admin User\n";
+echo "SanctumEMHR - Create Admin User\n";
 echo "==============================================\n\n";
 
 // Check database connection

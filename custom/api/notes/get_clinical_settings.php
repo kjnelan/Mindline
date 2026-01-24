@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Clinical Settings API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Clinical Settings API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Returns clinical documentation system settings
  *
  * Author: Kenneth J. Nelan

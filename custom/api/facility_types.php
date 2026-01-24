@@ -1,6 +1,6 @@
 <?php
 /**
- * Mindline EMHR - Facility Types API
+ * SanctumEMHR EMHR - Facility Types API
  * Manages facility type reference data
  */
 

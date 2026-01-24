@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * API utility for making authenticated requests
  * Session-based authentication with automatic redirect on 401
  *

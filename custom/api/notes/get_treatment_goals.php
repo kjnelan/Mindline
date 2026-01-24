@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Get Treatment Goals API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Get Treatment Goals API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Returns treatment goals for a patient
  *
  * Author: Kenneth J. Nelan

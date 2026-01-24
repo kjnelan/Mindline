@@ -1,5 +1,5 @@
 -- ============================================
--- MINDLINE MENTAL HEALTH EHR
+-- SanctumEMHR MENTAL HEALTH EHR
 -- Complete Database Schema
 -- ============================================
 -- Version: 1.0.0
@@ -1145,5 +1145,5 @@ UNION ALL SELECT 'settings_lists', COUNT(*) FROM settings_lists;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 -- ============================================
--- END OF MINDLINE DATABASE SCHEMA
+-- END OF SanctumEMHR DATABASE SCHEMA
 -- ============================================

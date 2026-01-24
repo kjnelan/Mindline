@@ -8,7 +8,7 @@
 
 ## System Overview
 
-The Clinical Notes system in Mindline EMHR is built as a standalone module with a **note-first architecture**, where notes are primary entities that appointments and billing reference (not the other way around).
+The Clinical Notes system in SanctumEMHR EMHR is built as a standalone module with a **note-first architecture**, where notes are primary entities that appointments and billing reference (not the other way around).
 
 ### Architecture Principles
 

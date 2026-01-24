@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * RiskAssessmentTemplate - Standalone comprehensive risk assessment
  * For detailed safety evaluations outside of regular sessions
  *

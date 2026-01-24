@@ -1,6 +1,6 @@
 # Installation Guide
 
-**Mindline EMHR - Mental Health EMR System**
+**SanctumEMHR EMHR - Mental Health EMR System**
 
 ---
 
@@ -27,7 +27,7 @@
 
 ### 1. Install OpenEMR Base
 
-Since Mindline EMHR currently runs on OpenEMR infrastructure:
+Since SanctumEMHR EMHR currently runs on OpenEMR infrastructure:
 
 ```bash
 # Download OpenEMR
@@ -71,10 +71,10 @@ EXIT;
 
 3. Complete installation
 
-### 4. Install Mindline Custom Files
+### 4. Install SanctumEMHR Custom Files
 
 ```bash
-# Clone Mindline EMHR repository
+# Clone SanctumEMHR EMHR repository
 cd /var/www/openemr
 git clone https://github.com/yourusername/sacwan-openemr-mh.git mindline
 
@@ -105,7 +105,7 @@ nano .env
 **`.env` Configuration:**
 ```env
 VITE_API_BASE_URL=http://localhost/custom/api
-VITE_APP_NAME=Mindline EMHR
+VITE_APP_NAME=SanctumEMHR EMHR
 ```
 
 ### 6. Build Frontend (Production)
@@ -212,7 +212,7 @@ Backend API at `http://localhost/openemr/custom/api`
 
 ### 3. Configure Calendar Settings
 
-1. Login to Mindline EMHR React app
+1. Login to SanctumEMHR EMHR React app
 2. Navigate to **Settings > Calendar Settings**
 3. Configure:
    - Time interval: 15 minutes
@@ -420,7 +420,7 @@ sudo systemctl reload apache2
 
 ## Uninstallation
 
-### Remove Mindline Files
+### Remove SanctumEMHR Files
 
 ```bash
 rm -rf /var/www/openemr/custom

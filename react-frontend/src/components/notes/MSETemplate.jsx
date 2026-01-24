@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * MSETemplate - Mental Status Exam template
  * Structured psychiatric assessment tool
  *

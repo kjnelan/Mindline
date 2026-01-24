@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * TreatmentPlanTemplate - Comprehensive treatment planning
  * Goals, objectives, interventions, frequency, expected duration
  *

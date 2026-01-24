@@ -1,6 +1,6 @@
 <?php
 /**
- * Mindline EMHR - Client Detail API
+ * SanctumEMHR EMHR - Client Detail API
  * Returns comprehensive client profile including demographics, insurance, appointments, diagnoses, notes
  */
 
@@ -56,7 +56,7 @@ try {
 
     error_log("Client detail: User authenticated - " . $session->getUserId() . ", fetching client ID: " . $clientId);
 
-    // Fetch patient demographics - mapped to Mindline schema
+    // Fetch patient demographics - mapped to SanctumEMHR schema
     $patientSql = "SELECT
         c.id AS pid,
         c.first_name AS fname,
@@ -141,7 +141,7 @@ try {
 
     error_log("Client detail: Found client " . $patient['fname'] . " " . $patient['lname']);
 
-    // Fetch employer data - mapped to Mindline schema
+    // Fetch employer data - mapped to SanctumEMHR schema
     $employerSql = "SELECT
         id,
         employer_name AS name,
@@ -168,7 +168,7 @@ try {
         $employer = null;
     }
 
-    // Fetch insurance data (primary, secondary, tertiary) - mapped to Mindline schema
+    // Fetch insurance data (primary, secondary, tertiary) - mapped to SanctumEMHR schema
     $insuranceSql = "SELECT
         ci.id,
         ci.priority AS type,
@@ -218,7 +218,7 @@ try {
         }
     }
 
-    // Fetch upcoming appointments - mapped to Mindline schema
+    // Fetch upcoming appointments - mapped to SanctumEMHR schema
     $appointmentsSql = "SELECT
         a.id AS pc_eid,
         DATE(a.start_datetime) AS pc_eventDate,
@@ -253,7 +253,7 @@ try {
 
     $upcomingAppointments = $db->queryAll($appointmentsSql, [$clientId]);
 
-    // Fetch recent appointments - mapped to Mindline schema
+    // Fetch recent appointments - mapped to SanctumEMHR schema
     $recentApptsSql = "SELECT
         a.id AS pc_eid,
         DATE(a.start_datetime) AS pc_eventDate,
@@ -287,7 +287,7 @@ try {
 
     $recentAppointments = $db->queryAll($recentApptsSql, [$clientId]);
 
-    // Fetch active diagnoses - mapped to Mindline schema
+    // Fetch active diagnoses - mapped to SanctumEMHR schema
     $diagnosesSql = "SELECT
         d.id,
         d.code AS diagnosis,
@@ -319,7 +319,7 @@ try {
     $notesTableCheck = $db->query($notesSql);
     $hasNotesTable = ($notesTableCheck && $notesTableCheck['count'] > 0);
 
-    // Fetch recent clinical notes if table exists - mapped to Mindline schema
+    // Fetch recent clinical notes if table exists - mapped to SanctumEMHR schema
     $clinicalNotes = [];
     if ($hasNotesTable) {
         try {
@@ -346,7 +346,7 @@ try {
         }
     }
 
-    // Fetch recent encounters - mapped to Mindline schema
+    // Fetch recent encounters - mapped to SanctumEMHR schema
     try {
         $encountersSql = "SELECT
             e.id,

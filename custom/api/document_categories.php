@@ -1,6 +1,6 @@
 <?php
 /**
- * Document Categories Management API (MIGRATED TO MINDLINE)
+ * Document Categories Management API (MIGRATED TO SanctumEMHR)
  * CRUD operations for document categories
  */
 

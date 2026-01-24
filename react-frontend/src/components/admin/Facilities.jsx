@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR - Facilities Management
+ * SanctumEMHR EMHR - Facilities Management
  * Manage practice facilities/locations
  *
  * Author: Kenneth J. Nelan

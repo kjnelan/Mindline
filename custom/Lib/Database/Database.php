@@ -7,7 +7,7 @@ use PDOException;
 use PDOStatement;
 
 /**
- * Database Abstraction Class for MINDLINE
+ * Database Abstraction Class for SanctumEMHR
  *
  * Replaces OpenEMR's legacy database functions (sqlQuery, sqlStatement, etc.)
  * with modern PDO-based implementation.
@@ -47,7 +47,7 @@ class Database
      * Load database configuration
      *
      * Priority order:
-     * 1. /config/database.php (MINDLINE config file)
+     * 1. /config/database.php (SanctumEMHR config file)
      * 2. Environment variables
      * 3. /sqlconf.php (OpenEMR legacy fallback)
      */
@@ -63,7 +63,7 @@ class Database
             'charset' => 'utf8mb4'
         ];
 
-        // Priority 1: Load from MINDLINE config file
+        // Priority 1: Load from SanctumEMHR config file
         $mindlineConfigPath = dirname(__FILE__, 4) . '/config/database.php';
         if (file_exists($mindlineConfigPath)) {
             $configData = require $mindlineConfigPath;

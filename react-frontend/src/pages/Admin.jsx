@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * Admin/Settings page - System configuration and preferences
  *
  * Author: Kenneth J. Nelan

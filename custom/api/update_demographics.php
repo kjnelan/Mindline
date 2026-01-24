@@ -1,6 +1,6 @@
 <?php
 /**
- * Update Demographics API - Session-based (MIGRATED TO MINDLINE)
+ * Update Demographics API - Session-based (MIGRATED TO SanctumEMHR)
  * Updates patient demographic information with audit trail
  */
 
@@ -73,7 +73,7 @@ try {
     $updateFields = [];
     $params = [];
 
-    // Define allowed fields with their database column names (Mindline schema)
+    // Define allowed fields with their database column names (SanctumEMHR schema)
     $allowedFields = [
         // Personal Information
         'fname' => 'first_name',

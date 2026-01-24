@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * ICD-10 Code Import Page
  *
  * Admin interface for importing ICD-10-CM codes from CMS files

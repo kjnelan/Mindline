@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Sign Note API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Sign Note API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Signs and locks a clinical note
  *
  * Author: Kenneth J. Nelan

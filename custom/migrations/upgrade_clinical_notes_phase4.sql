@@ -1,4 +1,4 @@
--- Mindline EMHR - Clinical Notes Table Migration to Phase 4
+-- SanctumEMHR EMHR - Clinical Notes Table Migration to Phase 4
 -- This migration updates the clinical_notes table from the legacy SOAP format
 -- to the new Phase 4 structure with support for multiple note types and templates
 --

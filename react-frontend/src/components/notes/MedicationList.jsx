@@ -1,5 +1,5 @@
 /**
- * Mindline EMHR
+ * SanctumEMHR EMHR
  * MedicationList - Manage current medications list in Intake
  * Simple add/remove/edit interface for documenting client's current medications
  *

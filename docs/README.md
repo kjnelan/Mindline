@@ -1,4 +1,4 @@
-# Mindline EMHR - Complete Documentation
+# SanctumEMHR EMHR - Complete Documentation
 
 **Mental Health EMR System**
 **Version:** ALPHA
@@ -79,7 +79,7 @@
 
 ## 📖 About This Documentation
 
-This documentation covers the Mindline EMHR system, a specialized mental health EMR built on OpenEMR infrastructure with a modern React frontend.
+This documentation covers the SanctumEMHR EMHR system, a specialized mental health EMR built on OpenEMR infrastructure with a modern React frontend.
 
 ### Documentation Philosophy
 
@@ -100,7 +100,7 @@ This documentation covers the Mindline EMHR system, a specialized mental health 
 
 ## 🏗️ System Overview
 
-**Mindline EMHR** is a mental health-focused Electronic Medical Health Record system designed for therapists and mental health clinicians.
+**SanctumEMHR EMHR** is a mental health-focused Electronic Medical Health Record system designed for therapists and mental health clinicians.
 
 ### Key Features
 

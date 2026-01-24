@@ -1,4 +1,4 @@
-# MINDLINE Authentication System - Setup Guide
+# SanctumEMHR Authentication System - Setup Guide
 
 **Date**: 2026-01-16
 **Status**: Phase 1 Complete - Authentication Foundation
@@ -242,7 +242,7 @@ $userService = new UserService();
 $users = $userService->getAll();
 ```
 
-### After (MINDLINE):
+### After (SanctumEMHR):
 ```php
 <?php
 require_once dirname(__FILE__, 3) . "/vendor/autoload.php";
@@ -259,7 +259,7 @@ $users = $userService->getUsers();
 
 ### Common Replacements:
 
-| Old (OpenEMR) | New (MINDLINE) |
+| Old (OpenEMR) | New (SanctumEMHR) |
 |--------------|----------------|
 | `sqlQuery()` | `$db->query()` |
 | `sqlStatement()` | `$db->queryAll()` |

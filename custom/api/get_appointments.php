@@ -1,10 +1,10 @@
 <?php
 /**
- * Get Appointments API - Session-based (MIGRATED TO MINDLINE)
+ * Get Appointments API - Session-based (MIGRATED TO SanctumEMHR)
  * Fetches appointments for calendar view with optional filters
  */
 
-// Load Mindline initialization
+// Load SanctumEMHR initialization
 require_once(__DIR__ . '/../init.php');
 
 use Custom\Lib\Database\Database;
@@ -63,7 +63,7 @@ try {
     // Initialize database
     $db = Database::getInstance();
 
-    // Build SQL query for MINDLINE schema
+    // Build SQL query for SanctumEMHR schema
     $sql = "SELECT
         a.id,
         a.start_datetime,
@@ -133,7 +133,7 @@ try {
             'providerId' => $row['provider_id'],
             'providerName' => $row['provider_name'],
             'facilityName' => $row['facility_name'],
-            'room' => null, // Room field removed from Mindline schema
+            'room' => null, // Room field removed from SanctumEMHR schema
             'roomId' => null,
             'isRecurring' => !empty($row['recurrence_id']), // If recurrence record exists
             'recurrenceId' => $row['recurrence_id'] // Recurrence series ID

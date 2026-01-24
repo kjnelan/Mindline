@@ -1,7 +1,7 @@
 <?php
 /**
- * Mindline EMHR
- * Delete Note API - Session-based authentication (MIGRATED TO MINDLINE)
+ * SanctumEMHR EMHR
+ * Delete Note API - Session-based authentication (MIGRATED TO SanctumEMHR)
  * Deletes unsigned clinical notes only
  *
  * Author: Kenneth J. Nelan

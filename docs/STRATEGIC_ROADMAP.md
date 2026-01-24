@@ -1,6 +1,6 @@
 # Strategic Roadmap - Path Forward
 
-**Mindline EMHR - Clinical Core Development**
+**SanctumEMHR EMHR - Clinical Core Development**
 **Date:** January 3, 2026
 **Status:** Active Planning
 
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Mindline EMHR has successfully completed advanced calendar and scheduling features (Phases 1-3). We are now at a strategic crossroads where we must decide the path forward. After assessment, the recommendation is to focus on **Clinical Documentation** as the next major development phase, followed by admin liberation, then billing, and finally backend migration.
+SanctumEMHR EMHR has successfully completed advanced calendar and scheduling features (Phases 1-3). We are now at a strategic crossroads where we must decide the path forward. After assessment, the recommendation is to focus on **Clinical Documentation** as the next major development phase, followed by admin liberation, then billing, and finally backend migration.
 
 ---
 
@@ -249,7 +249,7 @@ Plan:
 
 ## Phase 6: Billing Integration (LATER)
 
-**Goal:** Handle billing within Mindline EMHR.
+**Goal:** Handle billing within SanctumEMHR EMHR.
 
 **Timeline:** TBD (Complex, multi-week project)
 **Priority:** Low (can use OpenEMR billing for now)
