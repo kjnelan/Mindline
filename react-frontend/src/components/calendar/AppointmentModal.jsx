@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { createAppointment, updateAppointment, deleteAppointment, getAppointmentCategories, searchPatients, getRooms } from '../../utils/api';
+import { createAppointment, updateAppointment, deleteAppointment, getAppointmentCategories, searchPatients, getRooms, getSupervisees } from '../../utils/api';
 
 /**
  * Props:
@@ -68,6 +68,8 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const [patientSearchResults, setPatientSearchResults] = useState([]);
   const [showPatientDropdown, setShowPatientDropdown] = useState(false);
   const [patientSearchQuery, setPatientSearchQuery] = useState('');
+  const [supervisees, setSupervisees] = useState([]);
+  const [selectedSupervisees, setSelectedSupervisees] = useState([]);
 
   // Load appointment categories and rooms on mount
   useEffect(() => {
@@ -227,10 +229,47 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     setCptCodeId('');
     setSelectedCptCode(null);
 
+    // Reset patient/supervisee selections when changing category type
+    setPatientId('');
+    setPatientName('');
+    setPatientSearchQuery('');
+    setSelectedSupervisees([]);
+
     // Set default duration from category (already in minutes from API)
     if (category && category.defaultDuration > 0) {
       setDuration(category.defaultDuration);
     }
+  };
+
+  // Handle provider change - load supervisees if supervision category
+  const handleProviderChange = async (provId) => {
+    setSelectedProvider(provId);
+
+    // If this is a supervision appointment and provider is selected, load supervisees
+    const category = categories.find(c => c.id === parseInt(categoryId));
+    if (category && category.name === 'Supervision' && provId) {
+      try {
+        const response = await getSupervisees(provId);
+        setSupervisees(response.supervisees || []);
+      } catch (err) {
+        console.error('Failed to load supervisees:', err);
+        setSupervisees([]);
+      }
+    } else {
+      setSupervisees([]);
+      setSelectedSupervisees([]);
+    }
+  };
+
+  // Toggle supervisee selection for multi-select
+  const toggleSupervisee = (superviseeId) => {
+    setSelectedSupervisees(prev => {
+      if (prev.includes(superviseeId)) {
+        return prev.filter(id => id !== superviseeId);
+      } else {
+        return [...prev, superviseeId];
+      }
+    });
   };
 
   // Handle CPT code selection - auto-fill duration and fee
@@ -256,27 +295,55 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     setSuccess(null);
     setAvailabilityConflict(null);
 
-    // Validation
-    if (!patientId) {
-      setError('Please select a patient');
-      setLoading(false);
-      return;
-    }
-
-    if (!selectedProvider) {
-      setError('Please select a provider');
-      setLoading(false);
-      return;
-    }
-
+    // Validation - must select appointment type first
     if (!categoryId) {
       setError('Please select an appointment type');
       setLoading(false);
       return;
     }
 
-    // Validate CPT code if required (insurance patients with categories that require CPT)
     const category = categories.find(c => c.id === parseInt(categoryId));
+    if (!category) {
+      setError('Invalid appointment type');
+      setLoading(false);
+      return;
+    }
+
+    // Validate based on appointment type
+    if (category.categoryType === 'client') {
+      // Client appointments require patient and provider
+      if (!patientId) {
+        setError('Please select a client');
+        setLoading(false);
+        return;
+      }
+      if (!selectedProvider) {
+        setError('Please select a provider');
+        setLoading(false);
+        return;
+      }
+    } else if (category.name === 'Supervision') {
+      // Supervision requires provider (supervisor) and supervisees
+      if (!selectedProvider) {
+        setError('Please select a supervisor');
+        setLoading(false);
+        return;
+      }
+      if (selectedSupervisees.length === 0) {
+        setError('Please select at least one supervisee');
+        setLoading(false);
+        return;
+      }
+    } else if (category.name !== 'Staff Meeting') {
+      // Other clinic categories require provider (except Staff Meeting)
+      if (!selectedProvider) {
+        setError('Please select a provider');
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Validate CPT code if required (insurance patients with categories that require CPT)
     if (category && category.requiresCptSelection && patientPaymentType === 'insurance' && !cptCodeId) {
       setError('CPT code is required for insurance patients with this appointment type');
       setLoading(false);
@@ -308,20 +375,22 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
       const formattedTime = startTime.includes(':') ? `${startTime}:00` : `${startTime}:00:00`;
 
       const appointmentData = {
-        patientId: parseInt(patientId),
-        providerId: parseInt(selectedProvider),
         categoryId: parseInt(categoryId),
         eventDate: eventDate,
         startTime: formattedTime,
         duration: parseInt(duration),
-        title: title || patientName, // Use patient name as default title
+        title: title || patientName || category.name, // Use patient name or category name as default
         comments: comments,
         room: room,
         apptstatus: appointment ? appointment.apptstatus : '-', // Preserve status when editing, default for new
         overrideAvailability: overrideAvailability, // Pass override flag
-        cptCodeId: cptCodeId ? parseInt(cptCodeId) : null,
-        billingFee: selectedCptCode?.standardFee || null,
-        patientPaymentType: patientPaymentType
+        // Conditional fields based on appointment type
+        ...(patientId && { patientId: parseInt(patientId) }),
+        ...(selectedProvider && { providerId: parseInt(selectedProvider) }),
+        ...(selectedSupervisees.length > 0 && { superviseeIds: selectedSupervisees }),
+        ...(cptCodeId && { cptCodeId: parseInt(cptCodeId) }),
+        ...(selectedCptCode?.standardFee && { billingFee: selectedCptCode.standardFee }),
+        ...(patientPaymentType && { patientPaymentType: patientPaymentType })
       };
 
       // Add series management data if editing a recurring series
@@ -671,69 +740,8 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Patient Search */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Client <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={patientSearchQuery}
-              onChange={(e) => handlePatientSearch(e.target.value)}
-              placeholder="Search by name..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
 
-            {/* Patient Search Results Dropdown */}
-            {showPatientDropdown && patientSearchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                {patientSearchResults.map((patient) => (
-                  <button
-                    key={patient.pid}
-                    type="button"
-                    onClick={() => selectPatient(patient)}
-                    className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="font-medium text-gray-900">
-                      {patient.fname} {patient.lname}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      DOB: {patient.DOB} • PID: {patient.pid}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {patientName && (
-              <div className="mt-2 text-sm text-green-600">
-                Selected: {patientName}
-              </div>
-            )}
-          </div>
-
-          {/* Provider */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Provider <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={selectedProvider}
-              onChange={(e) => setSelectedProvider(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Provider</option>
-              {providers.map((provider) => (
-                <option key={provider.value} value={provider.value}>
-                  {provider.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Appointment Type */}
+          {/* Appointment Type - FIRST */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Appointment Type <span className="text-red-500">*</span>
@@ -752,6 +760,170 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
               ))}
             </select>
           </div>
+
+          {/* Conditional fields based on appointment type */}
+          {categoryId && (() => {
+            const category = categories.find(c => c.id === parseInt(categoryId));
+            if (!category) return null;
+
+            // CLIENT APPOINTMENTS - Show client search + provider
+            if (category.categoryType === 'client') {
+              return (
+                <>
+                  {/* Client Search */}
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Client <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={patientSearchQuery}
+                      onChange={(e) => handlePatientSearch(e.target.value)}
+                      placeholder="Search by name..."
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                    {showPatientDropdown && patientSearchResults.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {patientSearchResults.map((patient) => (
+                          <button
+                            key={patient.pid}
+                            type="button"
+                            onClick={() => selectPatient(patient)}
+                            className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="font-medium text-gray-900">
+                              {patient.fname} {patient.lname}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              DOB: {patient.DOB} • PID: {patient.pid}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {patientName && (
+                      <div className="mt-2 text-sm text-green-600">
+                        Selected: {patientName}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Provider */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Provider <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={selectedProvider}
+                      onChange={(e) => handleProviderChange(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Select Provider</option>
+                      {providers.map((provider) => (
+                        <option key={provider.value} value={provider.value}>
+                          {provider.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              );
+            }
+
+            // SUPERVISION - Show provider + supervisees multi-select
+            if (category.name === 'Supervision') {
+              return (
+                <>
+                  {/* Supervisor */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Supervisor <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={selectedProvider}
+                      onChange={(e) => handleProviderChange(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Select Supervisor</option>
+                      {providers.map((provider) => (
+                        <option key={provider.value} value={provider.value}>
+                          {provider.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Supervisees Multi-Select */}
+                  {selectedProvider && supervisees.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Supervisees <span className="text-red-500">*</span>
+                      </label>
+                      <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
+                        {supervisees.map((supervisee) => (
+                          <label key={supervisee.id} className="flex items-center gap-2 hover:bg-gray-50 p-2 rounded cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedSupervisees.includes(supervisee.id)}
+                              onChange={() => toggleSupervisee(supervisee.id)}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-900">{supervisee.label}</span>
+                            {supervisee.title && <span className="text-xs text-gray-500">({supervisee.title})</span>}
+                          </label>
+                        ))}
+                      </div>
+                      {selectedSupervisees.length > 0 && (
+                        <div className="mt-2 text-sm text-green-600">
+                          {selectedSupervisees.length} supervisee(s) selected
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              );
+            }
+
+            // STAFF MEETING - No provider needed
+            if (category.name === 'Staff Meeting') {
+              return (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    <strong>All-Staff Meeting:</strong> This appointment will be visible to all providers.
+                  </p>
+                </div>
+              );
+            }
+
+            // OTHER CLINIC CATEGORIES - Show provider only
+            if (category.categoryType === 'clinic') {
+              return (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Provider <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={selectedProvider}
+                    onChange={(e) => handleProviderChange(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select Provider</option>
+                    {providers.map((provider) => (
+                      <option key={provider.value} value={provider.value}>
+                        {provider.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            }
+
+            return null;
+          })()}
 
           {/* CPT Code Selection - Show when category requires it or patient has insurance */}
           {categoryId && (() => {

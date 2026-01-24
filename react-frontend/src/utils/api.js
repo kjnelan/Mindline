@@ -556,6 +556,14 @@ export async function getRooms() {
 }
 
 /**
+ * Get supervisees for a given supervisor
+ */
+export async function getSupervisees(supervisorId) {
+  console.log('Fetching supervisees for supervisor:', supervisorId);
+  return apiRequest(`/custom/api/get_supervisees.php?supervisor_id=${supervisorId}`);
+}
+
+/**
  * Create a new appointment
  * @param {Object} data - Appointment data
  * @param {number} data.patientId - Patient ID
