@@ -34,6 +34,9 @@ CREATE TABLE `appointment_categories` (
   `sort_order` int(11) DEFAULT 0,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `category_type` enum('client','clinic','holiday') DEFAULT 'client' COMMENT 'Client=billable encounter, Clinic=internal time, Holiday=closure',
+  `requires_cpt_selection` tinyint(1) DEFAULT 0 COMMENT 'Show CPT dropdown when scheduling',
+  `blocks_availability` tinyint(1) DEFAULT 0 COMMENT 'Blocks provider availability',
   PRIMARY KEY (`id`),
   KEY `idx_name` (`name`),
   KEY `idx_active` (`is_active`)
@@ -106,6 +109,10 @@ CREATE TABLE `appointments` (
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `cpt_code_id` int(11) DEFAULT NULL COMMENT 'CPT code used for this appointment',
+  `modifier_id` int(11) DEFAULT NULL COMMENT 'Billing modifier (override provider default)',
+  `billing_fee` decimal(10,2) DEFAULT NULL COMMENT 'Actual fee charged for this appointment',
+  `fee_type` enum('cpt','custom','pro-bono','none') DEFAULT 'none' COMMENT 'How fee was determined',
   PRIMARY KEY (`id`),
   KEY `category_id` (`category_id`),
   KEY `cancelled_by` (`cancelled_by`),
@@ -115,6 +122,8 @@ CREATE TABLE `appointments` (
   KEY `idx_facility` (`facility_id`),
   KEY `idx_start_datetime` (`start_datetime`),
   KEY `idx_status` (`status`),
+  KEY `idx_cpt_code` (`cpt_code_id`),
+  KEY `idx_modifier` (`modifier_id`),
   CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`provider_id`) REFERENCES `users` (`id`),
   CONSTRAINT `appointments_ibfk_3` FOREIGN KEY (`facility_id`) REFERENCES `facilities` (`id`),
@@ -158,7 +167,7 @@ CREATE TABLE `audit_logs` (
   KEY `idx_entity` (`entity_type`,`entity_id`),
   KEY `idx_created_at` (`created_at`),
   CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=132 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=136 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -298,8 +307,73 @@ INSERT INTO `audit_logs` VALUES
 (128,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0',NULL,NULL,'2026-01-23 15:46:27'),
 (129,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',NULL,NULL,'2026-01-24 14:16:42'),
 (130,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',NULL,NULL,'2026-01-24 14:18:14'),
-(131,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',NULL,NULL,'2026-01-24 14:18:30');
+(131,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',NULL,NULL,'2026-01-24 14:18:30'),
+(132,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',NULL,NULL,'2026-01-24 15:04:27'),
+(133,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',NULL,NULL,'2026-01-24 15:04:38'),
+(134,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',NULL,NULL,'2026-01-24 15:29:16'),
+(135,2,'login','user',2,'Successful login','172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',NULL,NULL,'2026-01-24 15:29:22');
 /*!40000 ALTER TABLE `audit_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `billing_modifiers`
+--
+
+DROP TABLE IF EXISTS `billing_modifiers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `billing_modifiers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(10) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `modifier_type` enum('telehealth','clinician','administrative','mh-specific') NOT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `sort_order` int(11) DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `idx_type` (`modifier_type`),
+  KEY `idx_active` (`is_active`)
+) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `billing_modifiers`
+--
+
+LOCK TABLES `billing_modifiers` WRITE;
+/*!40000 ALTER TABLE `billing_modifiers` DISABLE KEYS */;
+INSERT INTO `billing_modifiers` VALUES
+(1,'95','Telehealth (Synchronous)','telehealth',1,10,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(2,'93','Telehealth (Audio Only)','telehealth',1,20,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(3,'GT','Telehealth (Legacy)','telehealth',1,30,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(4,'AH','Clinical Psychologist (PhD/PsyD)','clinician',1,40,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(5,'AJ','Clinical Social Worker','clinician',1,50,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(6,'HO','Master\'s Level Therapist','clinician',1,60,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(7,'HN','Licensed Clinical Mental Health Counselor','clinician',1,70,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(8,'59','Distinct Procedural Service','administrative',1,80,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(9,'25','Significant, Separately Identifiable E/M Service','administrative',1,90,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(10,'76','Repeat Procedure by Same Physician','administrative',1,100,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(11,'77','Repeat Procedure by Another Physician','administrative',1,110,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(12,'KX','Requirements Specified in Medical Policy Met','administrative',1,120,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(13,'GA','Waiver of Liability (Issued as Required by Payer)','administrative',1,130,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(14,'GY','Item/Service Statutorily Excluded','administrative',1,140,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(15,'GZ','Item/Service Expected to be Denied','administrative',1,150,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(16,'HA','Child/Adolescent Program','mh-specific',1,160,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(17,'HQ','Group Setting','mh-specific',1,170,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(18,'TF','Intermediate Level of Care','mh-specific',1,180,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(19,'TG','Complex/High-Tech Level of Care','mh-specific',1,190,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(20,'U1','Medicaid Level of Care 1','mh-specific',1,200,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(21,'U2','Medicaid Level of Care 2','mh-specific',1,210,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(22,'U3','Medicaid Level of Care 3','mh-specific',1,220,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(23,'U4','Medicaid Level of Care 4','mh-specific',1,230,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(24,'U5','Medicaid Level of Care 5','mh-specific',1,240,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(25,'U6','Medicaid Level of Care 6','mh-specific',1,250,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(26,'U7','Medicaid Level of Care 7','mh-specific',1,260,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(27,'U8','Medicaid Level of Care 8','mh-specific',1,270,'2026-01-24 16:02:01','2026-01-24 16:02:01'),
+(28,'U9','Medicaid Level of Care 9','mh-specific',1,280,'2026-01-24 16:02:01','2026-01-24 16:02:01');
+/*!40000 ALTER TABLE `billing_modifiers` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -356,6 +430,36 @@ CREATE TABLE `billing_transactions` (
 LOCK TABLES `billing_transactions` WRITE;
 /*!40000 ALTER TABLE `billing_transactions` DISABLE KEYS */;
 /*!40000 ALTER TABLE `billing_transactions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `category_cpt_codes`
+--
+
+DROP TABLE IF EXISTS `category_cpt_codes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `category_cpt_codes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `category_id` bigint(20) unsigned NOT NULL,
+  `cpt_code_id` int(11) NOT NULL,
+  `is_default` tinyint(1) DEFAULT 0 COMMENT 'Default CPT for this category',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_category_cpt` (`category_id`,`cpt_code_id`),
+  KEY `cpt_code_id` (`cpt_code_id`),
+  CONSTRAINT `category_cpt_codes_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `appointment_categories` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `category_cpt_codes_ibfk_2` FOREIGN KEY (`cpt_code_id`) REFERENCES `cpt_codes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `category_cpt_codes`
+--
+
+LOCK TABLES `category_cpt_codes` WRITE;
+/*!40000 ALTER TABLE `category_cpt_codes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `category_cpt_codes` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -598,6 +702,8 @@ CREATE TABLE `clients` (
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL,
+  `payment_type` enum('insurance','self-pay','pro-bono') DEFAULT 'insurance' COMMENT 'How client pays for services',
+  `custom_session_fee` decimal(10,2) DEFAULT NULL COMMENT 'Negotiated rate for self-pay/pro-bono clients',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`),
   UNIQUE KEY `portal_username` (`portal_username`),
@@ -619,16 +725,16 @@ CREATE TABLE `clients` (
 LOCK TABLES `clients` WRITE;
 /*!40000 ALTER TABLE `clients` DISABLE KEYS */;
 INSERT INTO `clients` VALUES
-(1,'29950dd6-f40f-11f0-9ab0-26465fc4acb1','Michael','Anderson','James',NULL,'1985-03-15','male','male','heterosexual',NULL,'michael.anderson@email.test','555-0101','555-0102',NULL,NULL,'123 Main Street',NULL,'Portland','OR','97201',NULL,'Susan Anderson','Spouse','555-0103',4,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(2,'2995138f-f40f-11f0-9ab0-26465fc4acb1','Emily','Martinez','Rose',NULL,'1992-07-22','female','female','bisexual',NULL,'emily.martinez@email.test','555-0201','555-0202',NULL,NULL,'456 Oak Avenue',NULL,'Portland','OR','97202',NULL,'Carlos Martinez','Father','555-0203',4,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(3,'299515aa-f40f-11f0-9ab0-26465fc4acb1','Christopher','Taylor',NULL,NULL,'1978-11-08','male','male','homosexual',NULL,'chris.taylor@email.test','555-0301','555-0302',NULL,NULL,'789 Pine Road',NULL,'Portland','OR','97203',NULL,'Mark Stevens','Partner','555-0303',5,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(4,'29951705-f40f-11f0-9ab0-26465fc4acb1','Sarah','Wilson','Lynn',NULL,'1988-05-30','female','female','heterosexual',NULL,'sarah.wilson@email.test','555-0401','555-0402',NULL,NULL,'321 Elm Street',NULL,'Portland','OR','97204',NULL,'David Wilson','Spouse','555-0403',5,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(5,'29951843-f40f-11f0-9ab0-26465fc4acb1','Alex','Thompson','Jordan',NULL,'1995-09-12','other','non_binary','pansexual',NULL,'alex.thompson@email.test','555-0501','555-0502',NULL,NULL,'654 Maple Drive',NULL,'Portland','OR','97205',NULL,'Jamie Thompson','Sibling','555-0503',6,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(6,'2995198d-f40f-11f0-9ab0-26465fc4acb1','Jessica','Garcia','Marie',NULL,'1990-02-18','female','female','heterosexual',NULL,'jessica.garcia@email.test','555-0601','555-0602',NULL,NULL,'987 Cedar Lane',NULL,'Portland','OR','97206',NULL,'Miguel Garcia','Brother','555-0603',6,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(7,'29951ab0-f40f-11f0-9ab0-26465fc4acb1','Daniel','Lee','Robert',NULL,'1982-12-25','male','male','heterosexual',NULL,'daniel.lee@email.test','555-0701','555-0702',NULL,NULL,'147 Birch Court',NULL,'Portland','OR','97207',NULL,'Michelle Lee','Spouse','555-0703',7,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(8,'29951be0-f40f-11f0-9ab0-26465fc4acb1','Rachel','White','Ann',NULL,'1986-08-05','female','female','lesbian',NULL,'rachel.white@email.test','555-0801','555-0802',NULL,NULL,'258 Spruce Avenue',NULL,'Portland','OR','97208',NULL,'Laura White','Partner','555-0803',7,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(9,'29951d12-f40f-11f0-9ab0-26465fc4acb1','Kevin','Harris','Paul',NULL,'1993-04-17','male','male','heterosexual',NULL,'kevin.harris@email.test','555-0901','555-0902',NULL,NULL,'369 Willow Street',NULL,'Portland','OR','97209',NULL,'Linda Harris','Mother','555-0903',4,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL),
-(10,'29951e36-f40f-11f0-9ab0-26465fc4acb1','Amanda','Clark','Grace',NULL,'1991-06-28','female','female','heterosexual',NULL,'amanda.clark@email.test','555-1001','555-1002',NULL,NULL,'741 Ash Boulevard',NULL,'Portland','OR','97210',NULL,'James Clark','Father','555-1003',5,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL);
+(1,'29950dd6-f40f-11f0-9ab0-26465fc4acb1','Michael','Anderson','James',NULL,'1985-03-15','male','male','heterosexual',NULL,'michael.anderson@email.test','555-0101','555-0102',NULL,NULL,'123 Main Street',NULL,'Portland','OR','97201',NULL,'Susan Anderson','Spouse','555-0103',4,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(2,'2995138f-f40f-11f0-9ab0-26465fc4acb1','Emily','Martinez','Rose',NULL,'1992-07-22','female','female','bisexual',NULL,'emily.martinez@email.test','555-0201','555-0202',NULL,NULL,'456 Oak Avenue',NULL,'Portland','OR','97202',NULL,'Carlos Martinez','Father','555-0203',4,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(3,'299515aa-f40f-11f0-9ab0-26465fc4acb1','Christopher','Taylor',NULL,NULL,'1978-11-08','male','male','homosexual',NULL,'chris.taylor@email.test','555-0301','555-0302',NULL,NULL,'789 Pine Road',NULL,'Portland','OR','97203',NULL,'Mark Stevens','Partner','555-0303',5,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(4,'29951705-f40f-11f0-9ab0-26465fc4acb1','Sarah','Wilson','Lynn',NULL,'1988-05-30','female','female','heterosexual',NULL,'sarah.wilson@email.test','555-0401','555-0402',NULL,NULL,'321 Elm Street',NULL,'Portland','OR','97204',NULL,'David Wilson','Spouse','555-0403',5,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(5,'29951843-f40f-11f0-9ab0-26465fc4acb1','Alex','Thompson','Jordan',NULL,'1995-09-12','other','non_binary','pansexual',NULL,'alex.thompson@email.test','555-0501','555-0502',NULL,NULL,'654 Maple Drive',NULL,'Portland','OR','97205',NULL,'Jamie Thompson','Sibling','555-0503',6,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(6,'2995198d-f40f-11f0-9ab0-26465fc4acb1','Jessica','Garcia','Marie',NULL,'1990-02-18','female','female','heterosexual',NULL,'jessica.garcia@email.test','555-0601','555-0602',NULL,NULL,'987 Cedar Lane',NULL,'Portland','OR','97206',NULL,'Miguel Garcia','Brother','555-0603',6,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(7,'29951ab0-f40f-11f0-9ab0-26465fc4acb1','Daniel','Lee','Robert',NULL,'1982-12-25','male','male','heterosexual',NULL,'daniel.lee@email.test','555-0701','555-0702',NULL,NULL,'147 Birch Court',NULL,'Portland','OR','97207',NULL,'Michelle Lee','Spouse','555-0703',7,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(8,'29951be0-f40f-11f0-9ab0-26465fc4acb1','Rachel','White','Ann',NULL,'1986-08-05','female','female','lesbian',NULL,'rachel.white@email.test','555-0801','555-0802',NULL,NULL,'258 Spruce Avenue',NULL,'Portland','OR','97208',NULL,'Laura White','Partner','555-0803',7,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(9,'29951d12-f40f-11f0-9ab0-26465fc4acb1','Kevin','Harris','Paul',NULL,'1993-04-17','male','male','heterosexual',NULL,'kevin.harris@email.test','555-0901','555-0902',NULL,NULL,'369 Willow Street',NULL,'Portland','OR','97209',NULL,'Linda Harris','Mother','555-0903',4,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL),
+(10,'29951e36-f40f-11f0-9ab0-26465fc4acb1','Amanda','Clark','Grace',NULL,'1991-06-28','female','female','heterosexual',NULL,'amanda.clark@email.test','555-1001','555-1002',NULL,NULL,'741 Ash Boulevard',NULL,'Portland','OR','97210',NULL,'James Clark','Father','555-1003',5,NULL,'active','English',0,NULL,NULL,0,NULL,NULL,NULL,'2026-01-18 01:44:00','2026-01-18 01:44:00',NULL,'insurance',NULL);
 /*!40000 ALTER TABLE `clients` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -793,6 +899,53 @@ INSERT INTO `clinical_settings` VALUES
 UNLOCK TABLES;
 
 --
+-- Table structure for table `cpt_codes`
+--
+
+DROP TABLE IF EXISTS `cpt_codes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cpt_codes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(10) NOT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `type` varchar(20) DEFAULT 'CPT4',
+  `description` text DEFAULT NULL,
+  `standard_duration_minutes` int(11) DEFAULT 50,
+  `standard_fee` decimal(10,2) DEFAULT NULL COMMENT 'Standard insurance billing rate',
+  `is_active` tinyint(1) DEFAULT 1,
+  `is_addon` tinyint(1) DEFAULT 0,
+  `requires_primary_code` varchar(10) DEFAULT NULL COMMENT 'For add-on codes, which primary CPT required',
+  `sort_order` int(11) DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `idx_category` (`category`),
+  KEY `idx_active` (`is_active`)
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cpt_codes`
+--
+
+LOCK TABLES `cpt_codes` WRITE;
+/*!40000 ALTER TABLE `cpt_codes` DISABLE KEYS */;
+INSERT INTO `cpt_codes` VALUES
+(1,'00000','Non-Billable','CPT4','Non-Billable',50,NULL,1,0,NULL,0,'2026-01-24 15:59:08','2026-01-24 15:59:08'),
+(2,'90791','Intake','CPT4','Intake Interview',60,150.00,1,0,NULL,10,'2026-01-24 15:59:08','2026-01-24 15:59:08'),
+(3,'90832','Individual Therapy','CPT4','Psychotherapy 16–37 min',30,100.00,1,0,NULL,20,'2026-01-24 15:59:08','2026-01-24 15:59:08'),
+(4,'90834','Individual Therapy','CPT4','Psychotherapy 45–50 min',50,150.00,1,0,NULL,30,'2026-01-24 15:59:08','2026-01-24 15:59:08'),
+(5,'90837','Individual Therapy','CPT4','Psychotherapy 54+ min',60,180.00,1,0,NULL,40,'2026-01-24 15:59:08','2026-01-24 15:59:08'),
+(6,'90839','Individual Therapy','CPT4','Psychotherapy – Crisis',60,200.00,1,0,NULL,50,'2026-01-24 15:59:08','2026-01-24 15:59:08'),
+(7,'90846','Family Therapy','CPT4','Family Therapy (w/o patient)',50,150.00,1,0,NULL,60,'2026-01-24 15:59:08','2026-01-24 15:59:08'),
+(8,'90847','Family Therapy','CPT4','Family Therapy (w/ patient)',50,150.00,1,0,NULL,70,'2026-01-24 15:59:08','2026-01-24 15:59:08'),
+(9,'90853','Group Therapy','CPT4','Group Therapy',60,75.00,1,0,NULL,80,'2026-01-24 15:59:08','2026-01-24 15:59:08');
+/*!40000 ALTER TABLE `cpt_codes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `diagnoses`
 --
 
@@ -894,7 +1047,7 @@ CREATE TABLE `document_categories` (
   KEY `idx_rght` (`rght`),
   KEY `idx_active` (`is_active`),
   CONSTRAINT `document_categories_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `document_categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -904,8 +1057,17 @@ CREATE TABLE `document_categories` (
 LOCK TABLES `document_categories` WRITE;
 /*!40000 ALTER TABLE `document_categories` DISABLE KEYS */;
 INSERT INTO `document_categories` VALUES
-(1,'Insurance',NULL,NULL,0,0,1,0,'2026-01-18 14:13:07','2026-01-18 14:13:07'),
-(2,'Client Insurance Card',1,NULL,0,0,1,0,'2026-01-18 14:13:18','2026-01-18 14:13:18');
+(1,'Client Information',NULL,NULL,0,0,1,0,'2026-01-18 14:13:07','2026-01-24 15:30:02'),
+(2,'Client Insurance Card',1,NULL,0,0,1,0,'2026-01-18 14:13:18','2026-01-18 14:13:18'),
+(3,'Client Portal',NULL,NULL,0,0,1,0,'2026-01-24 15:30:53','2026-01-24 15:30:53'),
+(4,'Records (Received)',1,NULL,0,0,1,0,'2026-01-24 15:31:10','2026-01-24 15:57:08'),
+(5,'Financial',NULL,NULL,0,0,1,0,'2026-01-24 15:31:29','2026-01-24 15:31:29'),
+(6,'Invoices/Receipts (Self-Pay)',5,NULL,0,0,1,0,'2026-01-24 15:31:50','2026-01-24 15:31:50'),
+(7,'Client Communications',NULL,NULL,0,0,1,0,'2026-01-24 15:38:02','2026-01-24 15:38:02'),
+(8,'Releases of Information (ROI\'s)',7,NULL,0,0,1,0,'2026-01-24 15:38:20','2026-01-24 15:38:20'),
+(9,'From Client',3,NULL,0,0,1,0,'2026-01-24 15:39:37','2026-01-24 15:39:37'),
+(10,'For Client',3,NULL,0,0,1,0,'2026-01-24 15:39:45','2026-01-24 15:39:45'),
+(11,'Records Requests (Sent)',1,NULL,0,0,1,0,'2026-01-24 15:56:55','2026-01-24 15:56:55');
 /*!40000 ALTER TABLE `document_categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1544,7 +1706,6 @@ INSERT INTO `reference_lists` VALUES
 (99,'calendar-category','Group Therapy','Group therapy session',1,2,'2026-01-19 12:36:00','2026-01-19 12:36:00'),
 (100,'calendar-category','Family Therapy','Family/couples session',1,3,'2026-01-19 12:36:00','2026-01-19 12:36:00'),
 (101,'calendar-category','Intake/Assessment','Initial intake or assessment',1,4,'2026-01-19 12:36:00','2026-01-19 12:36:00'),
-(102,'calendar-category','Follow-up','Follow-up appointment',1,5,'2026-01-19 12:36:00','2026-01-19 12:36:00'),
 (103,'calendar-category','Crisis','Crisis intervention',1,6,'2026-01-19 12:36:00','2026-01-19 12:36:00'),
 (104,'calendar-category','Case Management','Case management services',1,7,'2026-01-19 12:36:00','2026-01-19 12:36:00'),
 (106,'calendar-category','Testing','Psychological testing',1,9,'2026-01-19 12:36:00','2026-01-19 12:36:00'),
@@ -1588,9 +1749,9 @@ INSERT INTO `sessions` VALUES
 ('75668oa3te0ujs8alpo71eppdm',NULL,'',1769175399,'172.59.99.0','Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0','2026-01-23 13:36:39'),
 ('bb78f36q6hqf41drvvjhdii102',2,'user_id|i:2;username|s:5:\"admin\";user_type|s:5:\"admin\";is_provider|i:1;full_name|s:20:\"System Administrator\";login_time|i:1768848365;user|a:7:{s:2:\"id\";i:2;s:8:\"username\";s:5:\"admin\";s:10:\"first_name\";s:6:\"System\";s:9:\"last_name\";s:13:\"Administrator\";s:5:\"email\";s:20:\"ken.nelan@sacwan.net\";s:9:\"user_type\";s:5:\"admin\";s:11:\"is_provider\";i:1;}',1768848369,'172.59.99.0','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36','2026-01-19 18:46:05'),
 ('d1pcp251lurpo4d51ekmss2li0',2,'user_id|i:2;username|s:5:\"admin\";user_type|s:5:\"admin\";is_provider|i:1;full_name|s:20:\"System Administrator\";login_time|i:1768848934;user|a:7:{s:2:\"id\";i:2;s:8:\"username\";s:5:\"admin\";s:10:\"first_name\";s:6:\"System\";s:9:\"last_name\";s:13:\"Administrator\";s:5:\"email\";s:20:\"ken.nelan@sacwan.net\";s:9:\"user_type\";s:5:\"admin\";s:11:\"is_provider\";i:1;}',1768849688,'172.59.99.0','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36','2026-01-19 18:55:34'),
+('fmflc4rms1qt09ekvsdnriq6j2',2,'user_id|i:2;username|s:5:\"admin\";user_type|s:5:\"admin\";is_provider|i:1;full_name|s:20:\"System Administrator\";login_time|i:1769268562;user|a:7:{s:2:\"id\";i:2;s:8:\"username\";s:5:\"admin\";s:10:\"first_name\";s:6:\"System\";s:9:\"last_name\";s:13:\"Administrator\";s:5:\"email\";s:20:\"ken.nelan@sacwan.net\";s:9:\"user_type\";s:5:\"admin\";s:11:\"is_provider\";i:1;}',1769270228,'172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0','2026-01-24 15:29:22'),
 ('gf5d5kr1nab5rmuqqnjv5kplv7',2,'user_id|i:2;username|s:5:\"admin\";user_type|s:5:\"admin\";is_provider|i:0;full_name|s:20:\"System Administrator\";login_time|i:1768742054;user|a:7:{s:2:\"id\";i:2;s:8:\"username\";s:5:\"admin\";s:10:\"first_name\";s:6:\"System\";s:9:\"last_name\";s:13:\"Administrator\";s:5:\"email\";s:20:\"admin@mindline.local\";s:9:\"user_type\";s:5:\"admin\";s:11:\"is_provider\";i:0;}',1768742060,'172.59.99.0','Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0','2026-01-18 13:14:14'),
-('hhmh24v6p3b72nk4bqsec4fqf8',2,'user_id|i:2;username|s:5:\"admin\";user_type|s:5:\"admin\";is_provider|i:1;full_name|s:20:\"System Administrator\";login_time|i:1768837479;user|a:7:{s:2:\"id\";i:2;s:8:\"username\";s:5:\"admin\";s:10:\"first_name\";s:6:\"System\";s:9:\"last_name\";s:13:\"Administrator\";s:5:\"email\";s:20:\"ken.nelan@sacwan.net\";s:9:\"user_type\";s:5:\"admin\";s:11:\"is_provider\";i:1;}',1768837479,'172.59.99.0','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36','2026-01-19 15:44:39'),
-('r3qhv7aldlchsvdi71ojhvvs9b',2,'user_id|i:2;username|s:5:\"admin\";user_type|s:5:\"admin\";is_provider|i:1;full_name|s:20:\"System Administrator\";login_time|i:1769264310;user|a:7:{s:2:\"id\";i:2;s:8:\"username\";s:5:\"admin\";s:10:\"first_name\";s:6:\"System\";s:9:\"last_name\";s:13:\"Administrator\";s:5:\"email\";s:20:\"ken.nelan@sacwan.net\";s:9:\"user_type\";s:5:\"admin\";s:11:\"is_provider\";i:1;}',1769264905,'172.59.99.0','Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0','2026-01-24 14:18:30');
+('hhmh24v6p3b72nk4bqsec4fqf8',2,'user_id|i:2;username|s:5:\"admin\";user_type|s:5:\"admin\";is_provider|i:1;full_name|s:20:\"System Administrator\";login_time|i:1768837479;user|a:7:{s:2:\"id\";i:2;s:8:\"username\";s:5:\"admin\";s:10:\"first_name\";s:6:\"System\";s:9:\"last_name\";s:13:\"Administrator\";s:5:\"email\";s:20:\"ken.nelan@sacwan.net\";s:9:\"user_type\";s:5:\"admin\";s:11:\"is_provider\";i:1;}',1768837479,'172.59.99.0','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36','2026-01-19 15:44:39');
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1766,12 +1927,12 @@ CREATE TABLE `system_settings` (
 LOCK TABLES `system_settings` WRITE;
 /*!40000 ALTER TABLE `system_settings` DISABLE KEYS */;
 INSERT INTO `system_settings` VALUES
-(1,'schedule_start','9','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-18 13:47:42',1),
-(2,'schedule_end','17','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-18 13:47:42',1),
-(3,'calendar_interval','30','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-18 13:47:42',1),
-(4,'calendar_view_type','week','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-18 13:47:42',1),
-(5,'event_color','1','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-18 13:47:42',1),
-(6,'docs_see_entire_calendar','1','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-18 13:47:42',1),
+(1,'schedule_start','9','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-24 15:54:49',1),
+(2,'schedule_end','17','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-24 15:54:49',1),
+(3,'calendar_interval','30','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-24 15:54:49',1),
+(4,'calendar_view_type','week','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-24 15:54:49',1),
+(5,'event_color','1','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-24 15:54:49',1),
+(6,'docs_see_entire_calendar','1','string',NULL,NULL,'2026-01-18 13:47:34','2026-01-24 15:54:49',1),
 (7,'security.max_login_attempts','5','integer','Maximum number of failed login attempts before account is locked','security','2026-01-23 14:25:59','2026-01-23 14:25:59',1),
 (8,'security.lockout_duration_minutes','30','integer','Duration in minutes that an account remains locked after maximum failed attempts','security','2026-01-23 14:25:59','2026-01-23 14:25:59',1),
 (9,'security.password_min_length','8','integer','Minimum password length required','security','2026-01-23 14:25:59','2026-01-23 14:25:59',1),
@@ -1995,6 +2156,7 @@ CREATE TABLE `users` (
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL,
+  `default_modifier_id` int(11) DEFAULT NULL COMMENT 'Default billing modifier based on credentials',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`),
@@ -2009,6 +2171,7 @@ CREATE TABLE `users` (
   KEY `idx_is_supervisor` (`is_supervisor`),
   KEY `idx_portal_user` (`portal_user`),
   KEY `idx_last_failed_login` (`last_failed_login_at`),
+  KEY `idx_default_modifier` (`default_modifier_id`),
   CONSTRAINT `fk_users_facility` FOREIGN KEY (`facility_id`) REFERENCES `facilities` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_users_supervisor` FOREIGN KEY (`supervisor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2021,15 +2184,15 @@ CREATE TABLE `users` (
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 INSERT INTO `users` VALUES
-(2,'f83b6467-7a7e-46a2-8b96-7fb6032f2b78','admin','ken.nelan@sacwan.net','$2y$10$Vsi27QUnr3asgisRipjanuWcxSMUy6odd51lrRjwPbdLawph225C2','System','Administrator',NULL,NULL,NULL,'admin',1,1,1,1,NULL,'7251-125',NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,'414-477-9887',NULL,NULL,'2026-01-24 14:18:30','2026-01-18 00:48:47',0,NULL,NULL,'2026-01-18 00:48:47','2026-01-24 14:18:30',NULL),
-(3,'2fa37a93-f40d-11f0-9ab0-26465fc4acb1','sadmin','admin@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','Sarah','Administrator',NULL,NULL,NULL,'admin',1,1,1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:20:49',NULL),
-(4,'2fa37f82-f40d-11f0-9ab0-26465fc4acb1','dsmith','jsmith@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','John','Smith',NULL,NULL,NULL,'provider',1,1,1,1,'1234567890',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:20:04',NULL),
-(5,'2fa380c3-f40d-11f0-9ab0-26465fc4acb1','mjohnson','mjohnson@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','Maria','Johnson',NULL,NULL,NULL,'provider',1,1,0,1,'1234567891',NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:20:36',NULL),
-(6,'2fa381c4-f40d-11f0-9ab0-26465fc4acb1','dwilliams','dwilliams@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','David','Williams',NULL,NULL,NULL,'provider',1,1,0,0,'1234567892',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:20:25',NULL),
-(7,'2fa382c1-f40d-11f0-9ab0-26465fc4acb1','jbrown','jbrown@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','Jennifer','Brown',NULL,NULL,NULL,'provider',1,1,1,1,'1234567893',NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:21:00','2026-01-18 13:26:33'),
-(8,'2fa383b9-f40d-11f0-9ab0-26465fc4acb1','ajones','ajones@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','Alice','Jones',NULL,NULL,NULL,'staff',1,1,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:18:42',NULL),
-(9,'2fa384b4-f40d-11f0-9ab0-26465fc4acb1','rdavis','rdavis@mindline.test','$2y$12$HOagThaUANaQ4nW4zRCIUeS992pvA887aK8Sv20fybfqD5yGpJjHK','Robert','Davis',NULL,NULL,NULL,'staff',1,0,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-23 13:42:08',0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:13:18',NULL),
-(10,'106c0e5e-b87c-470d-a51c-10df42f44d2e','domyse','sacwan@sacwan.net','$2y$12$q13pEWufNypWIaAMwX0MheEEZDx1Y8V8UrXbbiDk10.DQIpkKBq6G','Dom','Myse',NULL,'LPC',NULL,'staff',1,0,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,'2026-01-23 13:43:11','2026-01-23 14:01:58',0,NULL,NULL,'2026-01-23 13:42:54','2026-01-23 14:01:58',NULL);
+(2,'f83b6467-7a7e-46a2-8b96-7fb6032f2b78','admin','ken.nelan@sacwan.net','$2y$10$Vsi27QUnr3asgisRipjanuWcxSMUy6odd51lrRjwPbdLawph225C2','System','Administrator',NULL,NULL,NULL,'admin',1,1,1,1,NULL,'7251-125',NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,'414-477-9887',NULL,NULL,'2026-01-24 15:29:22','2026-01-18 00:48:47',0,NULL,NULL,'2026-01-18 00:48:47','2026-01-24 15:29:22',NULL,NULL),
+(3,'2fa37a93-f40d-11f0-9ab0-26465fc4acb1','sadmin','admin@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','Sarah','Administrator',NULL,NULL,NULL,'admin',1,1,1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:20:49',NULL,NULL),
+(4,'2fa37f82-f40d-11f0-9ab0-26465fc4acb1','dsmith','jsmith@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','John','Smith',NULL,NULL,NULL,'provider',1,1,1,1,'1234567890',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:20:04',NULL,NULL),
+(5,'2fa380c3-f40d-11f0-9ab0-26465fc4acb1','mjohnson','mjohnson@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','Maria','Johnson',NULL,NULL,NULL,'provider',1,1,0,1,'1234567891',NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:20:36',NULL,NULL),
+(6,'2fa381c4-f40d-11f0-9ab0-26465fc4acb1','dwilliams','dwilliams@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','David','Williams',NULL,NULL,NULL,'provider',1,1,0,0,'1234567892',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:20:25',NULL,NULL),
+(7,'2fa382c1-f40d-11f0-9ab0-26465fc4acb1','jbrown','jbrown@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','Jennifer','Brown',NULL,NULL,NULL,'provider',1,1,1,1,'1234567893',NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:21:00','2026-01-18 13:26:33',NULL),
+(8,'2fa383b9-f40d-11f0-9ab0-26465fc4acb1','ajones','ajones@mindline.test','$argon2id$v=19$m=65536,t=4,p=1$TnlISGFaU1NRcGRKcEw3Nw$8TQkQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVVVQvVV','Alice','Jones',NULL,NULL,NULL,'staff',1,1,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:18:42',NULL,NULL),
+(9,'2fa384b4-f40d-11f0-9ab0-26465fc4acb1','rdavis','rdavis@mindline.test','$2y$12$HOagThaUANaQ4nW4zRCIUeS992pvA887aK8Sv20fybfqD5yGpJjHK','Robert','Davis',NULL,NULL,NULL,'staff',1,0,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-23 13:42:08',0,NULL,NULL,'2026-01-18 01:29:51','2026-01-23 14:13:18',NULL,NULL),
+(10,'106c0e5e-b87c-470d-a51c-10df42f44d2e','domyse','sacwan@sacwan.net','$2y$12$q13pEWufNypWIaAMwX0MheEEZDx1Y8V8UrXbbiDk10.DQIpkKBq6G','Dom','Myse',NULL,'LPC',NULL,'staff',1,0,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,'2026-01-23 13:43:11','2026-01-23 14:01:58',0,NULL,NULL,'2026-01-23 13:42:54','2026-01-23 14:01:58',NULL,NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -2042,4 +2205,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-24  8:33:00
+-- Dump completed on 2026-01-24 10:06:15

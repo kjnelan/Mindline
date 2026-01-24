@@ -13,6 +13,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FormLabel } from '../FormLabel';
+import { TabButton } from '../TabButton';
 
 function Facilities() {
   const [facilities, setFacilities] = useState([]);
@@ -384,7 +385,7 @@ function Facilities() {
       {/* Facility Count */}
       {filteredFacilities.length > 0 && (
         <div className="mb-4">
-          <p className="text-gray-700 font-semibold">
+          <p className="text-label">
             {filteredFacilities.length} {statusFilter !== 'all' ? statusFilter : ''} facilit{filteredFacilities.length !== 1 ? 'ies' : 'y'}
           </p>
         </div>
@@ -548,38 +549,27 @@ function FacilityFormModal({
           {/* Address Tabs */}
           <div className="mb-4">
             <div className="flex border-b border-gray-300 mb-4">
-              <button
-                onClick={() => setAddressTab('physical')}
-                className={`px-4 py-2 font-semibold ${
-                  addressTab === 'physical'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                Physical Address
-              </button>
-              <button
-                onClick={() => setAddressTab('mailing')}
-                className={`px-4 py-2 font-semibold ${
-                  addressTab === 'mailing'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                Mailing Address
-              </button>
-              <button
-                onClick={() => setAddressTab('billing')}
-                className={`px-4 py-2 font-semibold ${
-                  addressTab === 'billing'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                Billing Address
-              </button>
+                  <TabButton
+                    active={addressTab === 'physical'}
+                    onClick={() => setAddressTab('physical')}
+                  >
+                    Physical Address
+                  </TabButton>
+                  
+                  <TabButton
+                    active={addressTab === 'mailing'}
+                    onClick={() => setAddressTab('mailing')}
+                  >
+                    Mailing Address
+                  </TabButton>
+                  
+                  <TabButton
+                    active={addressTab === 'billing'}
+                    onClick={() => setAddressTab('billing')}
+                  >
+                    Billing Address
+                  </TabButton>
             </div>
-
             {/* Address Fields */}
             {addressTab === 'physical' ? (
               <div className="grid grid-cols-1 gap-4">
@@ -659,7 +649,7 @@ function FacilityFormModal({
                     }}
                     className="w-5 h-5 rounded border-gray-300"
                   />
-                  <span className="text-gray-700 font-semibold">Same as Physical Address</span>
+                  <span className="text-label">Same as Physical Address</span>
                 </label>
                 <div>
                   <FormLabel>Mailing Address Line 1</FormLabel>
@@ -742,7 +732,7 @@ function FacilityFormModal({
                     }}
                     className="w-5 h-5 rounded border-gray-300"
                   />
-                  <span className="text-gray-700 font-semibold">Same as Physical Address</span>
+                  <span className="text-label">Same as Physical Address</span>
                 </label>
                 <div>
                   <FormLabel>Billing Address Line 1</FormLabel>
@@ -937,7 +927,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('billing_location')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Billing Location</span>
+              <span className="text-label">Billing Location</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -946,7 +936,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('accepts_assignment')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Accepts Assignment</span>
+              <span className="text-label">Accepts Assignment</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -955,7 +945,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('service_location')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Service Location</span>
+              <span className="text-label">Service Location</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -964,7 +954,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('primary_business_entity')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Primary Business Entity</span>
+              <span className="text-label">Primary Business Entity</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -973,7 +963,7 @@ function FacilityFormModal({
                 onChange={() => onToggle('inactive')}
                 className="w-5 h-5 rounded border-gray-300"
               />
-              <span className="text-gray-700 font-semibold">Facility Inactive</span>
+              <span className="text-label">Facility Inactive</span>
             </label>
           </div>
 

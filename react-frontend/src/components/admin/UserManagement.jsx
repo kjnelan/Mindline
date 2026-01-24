@@ -542,7 +542,7 @@ function UserManagement() {
       {/* User Count */}
       {filteredUsers.length > 0 && (
         <div className="mb-4">
-          <p className="text-gray-700 font-semibold">
+          <p className="text-label">
             {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
           </p>
         </div>

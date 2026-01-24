@@ -121,7 +121,7 @@ function Admin() {
                   {/* Group Header */}
                   <button
                     onClick={() => toggleGroup(group.id)}
-                    className="w-full flex items-center justify-between px-3 py-2 text-gray-700 font-semibold text-sm hover:bg-gray-50 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2 text-label text-sm hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <span className="flex items-center gap-2">
                       <span>{group.icon}</span>
