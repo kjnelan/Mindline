@@ -112,6 +112,7 @@ try {
 
         // Payment Type
         'payment_type' => 'payment_type',
+        'custom_session_fee' => 'custom_session_fee',
 
         // Clinician Information
         'provider_id' => 'provider_id',

@@ -161,7 +161,8 @@ function DemographicsTab({ data, onDataUpdate }) {
       care_team_status: patient.care_team_status || '',
 
       // Payment Type
-      payment_type: patient.payment_type || '',
+      payment_type: patient.payment_type || 'insurance',
+      custom_session_fee: patient.custom_session_fee || '',
 
       // Clinician Information
       provider_id: patient.provider_id || '',
@@ -622,9 +623,17 @@ function DemographicsTab({ data, onDataUpdate }) {
                       : null
                   )}
                   {renderField('Payment Type', formData.payment_type, 'payment_type', 'text',
-                    dropdownOptions.payment_type && dropdownOptions.payment_type.length > 0
-                      ? [{ value: '', label: 'Select...' }, ...dropdownOptions.payment_type]
-                      : null
+                    [
+                      { value: 'insurance', label: 'Insurance' },
+                      { value: 'self-pay', label: 'Self-Pay' },
+                      { value: 'pro-bono', label: 'Pro Bono' }
+                    ]
+                  )}
+                  {(formData.payment_type === 'self-pay' || formData.payment_type === 'pro-bono') && (
+                    renderField('Custom Session Fee ($)', formData.custom_session_fee, 'custom_session_fee', 'number', null, {
+                      step: '0.01',
+                      placeholder: '120.00'
+                    })
                   )}
                 </div>
               ) : (
@@ -635,9 +644,17 @@ function DemographicsTab({ data, onDataUpdate }) {
                       : null
                   )}
                   {renderField('Payment Type', patient.payment_type, null, 'text',
-                    dropdownOptions.payment_type && dropdownOptions.payment_type.length > 0
-                      ? dropdownOptions.payment_type
-                      : null
+                    [
+                      { value: 'insurance', label: 'Insurance' },
+                      { value: 'self-pay', label: 'Self-Pay' },
+                      { value: 'pro-bono', label: 'Pro Bono' }
+                    ]
+                  )}
+                  {(patient.payment_type === 'self-pay' || patient.payment_type === 'pro-bono') && patient.custom_session_fee && (
+                    <div className="form-field">
+                      <div className="form-field-label">Custom Session Fee</div>
+                      <div className="form-field-value">${parseFloat(patient.custom_session_fee).toFixed(2)}</div>
+                    </div>
                   )}
                 </div>
               )}
