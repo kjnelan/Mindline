@@ -15,6 +15,9 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PrimaryButton } from '../PrimaryButton';
 import { FormLabel } from '../FormLabel';
+import { RequiredAsterisk } from '../RequiredAsterisk';
+import { ErrorInline } from '../ErrorInline';
+import { DangerButton } from '../DangerButton';
 
 function DocumentCategories() {
   const [categories, setCategories] = useState([]);
@@ -276,7 +279,7 @@ function DocumentCategories() {
   if (error) {
     return (
       <div className="glass-card p-8">
-        <div className="text-center text-red-600">Error: {error}</div>
+        <ErrorInline>Error: {error}</ErrorInline>
         <div className="text-center mt-4">
 		<PrimaryButton onClick={fetchCategories}>
 			Retry
@@ -330,12 +333,7 @@ function DocumentCategories() {
                 >
                   Edit
                 </button>
-                <button
-                  onClick={() => handleDeleteClick(category)}
-                  className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  Delete
-                </button>
+                <DangerButton onClick={() => handleDeleteClick(category)} > Delete </DangerButton>
               </div>
             </div>
           ))}
@@ -370,7 +368,7 @@ function DocumentCategories() {
 
               <div className="mb-4">
                 <FormLabel>
-                  Category Name <span className="text-red-500">*</span>
+                  Category Name <RequiredAsterisk />
                 </FormLabel>
                 <input
                   type="text"
@@ -459,7 +457,7 @@ function DocumentCategories() {
 
               <div className="mb-4">
                 <FormLabel>
-                  Category Name <span className="text-red-500">*</span>
+                  Category Name <RequiredAsterisk />
                 </FormLabel>
                 <input
                   type="text"

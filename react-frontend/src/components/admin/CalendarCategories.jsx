@@ -15,6 +15,8 @@ import { createPortal } from 'react-dom';
 import { PrimaryButton } from '../PrimaryButton';
 import { SecondaryButton } from '../SecondaryButton';
 import { FormLabel } from '../FormLabel';
+import { ErrorMessage } from '../ErrorMessage';
+import { DangerButton } from '../DangerButton';
 
 function CalendarCategories() {
   const [categories, setCategories] = useState([]);
@@ -268,9 +270,9 @@ function CalendarCategories() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <ErrorMessage>
           {error}
-        </div>
+        </ErrorMessage>
       )}
 
       {/* Filters */}
@@ -380,12 +382,11 @@ function CalendarCategories() {
                     >
                       Edit
                     </button>
-                    <button
+                    <DangerButton
                       onClick={() => handleDelete(category.id)}
-                      className="text-red-600 hover:text-red-800"
                     >
                       Delete
-                    </button>
+                    </DangerButton>
                   </td>
                 </tr>
               ))

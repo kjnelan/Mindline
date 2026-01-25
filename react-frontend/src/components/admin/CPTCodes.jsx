@@ -15,6 +15,9 @@ import { createPortal } from 'react-dom';
 import { PrimaryButton } from '../PrimaryButton';
 import { SecondaryButton } from '../SecondaryButton';
 import { FormLabel } from '../FormLabel';
+import { RequiredAsterisk } from '../RequiredAsterisk';
+import { ErrorMessage } from '../ErrorMessage';
+import { DangerButton } from '../DangerButton';
 
 function CPTCodes() {
   const [cptCodes, setCptCodes] = useState([]);
@@ -246,9 +249,9 @@ function CPTCodes() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <ErrorMessage>
           {error}
-        </div>
+        </ErrorMessage>
       )}
 
       {/* Filters */}
@@ -331,12 +334,11 @@ function CPTCodes() {
                     >
                       Edit
                     </button>
-                    <button
+                    <DangerButton
                       onClick={() => handleDelete(code.id)}
-                      className="text-red-600 hover:text-red-800"
                     >
                       Delete
-                    </button>
+                    </DangerButton>
                   </td>
                 </tr>
               ))
@@ -368,15 +370,15 @@ function CPTCodes() {
 
             <div className="modal-body space-y-4">
               {formError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                <ErrorMessage>
                   {formError}
-                </div>
+                </ErrorMessage>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <FormLabel>
-                    CPT Code <span className="text-red-500">*</span>
+                    CPT Code <RequiredAsterisk />
                   </FormLabel>
                   <input
                     type="text"
@@ -403,7 +405,7 @@ function CPTCodes() {
 
               <div>
                 <FormLabel>
-                  Description <span className="text-red-500">*</span>
+                  Description <RequiredAsterisk />
                 </FormLabel>
                 <input
                   type="text"

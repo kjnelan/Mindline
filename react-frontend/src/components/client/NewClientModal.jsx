@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createClient } from '../../utils/api';
 import { FormLabel } from '../FormLabel';
+import { RequiredAsterisk } from '../RequiredAsterisk';
 
 function NewClientModal({ onClose, onClientCreated }) {
   const [formData, setFormData] = useState({
@@ -95,7 +96,7 @@ function NewClientModal({ onClose, onClientCreated }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <FormLabel>
-                  First Name <span className="text-red-500">*</span>
+                  First Name <RequiredAsterisk />
                 </FormLabel>
                 <input
                   type="text"
@@ -120,7 +121,7 @@ function NewClientModal({ onClose, onClientCreated }) {
 
               <div>
                 <FormLabel>
-                  Last Name <span className="text-red-500">*</span>
+                  Last Name <RequiredAsterisk />
                 </FormLabel>
                 <input
                   type="text"
@@ -133,7 +134,7 @@ function NewClientModal({ onClose, onClientCreated }) {
 
               <div>
                 <FormLabel>
-                  Date of Birth <span className="text-red-500">*</span>
+                  Date of Birth <RequiredAsterisk />
                 </FormLabel>
                 <input
                   type="date"

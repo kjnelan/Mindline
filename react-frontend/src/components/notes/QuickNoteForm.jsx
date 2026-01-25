@@ -13,6 +13,7 @@
 
 import React, { useState } from 'react';
 import { createNote, signNote } from '../../utils/api';
+import { ErrorMessage } from '../ErrorMessage';
 
 /**
  * Props:
@@ -105,9 +106,9 @@ function QuickNoteForm({ noteType, patientId, appointmentId = null, serviceDate,
         </div>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+          <ErrorMessage>
             {error}
-          </div>
+          </ErrorMessage>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">

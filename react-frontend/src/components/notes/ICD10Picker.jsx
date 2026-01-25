@@ -21,6 +21,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { searchCodes } from '../../utils/api';
 import { FormLabel } from '../FormLabel';
+import { ErrorMessage } from '../ErrorMessage';
 
 const SEVERITY_OPTIONS = [
   'Mild',
@@ -281,9 +282,9 @@ function ICD10Picker({
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 text-red-800 text-sm">
+        <ErrorMessage>
           {error}
-        </div>
+        </ErrorMessage>
       )}
 
       {/* Selected Codes */}

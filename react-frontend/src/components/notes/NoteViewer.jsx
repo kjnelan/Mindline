@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getNote } from '../../utils/api';
+import { ErrorInline } from '../ErrorInline';
 
 /**
  * Props:
@@ -94,7 +95,7 @@ function NoteViewer({ noteId, onClose, onEdit, onAddendum }) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="card-main text-center p-12">
-          <div className="text-red-600 mb-4">Error: {error}</div>
+          <ErrorInline>Error: {error}</ErrorInline>
           <button onClick={onClose} className="btn-secondary">
             Close
           </button>

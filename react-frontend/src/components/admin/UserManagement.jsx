@@ -15,6 +15,9 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PrimaryButton } from '../PrimaryButton';
 import { FormLabel } from '../FormLabel';
+import { RequiredAsterisk } from '../RequiredAsterisk';
+import { ErrorMessage } from '../ErrorMessage';
+import { DangerButton } from '../DangerButton';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -464,7 +467,7 @@ function UserManagement() {
   if (error) {
     return (
       <div className="glass-card p-8">
-        <div className="text-center text-red-600">Error: {error}</div>
+        <ErrorMessage className="text-center">Error: {error}</ErrorMessage>
         <div className="text-center mt-4">
 
           <PrimaryButton
@@ -633,12 +636,11 @@ function UserManagement() {
                   </button>
                 )}
                 {user.active === '1' && (
-                  <button
+                  <DangerButton
                     onClick={() => handleDeactivate(user.id)}
-                    className="flex-1 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     Deactivate
-                  </button>
+                  </DangerButton>
                 )}
               </div>
             </div>
@@ -717,7 +719,7 @@ function UserFormModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <FormLabel>
-                    Username <span className="text-red-500">*</span>
+                    Username <RequiredAsterisk />
                   </FormLabel>
                   <input
                     type="text"
@@ -729,7 +731,7 @@ function UserFormModal({
                 </div>
                 <div>
                   <FormLabel>
-                    {isEdit ? 'New Password (leave blank to keep current)' : 'Password'} {!isEdit && <span className="text-red-500">*</span>}
+                    {isEdit ? 'New Password (leave blank to keep current)' : 'Password'} {!isEdit && <RequiredAsterisk />}
                   </FormLabel>
                   <div className="relative">
                     <input
@@ -756,7 +758,7 @@ function UserFormModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <FormLabel>
-                    Legal First Name <span className="text-red-500">*</span>
+                    Legal First Name <RequiredAsterisk />
                   </FormLabel>
                   <input
                     type="text"
@@ -778,7 +780,7 @@ function UserFormModal({
                 </div>
                 <div>
                   <FormLabel>
-                    Legal Last Name <span className="text-red-500">*</span>
+                    Legal Last Name <RequiredAsterisk />
                   </FormLabel>
                   <input
                     type="text"
@@ -831,7 +833,7 @@ function UserFormModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <FormLabel>
-                    Email <span className="text-red-500">*</span>
+                    Email <RequiredAsterisk />
                   </FormLabel>
                   <input
                     type="email"

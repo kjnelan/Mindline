@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getInterventions } from '../../utils/api';
+import { ErrorInline } from '../ErrorInline';
 
 /**
  * Props:
@@ -73,7 +74,7 @@ function InterventionPicker({ selectedInterventions = [], onChange, riskPresent 
   }
 
   if (error) {
-    return <div className="text-red-600">Error loading interventions: {error}</div>;
+    return <ErrorInline>Error loading interventions: {error}</ErrorInline>;
   }
 
   if (!interventions) {
