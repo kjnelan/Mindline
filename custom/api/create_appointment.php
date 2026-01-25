@@ -93,16 +93,17 @@ try {
     $patientPaymentType = $input['patientPaymentType'] ?? null;
 
     // Map OpenEMR status symbols to SanctumEMHR status strings
+    // Database ENUM: 'scheduled','confirmed','arrived','in_session','completed','cancelled','no_show'
     $statusMap = [
-        '-' => 'pending',
+        '-' => 'scheduled',
         '~' => 'confirmed',
         '@' => 'arrived',
-        '^' => 'checkout',
+        '^' => 'completed',
         '*' => 'no_show',
         '?' => 'cancelled',
-        'x' => 'deleted'
+        'x' => 'cancelled'  // Map deleted to cancelled since 'deleted' is not in ENUM
     ];
-    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
+    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'scheduled';
 
     // Check if this is a recurring appointment
     $isRecurring = isset($input['recurrence']) && $input['recurrence']['enabled'] === true;
