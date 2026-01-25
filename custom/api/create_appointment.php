@@ -208,6 +208,15 @@ try {
         $facilityId = $facilityResult['facility_id'] ?? 0;
     }
 
+    // If still no facility, get the first active facility as default
+    if ($facilityId === 0) {
+        $defaultFacility = $db->query("SELECT id FROM facilities WHERE is_active = 1 ORDER BY id LIMIT 1");
+        $facilityId = $defaultFacility['id'] ?? null;
+        if ($facilityId === null) {
+            throw new Exception("No active facility found. Please configure a facility first.");
+        }
+    }
+
     // Check for conflicts with existing appointments and availability blocks
     // Only check conflicts for patient appointments (not for availability blocks themselves)
     $conflicts = [];
@@ -230,7 +239,7 @@ try {
             LEFT JOIN appointment_categories c ON a.category_id = c.id
             WHERE a.provider_id = ?
               AND DATE(a.start_datetime) = ?
-              AND a.status NOT IN ('deleted', 'cancelled')
+              AND a.status NOT IN ('cancelled', 'no_show')
               AND (
                   -- New appointment overlaps with existing event
                   (? < a.end_datetime AND ? > a.start_datetime)
@@ -332,14 +341,17 @@ try {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
         // Determine fee_type based on payment type and billing fee
-        $feeType = null;
-        if ($billingFee !== null) {
+        // Database ENUM: 'cpt','custom','pro-bono','none'
+        $feeType = 'none';
+        if ($cptCodeId !== null && $billingFee !== null) {
             if ($patientPaymentType === 'insurance') {
-                $feeType = 'insurance';
+                $feeType = 'cpt';  // Insurance uses CPT-based billing
             } elseif ($patientPaymentType === 'self-pay') {
                 $feeType = 'custom';
             } elseif ($patientPaymentType === 'pro-bono') {
                 $feeType = 'pro-bono';
+            } else {
+                $feeType = 'cpt';  // Default to CPT if we have a code
             }
         }
 
@@ -387,8 +399,7 @@ try {
             a.notes,
             a.client_id,
             a.provider_id,
-            a.is_recurring,
-            a.recurrence_group_id,
+            a.room,
             c.name AS category_name,
             c.color AS category_color,
             cl.first_name AS patient_fname,
@@ -423,12 +434,13 @@ try {
             'status' => $reverseStatusMap[$row['status']] ?? '-', // Map back to symbol
             'title' => $row['title'],
             'notes' => $row['notes'],
+            'room' => $row['room'],
             'patientId' => $row['client_id'],
             'patientName' => trim(($row['patient_fname'] ?? '') . ' ' . ($row['patient_lname'] ?? '')),
             'providerId' => $row['provider_id'],
             'providerName' => $row['provider_name'],
-            'isRecurring' => intval($row['is_recurring']) === 1,
-            'recurrenceId' => $row['recurrence_group_id']
+            'isRecurring' => $isRecurring,
+            'recurrenceId' => $recurrenceGroupId
         ];
     }
 
