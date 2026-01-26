@@ -17,6 +17,8 @@ import { FormLabel } from '../FormLabel';
 import { RequiredAsterisk } from '../RequiredAsterisk';
 import { ErrorMessage } from '../ErrorMessage';
 import { DangerButton } from '../DangerButton';
+import { PrimaryButton } from '../PrimaryButton';
+import { SecondaryButton } from '../SecondaryButton';
 
 /**
  * Props:
@@ -47,6 +49,10 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const [title, setTitle] = useState('');
   const [comments, setComments] = useState('');
   const [room, setRoom] = useState('');
+  const [apptstatus, setApptstatus] = useState('scheduled'); // Default to scheduled
+  const [statuses, setStatuses] = useState([]);
+  const [cancellationReasons, setCancellationReasons] = useState([]);
+  const [cancellationReason, setCancellationReason] = useState('');
 
   // Billing/CPT fields
   const [cptCodeId, setCptCodeId] = useState('');
@@ -75,11 +81,13 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const [supervisees, setSupervisees] = useState([]);
   const [selectedSupervisees, setSelectedSupervisees] = useState([]);
 
-  // Load appointment categories and rooms on mount
+  // Load appointment categories, rooms, statuses, and cancellation reasons on mount
   useEffect(() => {
     if (isOpen) {
       loadCategories();
       loadRooms();
+      loadStatuses();
+      loadCancellationReasons();
     }
   }, [isOpen]);
 
@@ -119,6 +127,8 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
       setTitle(appointment.title || '');
       setComments(appointment.comments || '');
       setRoom(appointment.roomId || appointment.room || ''); // Use roomId for editing, fallback to room
+      setApptstatus(appointment.apptstatus || appointment.status || 'scheduled'); // Set status when editing
+      setCancellationReason(appointment.cancellationReason || ''); // Set cancellation reason if exists
       setCptCodeId(appointment.cptCodeId || '');
 
       // Fetch patient payment type if we have a patient
@@ -150,7 +160,9 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
 
   const loadCategories = async () => {
     try {
-      const response = await getAppointmentCategories();
+      // Exclude 'holiday' categories (Vacation, Out of Office) from appointment modal
+      // Those are only for clinician calendar settings
+      const response = await getAppointmentCategories(0, 'holiday');
       console.log('getAppointmentCategories response:', response);
       console.log('Categories array:', response.categories);
       setCategories(response.categories || []);
@@ -181,6 +193,34 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     } catch (err) {
       console.error('Failed to load rooms:', err);
       // Don't set error - rooms are optional
+    }
+  };
+
+  const loadStatuses = async () => {
+    try {
+      const response = await fetch('/custom/api/settings_lists.php?list_id=appointment_statuses', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setStatuses(data.items || []);
+      }
+    } catch (err) {
+      console.error('Failed to load statuses:', err);
+    }
+  };
+
+  const loadCancellationReasons = async () => {
+    try {
+      const response = await fetch('/custom/api/settings_lists.php?list_id=cancellation_reasons', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCancellationReasons(data.items || []);
+      }
+    } catch (err) {
+      console.error('Failed to load cancellation reasons:', err);
     }
   };
 
@@ -386,7 +426,8 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
         title: title || patientName || category.name, // Use patient name or category name as default
         comments: comments,
         room: room,
-        apptstatus: appointment ? appointment.apptstatus : '-', // Preserve status when editing, default for new
+        apptstatus: apptstatus, // Use state value for status
+        cancellationReason: (apptstatus === 'cancelled' || apptstatus === 'no_show') ? cancellationReason : null,
         overrideAvailability: overrideAvailability, // Pass override flag
         // Conditional fields based on appointment type
         ...(patientId && { patientId: parseInt(patientId) }),
@@ -532,6 +573,8 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     setTitle('');
     setComments('');
     setRoom('');
+    setApptstatus('scheduled');
+    setCancellationReason('');
     setError(null);
     setSuccess(null);
     setAvailabilityConflict(null);
@@ -753,7 +796,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
             <select
               value={categoryId}
               onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-field"
               required
             >
               <option value="">Select Type</option>
@@ -764,6 +807,71 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
               ))}
             </select>
           </div>
+
+          {/* Status - Show at top when editing */}
+          {appointment && (
+            <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div>
+                <FormLabel>Status</FormLabel>
+                <select
+                  value={apptstatus}
+                  onChange={(e) => setApptstatus(e.target.value)}
+                  className="input-field"
+                >
+                  {statuses.length > 0 ? (
+                    statuses.filter(s => s.is_active).map((status) => (
+                      <option key={status.option_id} value={status.option_id}>
+                        {status.title}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="scheduled">Scheduled</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="arrived">Arrived</option>
+                      <option value="in_session">In Session</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="no_show">No Show</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Cancellation Reason - Show when status is cancelled or no_show */}
+              {(apptstatus === 'cancelled' || apptstatus === 'no_show') && (
+                <div>
+                  <FormLabel>
+                    Cancellation Reason <RequiredAsterisk />
+                  </FormLabel>
+                  <select
+                    value={cancellationReason}
+                    onChange={(e) => setCancellationReason(e.target.value)}
+                    className="input-field"
+                    required
+                  >
+                    <option value="">Select a reason...</option>
+                    {cancellationReasons.length > 0 ? (
+                      cancellationReasons.filter(r => r.is_active).map((reason) => (
+                        <option key={reason.option_id} value={reason.option_id}>
+                          {reason.title}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="no_show">No Show</option>
+                        <option value="client_cancelled">Client Cancelled</option>
+                        <option value="provider_cancelled">Provider Cancelled</option>
+                        <option value="emergency">Emergency</option>
+                        <option value="rescheduled">Rescheduled</option>
+                        <option value="other">Other</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Conditional fields based on appointment type */}
           {categoryId && (() => {
@@ -784,7 +892,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                       value={patientSearchQuery}
                       onChange={(e) => handlePatientSearch(e.target.value)}
                       placeholder="Search by name..."
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input-field"
                       required
                     />
                     {showPatientDropdown && patientSearchResults.length > 0 && (
@@ -821,7 +929,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                     <select
                       value={selectedProvider}
                       onChange={(e) => handleProviderChange(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input-field"
                       required
                     >
                       <option value="">Select Provider</option>
@@ -848,7 +956,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                     <select
                       value={selectedProvider}
                       onChange={(e) => handleProviderChange(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input-field"
                       required
                     >
                       <option value="">Select Supervisor</option>
@@ -912,7 +1020,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                   <select
                     value={selectedProvider}
                     onChange={(e) => handleProviderChange(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="input-field"
                     required
                   >
                     <option value="">Select Provider</option>
@@ -945,7 +1053,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                   <select
                     value={cptCodeId}
                     onChange={(e) => handleCptCodeChange(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="input-field"
                     required={cptRequired}
                   >
                     <option value="">Select CPT Code</option>
@@ -976,7 +1084,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                 type="date"
                 value={eventDate}
                 onChange={(e) => setEventDate(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
                 required
               />
             </div>
@@ -989,7 +1097,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
                 required
               />
             </div>
@@ -1024,7 +1132,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                 onChange={(e) => setDuration(e.target.value)}
                 min="5"
                 step="5"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="input-field"
                 required
               />
             </div>
@@ -1036,7 +1144,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
               <select
                 value={room}
                 onChange={(e) => setRoom(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="input-field"
               >
                 <option value="">Select Location (Optional)</option>
                 {rooms.map((roomOption) => (
@@ -1103,7 +1211,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
                   <select
                     value={recurInterval}
                     onChange={(e) => setRecurInterval(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    className="input-field"
                   >
                     <option value="1">Weekly</option>
                     <option value="2">Every 2 weeks</option>
@@ -1169,7 +1277,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Defaults to client name if left blank"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-field"
             />
           </div>
 
@@ -1183,35 +1291,37 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
               onChange={(e) => setComments(e.target.value)}
               rows={3}
               placeholder="Optional notes about this appointment"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-field"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex gap-4 pt-6 mt-6 border-t border-gray-200">
+          <div className="flex gap-3 pt-6 mt-6 border-t border-gray-200">
             {appointment && (
               <DangerButton
+                type="button"
                 onClick={handleDelete}
                 disabled={loading}
+                title="Permanently delete this appointment record"
               >
                 Delete
               </DangerButton>
             )}
-            <button
+            <div className="flex-1" />
+            <SecondaryButton
               type="button"
               onClick={handleClose}
-              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-label rounded-xl transition-all hover:shadow-md"
               disabled={loading}
             >
-              Cancel
-            </button>
-            <button
+              Close
+            </SecondaryButton>
+            <PrimaryButton
               type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
+              className="min-w-[160px]"
             >
-              {loading ? (appointment ? 'Updating...' : 'Creating...') : (appointment ? 'Update Appointment' : 'Create Appointment')}
-            </button>
+              {loading ? (appointment ? 'Saving...' : 'Creating...') : (appointment ? 'Save Changes' : 'Create Appointment')}
+            </PrimaryButton>
           </div>
         </form>
       </div>

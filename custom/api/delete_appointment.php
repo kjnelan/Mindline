@@ -77,7 +77,7 @@ try {
 
     // Verify the appointment exists and belongs to the current user (for provider blocks)
     $existing = $db->query(
-        "SELECT id, client_id, provider_id, category_id, start_datetime, recurrence_group_id
+        "SELECT id, client_id, provider_id, category_id, start_datetime
          FROM appointments
          WHERE id = ?",
         [$appointmentId]
@@ -93,27 +93,10 @@ try {
         throw new Exception('You can only delete your own availability blocks');
     }
 
-    // Determine what to delete based on scope
-    $whereClause = "id = ?";
+    // Delete the appointment
+    // Note: Series deletion not yet implemented (recurrence_group_id column not in schema)
+    $sql = "DELETE FROM appointments WHERE id = ?";
     $whereParams = [$appointmentId];
-
-    if ($seriesData && $deleteScope !== 'single') {
-        if ($deleteScope === 'all') {
-            // Delete all occurrences in the series
-            $whereClause = "recurrence_group_id = ?";
-            $whereParams = [$recurrenceId];
-            error_log("Delete appointment: Deleting ALL occurrences with recurrence ID: $recurrenceId");
-        } elseif ($deleteScope === 'future') {
-            // Delete this and future occurrences
-            $splitDate = $existing['start_datetime'];
-            $whereClause = "recurrence_group_id = ? AND start_datetime >= ?";
-            $whereParams = [$recurrenceId, $splitDate];
-            error_log("Delete appointment: Deleting this and future occurrences with recurrence ID: $recurrenceId from date: $splitDate");
-        }
-    }
-
-    // Delete the appointment(s)
-    $sql = "DELETE FROM appointments WHERE $whereClause";
 
     error_log("Delete appointment SQL: " . $sql);
     error_log("Delete appointment params: " . print_r($whereParams, true));

@@ -87,22 +87,30 @@ try {
     $facilityId = isset($input['facilityId']) ? intval($input['facilityId']) : 0;
     $overrideAvailability = isset($input['overrideAvailability']) ? boolval($input['overrideAvailability']) : false;
 
-    // CPT/Billing fields
+    // CPT code for the appointment (billing details handled separately)
     $cptCodeId = isset($input['cptCodeId']) && $input['cptCodeId'] ? intval($input['cptCodeId']) : null;
-    $billingFee = isset($input['billingFee']) && $input['billingFee'] ? floatval($input['billingFee']) : null;
-    $patientPaymentType = $input['patientPaymentType'] ?? null;
 
     // Map OpenEMR status symbols to SanctumEMHR status strings
+    // Also accepts direct status strings (e.g., 'scheduled', 'confirmed', etc.)
     $statusMap = [
-        '-' => 'pending',
+        '-' => 'scheduled',
         '~' => 'confirmed',
         '@' => 'arrived',
-        '^' => 'checkout',
+        '^' => 'completed',
         '*' => 'no_show',
         '?' => 'cancelled',
-        'x' => 'deleted'
+        'x' => 'cancelled'
     ];
-    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
+
+    // If it's a symbol, map it; otherwise use the value directly
+    if (isset($statusMap[$apptstatus])) {
+        $sanctumEMHRStatus = $statusMap[$apptstatus];
+    } elseif (strlen($apptstatus) > 1) {
+        // It's a direct status string (e.g., 'scheduled', 'confirmed')
+        $sanctumEMHRStatus = $apptstatus;
+    } else {
+        $sanctumEMHRStatus = 'scheduled'; // Default
+    }
 
     // Check if this is a recurring appointment
     $isRecurring = isset($input['recurrence']) && $input['recurrence']['enabled'] === true;
@@ -207,6 +215,15 @@ try {
         $facilityId = $facilityResult['facility_id'] ?? 0;
     }
 
+    // If still no facility, get the first active facility as default
+    if ($facilityId === 0) {
+        $defaultFacility = $db->query("SELECT id FROM facilities WHERE is_active = 1 ORDER BY id LIMIT 1");
+        $facilityId = $defaultFacility['id'] ?? null;
+        if ($facilityId === null) {
+            throw new Exception("No active facility found. Please configure a facility first.");
+        }
+    }
+
     // Check for conflicts with existing appointments and availability blocks
     // Only check conflicts for patient appointments (not for availability blocks themselves)
     $conflicts = [];
@@ -229,7 +246,7 @@ try {
             LEFT JOIN appointment_categories c ON a.category_id = c.id
             WHERE a.provider_id = ?
               AND DATE(a.start_datetime) = ?
-              AND a.status NOT IN ('deleted', 'cancelled')
+              AND a.status NOT IN ('cancelled', 'no_show')
               AND (
                   -- New appointment overlaps with existing event
                   (? < a.end_datetime AND ? > a.start_datetime)
@@ -323,26 +340,10 @@ try {
             status,
             room,
             facility_id,
-            is_recurring,
-            recurrence_group_id,
             cpt_code_id,
-            billing_fee,
-            fee_type,
             created_at,
             updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-
-        // Determine fee_type based on payment type and billing fee
-        $feeType = null;
-        if ($billingFee !== null) {
-            if ($patientPaymentType === 'insurance') {
-                $feeType = 'insurance';
-            } elseif ($patientPaymentType === 'self-pay') {
-                $feeType = 'custom';
-            } elseif ($patientPaymentType === 'pro-bono') {
-                $feeType = 'pro-bono';
-            }
-        }
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
         $params = [
             $categoryId,
@@ -356,11 +357,7 @@ try {
             $sanctumEMHRStatus,
             $room,
             $facilityId,
-            $isRecurring ? 1 : 0,
-            $recurrenceGroupId,
-            $cptCodeId,
-            $billingFee,
-            $feeType
+            $cptCodeId
         ];
 
         error_log("Create appointment SQL for date $occurrenceDate: " . $sql);
@@ -390,8 +387,7 @@ try {
             a.notes,
             a.client_id,
             a.provider_id,
-            a.is_recurring,
-            a.recurrence_group_id,
+            a.room,
             c.name AS category_name,
             c.color AS category_color,
             cl.first_name AS patient_fname,
@@ -426,12 +422,13 @@ try {
             'status' => $reverseStatusMap[$row['status']] ?? '-', // Map back to symbol
             'title' => $row['title'],
             'notes' => $row['notes'],
+            'room' => $row['room'],
             'patientId' => $row['client_id'],
             'patientName' => trim(($row['patient_fname'] ?? '') . ' ' . ($row['patient_lname'] ?? '')),
             'providerId' => $row['provider_id'],
             'providerName' => $row['provider_name'],
-            'isRecurring' => intval($row['is_recurring']) === 1,
-            'recurrenceId' => $row['recurrence_group_id']
+            'isRecurring' => $isRecurring,
+            'recurrenceId' => $recurrenceGroupId
         ];
     }
 
