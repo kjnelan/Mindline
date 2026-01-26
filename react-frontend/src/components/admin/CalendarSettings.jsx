@@ -468,7 +468,7 @@ function SettingsListTab({ listId, title, description, itemLabel }) {
                       {item.is_active ? 'Active' : 'Inactive'}
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-3 text-center whitespace-nowrap">
                     <button
                       onClick={() => handleEdit(item)}
                       className="text-blue-600 hover:text-blue-800 mr-3"

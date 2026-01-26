@@ -47,6 +47,8 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const [title, setTitle] = useState('');
   const [comments, setComments] = useState('');
   const [room, setRoom] = useState('');
+  const [apptstatus, setApptstatus] = useState('-'); // Default to scheduled
+  const [statuses, setStatuses] = useState([]);
 
   // Billing/CPT fields
   const [cptCodeId, setCptCodeId] = useState('');
@@ -75,11 +77,12 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
   const [supervisees, setSupervisees] = useState([]);
   const [selectedSupervisees, setSelectedSupervisees] = useState([]);
 
-  // Load appointment categories and rooms on mount
+  // Load appointment categories, rooms, and statuses on mount
   useEffect(() => {
     if (isOpen) {
       loadCategories();
       loadRooms();
+      loadStatuses();
     }
   }, [isOpen]);
 
@@ -119,6 +122,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
       setTitle(appointment.title || '');
       setComments(appointment.comments || '');
       setRoom(appointment.roomId || appointment.room || ''); // Use roomId for editing, fallback to room
+      setApptstatus(appointment.apptstatus || appointment.status || '-'); // Set status when editing
       setCptCodeId(appointment.cptCodeId || '');
 
       // Fetch patient payment type if we have a patient
@@ -183,6 +187,20 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     } catch (err) {
       console.error('Failed to load rooms:', err);
       // Don't set error - rooms are optional
+    }
+  };
+
+  const loadStatuses = async () => {
+    try {
+      const response = await fetch('/custom/api/settings_lists.php?list_id=appointment_statuses', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setStatuses(data.items || []);
+      }
+    } catch (err) {
+      console.error('Failed to load statuses:', err);
     }
   };
 
@@ -388,7 +406,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
         title: title || patientName || category.name, // Use patient name or category name as default
         comments: comments,
         room: room,
-        apptstatus: appointment ? appointment.apptstatus : '-', // Preserve status when editing, default for new
+        apptstatus: apptstatus, // Use state value for status
         overrideAvailability: overrideAvailability, // Pass override flag
         // Conditional fields based on appointment type
         ...(patientId && { patientId: parseInt(patientId) }),
@@ -534,6 +552,7 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
     setTitle('');
     setComments('');
     setRoom('');
+    setApptstatus('-');
     setError(null);
     setSuccess(null);
     setAvailabilityConflict(null);
@@ -1049,6 +1068,37 @@ function AppointmentModal({ isOpen, onClose, onSave, initialDate, initialTime, p
               </select>
             </div>
           </div>
+
+          {/* Status - Only show when editing */}
+          {appointment && (
+            <div>
+              <FormLabel>
+                Status
+              </FormLabel>
+              <select
+                value={apptstatus}
+                onChange={(e) => setApptstatus(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              >
+                {statuses.length > 0 ? (
+                  statuses.filter(s => s.is_active).map((status) => (
+                    <option key={status.option_id} value={status.option_id}>
+                      {status.title}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="-">Scheduled</option>
+                    <option value="~">Confirmed</option>
+                    <option value="@">Arrived</option>
+                    <option value="^">Completed</option>
+                    <option value="?">Cancelled</option>
+                    <option value="*">No Show</option>
+                  </>
+                )}
+              </select>
+            </div>
+          )}
 
           {/* Recurrence Section */}
           <div className="border-t border-gray-200 pt-6 mt-6">

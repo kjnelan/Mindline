@@ -91,7 +91,7 @@ try {
     $cptCodeId = isset($input['cptCodeId']) && $input['cptCodeId'] ? intval($input['cptCodeId']) : null;
 
     // Map OpenEMR status symbols to SanctumEMHR status strings
-    // Database ENUM: 'scheduled','confirmed','arrived','in_session','completed','cancelled','no_show'
+    // Also accepts direct status strings (e.g., 'scheduled', 'confirmed', etc.)
     $statusMap = [
         '-' => 'scheduled',
         '~' => 'confirmed',
@@ -99,9 +99,18 @@ try {
         '^' => 'completed',
         '*' => 'no_show',
         '?' => 'cancelled',
-        'x' => 'cancelled'  // Map deleted to cancelled since 'deleted' is not in ENUM
+        'x' => 'cancelled'
     ];
-    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'scheduled';
+
+    // If it's a symbol, map it; otherwise use the value directly
+    if (isset($statusMap[$apptstatus])) {
+        $sanctumEMHRStatus = $statusMap[$apptstatus];
+    } elseif (strlen($apptstatus) > 1) {
+        // It's a direct status string (e.g., 'scheduled', 'confirmed')
+        $sanctumEMHRStatus = $apptstatus;
+    } else {
+        $sanctumEMHRStatus = 'scheduled'; // Default
+    }
 
     // Check if this is a recurring appointment
     $isRecurring = isset($input['recurrence']) && $input['recurrence']['enabled'] === true;

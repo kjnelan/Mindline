@@ -92,16 +92,26 @@ try {
     $patientPaymentType = $input['patientPaymentType'] ?? null;
 
     // Map OpenEMR status symbols to SanctumEMHR status strings
+    // Also accepts direct status strings (e.g., 'scheduled', 'confirmed', etc.)
     $statusMap = [
-        '-' => 'pending',
+        '-' => 'scheduled',
         '~' => 'confirmed',
         '@' => 'arrived',
-        '^' => 'checkout',
+        '^' => 'completed',
         '*' => 'no_show',
         '?' => 'cancelled',
-        'x' => 'deleted'
+        'x' => 'cancelled'
     ];
-    $sanctumEMHRStatus = isset($statusMap[$apptstatus]) ? $statusMap[$apptstatus] : 'pending';
+
+    // If it's a symbol, map it; otherwise use the value directly
+    if (isset($statusMap[$apptstatus])) {
+        $sanctumEMHRStatus = $statusMap[$apptstatus];
+    } elseif (strlen($apptstatus) > 1) {
+        // It's a direct status string (e.g., 'scheduled', 'confirmed')
+        $sanctumEMHRStatus = $apptstatus;
+    } else {
+        $sanctumEMHRStatus = 'scheduled'; // Default
+    }
 
     // Check for series update
     $seriesUpdate = isset($input['seriesUpdate']) ? $input['seriesUpdate'] : null;
