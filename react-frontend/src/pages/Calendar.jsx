@@ -594,7 +594,7 @@ function Calendar() {
 
                           // Availability blocks render as background, not clickable appointments
                           if (isAvailabilityBlock) {
-                            const bgColor = apt.categoryColor || '#F3F4F6';
+                            const bgColor = '#F3F4F6'; // Gray for availability blocks
                             return (
                               <div
                                 key={apt.id}
@@ -700,8 +700,8 @@ function Calendar() {
                           // Get styling based on provider color and status
                           let bgColor, borderColor, bgImage;
                           if (isAvailabilityBlock) {
-                            bgColor = apt.categoryColor || '#E5E7EB';
-                            borderColor = apt.categoryColor ? `${apt.categoryColor}80` : '#9CA3AF80';
+                            bgColor = '#E5E7EB'; // Gray for availability blocks
+                            borderColor = '#9CA3AF80';
                             bgImage = 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,.3) 4px, rgba(255,255,255,.3) 8px)';
                           } else {
                             const style = getAppointmentStyle(apt);
@@ -820,8 +820,8 @@ function Calendar() {
                           // Get styling based on provider color and status
                           let bgColor, borderColor, bgImage;
                           if (isAvailabilityBlock) {
-                            bgColor = apt.categoryColor || '#E5E7EB';
-                            borderColor = apt.categoryColor ? `${apt.categoryColor}80` : '#9CA3AF80';
+                            bgColor = '#E5E7EB'; // Gray for availability blocks
+                            borderColor = '#9CA3AF80';
                             bgImage = 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,.3) 4px, rgba(255,255,255,.3) 8px)';
                           } else {
                             const style = getAppointmentStyle(apt);

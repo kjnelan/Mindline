@@ -80,7 +80,6 @@ try {
         a.provider_id,
         a.facility_id,
         c.name AS category_name,
-        c.color AS category_color,
         c.is_billable,
         CONCAT(cl.first_name, ' ', cl.last_name) AS client_name,
         cl.date_of_birth AS client_dob,
@@ -127,7 +126,6 @@ try {
             'duration' => intval($row['duration']),
             'categoryId' => $row['category_id'],
             'categoryName' => $row['category_name'],
-            'categoryColor' => $row['category_color'],
             'categoryType' => $row['is_billable'] ? 0 : 1, // Map billable to type (0=appointment, 1=availability)
             'apptstatus' => $row['status'],
             'status' => $row['status'],
