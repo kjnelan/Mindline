@@ -84,7 +84,10 @@ try {
         c.is_billable,
         CONCAT(cl.first_name, ' ', cl.last_name) AS client_name,
         cl.date_of_birth AS client_dob,
+        u.first_name AS provider_first_name,
+        u.last_name AS provider_last_name,
         CONCAT(u.first_name, ' ', u.last_name) AS provider_name,
+        u.color AS provider_color,
         f.name AS facility_name,
         (SELECT id FROM appointment_recurrence WHERE parent_appointment_id = a.id LIMIT 1) AS recurrence_id
     FROM appointments a
@@ -135,6 +138,9 @@ try {
             'patientDOB' => $row['client_dob'],
             'providerId' => $row['provider_id'],
             'providerName' => $row['provider_name'],
+            'providerFirstName' => $row['provider_first_name'],
+            'providerLastName' => $row['provider_last_name'],
+            'providerColor' => $row['provider_color'],
             'facilityName' => $row['facility_name'],
             'room' => $row['room'],
             'roomId' => $row['room'],

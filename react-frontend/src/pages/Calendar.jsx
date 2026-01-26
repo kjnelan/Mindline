@@ -204,6 +204,53 @@ function Calendar() {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
+  // Format client name as "First L." (first name + last initial)
+  const formatClientName = (fullName) => {
+    if (!fullName) return '';
+    const parts = fullName.trim().split(' ');
+    if (parts.length === 1) return parts[0];
+    const firstName = parts[0];
+    const lastName = parts[parts.length - 1];
+    return `${firstName} ${lastName.charAt(0)}.`;
+  };
+
+  // Format clinician name as "First L." for compact display
+  const formatClinicianName = (apt) => {
+    if (!apt.providerFirstName) return apt.providerName || '';
+    const firstName = apt.providerFirstName;
+    const lastName = apt.providerLastName || '';
+    return lastName ? `${firstName} ${lastName.charAt(0)}.` : firstName;
+  };
+
+  // Check if appointment is cancelled or no-show
+  const isCancelledOrNoShow = (status) => {
+    return status === 'cancelled' || status === 'no_show';
+  };
+
+  // Get appointment styling based on provider color and status
+  const getAppointmentStyle = (apt) => {
+    const isCancelled = isCancelledOrNoShow(apt.status);
+
+    // Cancelled/no-show: neutral gray with strikethrough
+    if (isCancelled) {
+      return {
+        bgColor: '#9CA3AF', // Tailwind gray-400
+        borderColor: '#6B728066', // gray-500 with opacity
+        textClass: 'line-through text-gray-600',
+        opacity: '80' // 50% opacity in hex
+      };
+    }
+
+    // Active appointments: use provider color, fallback to blue
+    const color = apt.providerColor || '#3B82F6';
+    return {
+      bgColor: color,
+      borderColor: `${color}80`,
+      textClass: 'text-gray-900',
+      opacity: 'B3' // 70% opacity in hex
+    };
+  };
+
   // Get appointments for a specific time slot
   const getAppointmentsForSlot = (date, hour, minutes) => {
     const dateStr = date.toISOString().split('T')[0];
@@ -564,25 +611,26 @@ function Calendar() {
                           }
 
                           // Regular appointments are clickable cards
-                          const bgColor = apt.categoryColor || '#DBEAFE';
-                          const borderColor = apt.categoryColor ? `${apt.categoryColor}80` : '#93C5FD80';
+                          const style = getAppointmentStyle(apt);
+                          const isCancelled = isCancelledOrNoShow(apt.status);
 
                           return (
                             <div
                               key={apt.id}
                               onClick={(e) => handleAppointmentClick(apt, e)}
-                              className="absolute left-1 right-1 px-2 py-1 rounded-lg text-xs border hover:opacity-80 hover:shadow-md transition-all cursor-pointer z-10 overflow-hidden"
+                              className={`absolute left-1 right-1 px-2 py-1 rounded-lg text-xs border hover:opacity-80 hover:shadow-md transition-all cursor-pointer z-10 overflow-hidden ${isCancelled ? 'border-dashed' : ''}`}
                               style={{
                                 top: `${top}px`,
                                 height: `${height}px`,
-                                backgroundColor: `${bgColor}B3`,
-                                borderColor: borderColor
+                                backgroundColor: `${style.bgColor}${style.opacity}`,
+                                borderColor: style.borderColor
                               }}
                             >
-                              <div className="font-semibold text-gray-900">{formatTime12Hour(apt.startTime)}</div>
-                              {height > 30 && <div className="text-gray-800 truncate">{apt.patientName}</div>}
-                              {height > 50 && <div className="text-gray-700 truncate text-[10px]">{apt.categoryName}</div>}
-                              {height > 70 && apt.room && <div className="text-gray-600 truncate text-[10px]">{apt.room}</div>}
+                              <div className={`font-semibold ${style.textClass}`}>
+                                {formatClientName(apt.patientName)} / {formatClinicianName(apt)}
+                              </div>
+                              {height > 30 && <div className={`truncate ${style.textClass}`}>{apt.categoryName}</div>}
+                              {height > 50 && apt.room && <div className={`truncate text-[10px] ${isCancelled ? 'text-gray-500 line-through' : 'text-gray-700'}`}>Room: {apt.room}</div>}
                             </div>
                           );
                         })}
@@ -643,27 +691,37 @@ function Calendar() {
                         {slotAppointments.map(apt => {
                           // Check if this is an availability block (Type 1) or regular appointment (Type 0)
                           const isAvailabilityBlock = apt.categoryType === 1;
+                          const isCancelled = isCancelledOrNoShow(apt.status);
 
                           // Calculate how many slots this appointment spans
                           const slotsSpan = calculateSlotSpan(apt);
                           const heightPx = slotsSpan * 60 - 8; // 60px per slot, minus padding
 
-                          // Use category color if available, otherwise default
-                          const bgColor = apt.categoryColor || (isAvailabilityBlock ? '#E5E7EB' : '#DBEAFE');
-                          const borderColor = apt.categoryColor ? `${apt.categoryColor}80` : (isAvailabilityBlock ? '#9CA3AF80' : '#93C5FD80');
+                          // Get styling based on provider color and status
+                          let bgColor, borderColor, bgImage;
+                          if (isAvailabilityBlock) {
+                            bgColor = apt.categoryColor || '#E5E7EB';
+                            borderColor = apt.categoryColor ? `${apt.categoryColor}80` : '#9CA3AF80';
+                            bgImage = 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,.3) 4px, rgba(255,255,255,.3) 8px)';
+                          } else {
+                            const style = getAppointmentStyle(apt);
+                            bgColor = style.bgColor;
+                            borderColor = style.borderColor;
+                            bgImage = 'none';
+                          }
 
                           return (
                             <div
                               key={apt.id}
                               onClick={(e) => handleAppointmentClick(apt, e)}
                               className={`mb-1 px-2 py-1 rounded-lg text-xs border hover:opacity-80 hover:shadow-md transition-all cursor-pointer ${
-                                isAvailabilityBlock ? 'border-dashed' : ''
+                                isAvailabilityBlock || isCancelled ? 'border-dashed' : ''
                               }`}
                               style={{
                                 height: `${heightPx}px`,
-                                backgroundColor: isAvailabilityBlock ? `${bgColor}99` : `${bgColor}B3`, // 60% vs 70% opacity
+                                backgroundColor: isAvailabilityBlock ? `${bgColor}99` : (isCancelled ? `${bgColor}80` : `${bgColor}B3`),
                                 borderColor: borderColor,
-                                backgroundImage: isAvailabilityBlock ? 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,.3) 4px, rgba(255,255,255,.3) 8px)' : 'none'
+                                backgroundImage: bgImage
                               }}
                             >
                               {isAvailabilityBlock ? (
@@ -679,12 +737,19 @@ function Calendar() {
                                   )}
                                 </>
                               ) : (
-                                <>
-                                  <div className="font-semibold text-gray-900">{formatTime12Hour(apt.startTime)}</div>
-                                  <div className="text-gray-800 truncate">{apt.patientName}</div>
-                                  <div className="text-gray-700 truncate text-[10px]">{apt.categoryName}</div>
-                                  {apt.room && <div className="text-gray-600 truncate text-[10px]">{apt.room}</div>}
-                                </>
+                                (() => {
+                                  const style = getAppointmentStyle(apt);
+                                  const isCancelled = isCancelledOrNoShow(apt.status);
+                                  return (
+                                    <>
+                                      <div className={`font-semibold ${style.textClass}`}>
+                                        {formatClientName(apt.patientName)} / {formatClinicianName(apt)}
+                                      </div>
+                                      <div className={`truncate ${style.textClass}`}>{apt.categoryName}</div>
+                                      {apt.room && <div className={`truncate text-[10px] ${isCancelled ? 'text-gray-500 line-through' : 'text-gray-600'}`}>Room: {apt.room}</div>}
+                                    </>
+                                  );
+                                })()
                               )}
                             </div>
                           );
@@ -750,21 +815,32 @@ function Calendar() {
                         {dayAppointments.slice(0, 3).map(apt => {
                           // Check if this is an availability block (Type 1) or regular appointment (Type 0)
                           const isAvailabilityBlock = apt.categoryType === 1;
+                          const isCancelled = isCancelledOrNoShow(apt.status);
 
-                          const bgColor = apt.categoryColor || (isAvailabilityBlock ? '#E5E7EB' : '#DBEAFE');
-                          const borderColor = apt.categoryColor ? `${apt.categoryColor}80` : (isAvailabilityBlock ? '#9CA3AF80' : '#93C5FD80');
+                          // Get styling based on provider color and status
+                          let bgColor, borderColor, bgImage;
+                          if (isAvailabilityBlock) {
+                            bgColor = apt.categoryColor || '#E5E7EB';
+                            borderColor = apt.categoryColor ? `${apt.categoryColor}80` : '#9CA3AF80';
+                            bgImage = 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,.3) 4px, rgba(255,255,255,.3) 8px)';
+                          } else {
+                            const style = getAppointmentStyle(apt);
+                            bgColor = style.bgColor;
+                            borderColor = style.borderColor;
+                            bgImage = 'none';
+                          }
 
                           return (
                             <div
                               key={apt.id}
                               onClick={(e) => handleAppointmentClick(apt, e)}
                               className={`px-2 py-1 rounded text-xs border truncate hover:opacity-80 hover:shadow-md transition-all cursor-pointer ${
-                                isAvailabilityBlock ? 'border-dashed' : ''
+                                isAvailabilityBlock || isCancelled ? 'border-dashed' : ''
                               }`}
                               style={{
-                                backgroundColor: isAvailabilityBlock ? `${bgColor}99` : `${bgColor}B3`,
+                                backgroundColor: isAvailabilityBlock ? `${bgColor}99` : (isCancelled ? `${bgColor}80` : `${bgColor}B3`),
                                 borderColor: borderColor,
-                                backgroundImage: isAvailabilityBlock ? 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,.3) 4px, rgba(255,255,255,.3) 8px)' : 'none'
+                                backgroundImage: bgImage
                               }}
                             >
                               {isAvailabilityBlock ? (
@@ -775,13 +851,17 @@ function Calendar() {
                                   <span className="truncate">{apt.categoryName}</span>
                                 </div>
                               ) : (
-                                <>
-                                  <div className="font-semibold text-gray-900">
-                                    {formatTime12Hour(apt.startTime)}
-                                  </div>
-                                  <div className="text-gray-800 truncate">{apt.patientName}</div>
-                                  {apt.room && <div className="text-gray-600 truncate text-[10px]">{apt.room}</div>}
-                                </>
+                                (() => {
+                                  const style = getAppointmentStyle(apt);
+                                  return (
+                                    <>
+                                      <div className={`font-semibold truncate ${style.textClass}`}>
+                                        {formatClientName(apt.patientName)} / {formatClinicianName(apt)}
+                                      </div>
+                                      <div className={`truncate text-[10px] ${isCancelled ? 'text-gray-500 line-through' : 'text-gray-700'}`}>{apt.categoryName}</div>
+                                    </>
+                                  );
+                                })()
                               )}
                             </div>
                           );
